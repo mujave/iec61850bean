@@ -18,31 +18,31 @@ import com.beanit.iec61850bean.BdaType;
 
 public class Int32UDataBind extends TextFieldDataBind<BdaInt32U> {
 
-  private static final UInt32Filter FILTER = new UInt32Filter();
+    private static final UInt32Filter FILTER = new UInt32Filter();
 
-  public Int32UDataBind(BdaInt32U data) {
-    super(data, BdaType.INT32U, FILTER);
-  }
-
-  @Override
-  protected void resetImpl() {
-    inputField.setText(Long.toString(data.getValue()));
-  }
-
-  @Override
-  protected void writeImpl() {
-    data.setValue(Long.parseLong(inputField.getText()));
-  }
-
-  private static class UInt32Filter extends AbstractFilter {
-    @Override
-    protected boolean test(String text) {
-      try {
-        long value = Long.parseLong(text);
-        return value >= 0 && value <= 0xFFFFFFFFL;
-      } catch (NumberFormatException e) {
-        return false;
-      }
+    public Int32UDataBind(BdaInt32U data) {
+        super(data, BdaType.INT32U, FILTER);
     }
-  }
+
+    @Override
+    protected void resetImpl() {
+        inputField.setText(Long.toString(data.getValue()));
+    }
+
+    @Override
+    protected void writeImpl() {
+        data.setValue(Long.parseLong(inputField.getText()));
+    }
+
+    private static class UInt32Filter extends AbstractFilter {
+        @Override
+        protected boolean test(String text) {
+            try {
+                long value = Long.parseLong(text);
+                return value >= 0 && value <= 0xFFFFFFFFL;
+            } catch (NumberFormatException e) {
+                return false;
+            }
+        }
+    }
 }

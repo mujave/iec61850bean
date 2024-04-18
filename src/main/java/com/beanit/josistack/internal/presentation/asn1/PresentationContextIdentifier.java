@@ -5,23 +5,25 @@
 package com.beanit.josistack.internal.presentation.asn1;
 
 import com.beanit.asn1bean.ber.types.BerInteger;
+
 import java.math.BigInteger;
 
 public class PresentationContextIdentifier extends BerInteger {
 
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  public PresentationContextIdentifier() {}
+    public PresentationContextIdentifier() {
+    }
 
-  public PresentationContextIdentifier(byte[] code) {
-    super(code);
-  }
+    public PresentationContextIdentifier(byte[] code) {
+        super(code);
+    }
 
-  public PresentationContextIdentifier(BigInteger value) {
-    super(value);
-  }
+    public PresentationContextIdentifier(BigInteger value) {
+        super(value);
+    }
 
-  public PresentationContextIdentifier(long value) {
-    super(value);
-  }
+    public PresentationContextIdentifier(long value) {
+        super(value);
+    }
 }

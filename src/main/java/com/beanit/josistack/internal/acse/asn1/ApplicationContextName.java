@@ -8,15 +8,16 @@ import com.beanit.asn1bean.ber.types.BerObjectIdentifier;
 
 public class ApplicationContextName extends BerObjectIdentifier {
 
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  public ApplicationContextName() {}
+    public ApplicationContextName() {
+    }
 
-  public ApplicationContextName(byte[] code) {
-    super(code);
-  }
+    public ApplicationContextName(byte[] code) {
+        super(code);
+    }
 
-  public ApplicationContextName(int[] value) {
-    super(value);
-  }
+    public ApplicationContextName(int[] value) {
+        super(value);
+    }
 }

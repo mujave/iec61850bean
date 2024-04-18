@@ -16,31 +16,31 @@ package com.beanit.iec61850bean.clientgui.databind;
 import com.beanit.iec61850bean.BdaTapCommand;
 import com.beanit.iec61850bean.BdaType;
 import com.beanit.iec61850bean.clientgui.BasicDataBind;
-import javax.swing.JComboBox;
-import javax.swing.JComponent;
+
+import javax.swing.*;
 
 public class TapCommandDataBind extends BasicDataBind<BdaTapCommand> {
 
-  @SuppressWarnings("unchecked")
-  private final JComboBox tapCommand = new JComboBox(BdaTapCommand.TapCommand.values());
+    @SuppressWarnings("unchecked")
+    private final JComboBox tapCommand = new JComboBox(BdaTapCommand.TapCommand.values());
 
-  public TapCommandDataBind(BdaTapCommand data) {
-    super(data, BdaType.TAP_COMMAND);
-  }
+    public TapCommandDataBind(BdaTapCommand data) {
+        super(data, BdaType.TAP_COMMAND);
+    }
 
-  @Override
-  protected JComponent init() {
-    return tapCommand;
-  }
+    @Override
+    protected JComponent init() {
+        return tapCommand;
+    }
 
-  @Override
-  protected void resetImpl() {
-    tapCommand.setSelectedItem(data.getTapCommand());
-  }
+    @Override
+    protected void resetImpl() {
+        tapCommand.setSelectedItem(data.getTapCommand());
+    }
 
-  @Override
-  protected void writeImpl() {
-    // TODO uncomment once data.setTapCommand is implemented
-    // data.setTapCommand(tapCommand.getSelectedItem());
-  }
+    @Override
+    protected void writeImpl() {
+        // TODO uncomment once data.setTapCommand is implemented
+        // data.setTapCommand(tapCommand.getSelectedItem());
+    }
 }

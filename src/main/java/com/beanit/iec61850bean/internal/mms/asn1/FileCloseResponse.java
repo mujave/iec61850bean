@@ -8,11 +8,12 @@ import com.beanit.asn1bean.ber.types.BerNull;
 
 public class FileCloseResponse extends BerNull {
 
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  public FileCloseResponse() {}
+    public FileCloseResponse() {
+    }
 
-  public FileCloseResponse(byte[] code) {
-    super(code);
-  }
+    public FileCloseResponse(byte[] code) {
+        super(code);
+    }
 }

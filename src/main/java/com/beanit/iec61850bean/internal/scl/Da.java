@@ -20,53 +20,53 @@ import org.w3c.dom.Node;
 
 public final class Da extends AbstractDataAttribute {
 
-  private Fc fc = null;
-  private boolean dchg = false;
-  private boolean qchg = false;
-  private boolean dupd = false;
+    private Fc fc = null;
+    private boolean dchg = false;
+    private boolean qchg = false;
+    private boolean dupd = false;
 
-  public Da(Node xmlNode) throws SclParseException {
+    public Da(Node xmlNode) throws SclParseException {
 
-    super(xmlNode);
+        super(xmlNode);
 
-    NamedNodeMap attributes = xmlNode.getAttributes();
+        NamedNodeMap attributes = xmlNode.getAttributes();
 
-    for (int i = 0; i < attributes.getLength(); i++) {
-      Node node = attributes.item(i);
-      String nodeName = node.getNodeName();
+        for (int i = 0; i < attributes.getLength(); i++) {
+            Node node = attributes.item(i);
+            String nodeName = node.getNodeName();
 
-      if (nodeName.equals("fc")) {
-        fc = Fc.fromString(node.getNodeValue());
-        if (fc == null) {
-          throw new SclParseException("Invalid Functional Constraint");
+            if (nodeName.equals("fc")) {
+                fc = Fc.fromString(node.getNodeValue());
+                if (fc == null) {
+                    throw new SclParseException("Invalid Functional Constraint");
+                }
+            } else if (nodeName.equals("dchg")) {
+                dchg = "true".equals(node.getNodeValue());
+            } else if (nodeName.equals("qchg")) {
+                qchg = "true".equals(node.getNodeValue());
+            } else if (nodeName.equals("dupd")) {
+                dupd = "true".equals(node.getNodeValue());
+            }
         }
-      } else if (nodeName.equals("dchg")) {
-        dchg = "true".equals(node.getNodeValue());
-      } else if (nodeName.equals("qchg")) {
-        qchg = "true".equals(node.getNodeValue());
-      } else if (nodeName.equals("dupd")) {
-        dupd = "true".equals(node.getNodeValue());
-      }
+
+        if (fc == null) {
+            throw new SclParseException("Required attribute \"fc\" not found!");
+        }
     }
 
-    if (fc == null) {
-      throw new SclParseException("Required attribute \"fc\" not found!");
+    public Fc getFc() {
+        return fc;
     }
-  }
 
-  public Fc getFc() {
-    return fc;
-  }
+    public boolean isDchg() {
+        return dchg;
+    }
 
-  public boolean isDchg() {
-    return dchg;
-  }
+    public boolean isQchg() {
+        return qchg;
+    }
 
-  public boolean isQchg() {
-    return qchg;
-  }
-
-  public boolean isDupd() {
-    return dupd;
-  }
+    public boolean isDupd() {
+        return dupd;
+    }
 }

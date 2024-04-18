@@ -19,34 +19,34 @@ import org.w3c.dom.Node;
 
 public abstract class AbstractElement {
 
-  private String name = null;
-  private String desc = null;
+    private String name = null;
+    private String desc = null;
 
-  AbstractElement(String name, String desc) {
-    this.name = name;
-    this.desc = desc;
-  }
-
-  AbstractElement(Node xmlNode) throws SclParseException {
-    NamedNodeMap attributes = xmlNode.getAttributes();
-
-    Node node = attributes.getNamedItem("name");
-    if (node == null) {
-      throw new SclParseException("Required attribute \"name\" not found!");
+    AbstractElement(String name, String desc) {
+        this.name = name;
+        this.desc = desc;
     }
-    name = node.getNodeValue();
 
-    node = attributes.getNamedItem("desc");
-    if (node != null) {
-      desc = node.getNodeValue();
+    AbstractElement(Node xmlNode) throws SclParseException {
+        NamedNodeMap attributes = xmlNode.getAttributes();
+
+        Node node = attributes.getNamedItem("name");
+        if (node == null) {
+            throw new SclParseException("Required attribute \"name\" not found!");
+        }
+        name = node.getNodeValue();
+
+        node = attributes.getNamedItem("desc");
+        if (node != null) {
+            desc = node.getNodeValue();
+        }
     }
-  }
 
-  public String getName() {
-    return name;
-  }
+    public String getName() {
+        return name;
+    }
 
-  public String getDesc() {
-    return desc;
-  }
+    public String getDesc() {
+        return desc;
+    }
 }

@@ -7,8 +7,8 @@ package com.beanit.josistack.internal.acse.asn1;
 import com.beanit.asn1bean.ber.types.BerObjectIdentifier;
 
 public final class OidValues {
-  public static final BerObjectIdentifier aCSEId =
-      new BerObjectIdentifier(new int[] {2, 2, 3, 1, 1});
-  public static final BerObjectIdentifier acseAsId =
-      new BerObjectIdentifier(new int[] {2, 2, 1, 0, 1});
+    public static final BerObjectIdentifier aCSEId =
+            new BerObjectIdentifier(new int[]{2, 2, 3, 1, 1});
+    public static final BerObjectIdentifier acseAsId =
+            new BerObjectIdentifier(new int[]{2, 2, 1, 0, 1});
 }

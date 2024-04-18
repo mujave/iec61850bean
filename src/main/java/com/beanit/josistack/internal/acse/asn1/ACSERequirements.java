@@ -8,19 +8,20 @@ import com.beanit.asn1bean.ber.types.BerBitString;
 
 public class ACSERequirements extends BerBitString {
 
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  public ACSERequirements() {}
+    public ACSERequirements() {
+    }
 
-  public ACSERequirements(byte[] code) {
-    super(code);
-  }
+    public ACSERequirements(byte[] code) {
+        super(code);
+    }
 
-  public ACSERequirements(byte[] value, int numBits) {
-    super(value, numBits);
-  }
+    public ACSERequirements(byte[] value, int numBits) {
+        super(value, numBits);
+    }
 
-  public ACSERequirements(boolean[] value) {
-    super(value);
-  }
+    public ACSERequirements(boolean[] value) {
+        super(value);
+    }
 }

@@ -5,23 +5,25 @@
 package com.beanit.iec61850bean.internal.mms.asn1;
 
 import com.beanit.asn1bean.ber.types.BerInteger;
+
 import java.math.BigInteger;
 
 public class Unsigned8 extends BerInteger {
 
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  public Unsigned8() {}
+    public Unsigned8() {
+    }
 
-  public Unsigned8(byte[] code) {
-    super(code);
-  }
+    public Unsigned8(byte[] code) {
+        super(code);
+    }
 
-  public Unsigned8(BigInteger value) {
-    super(value);
-  }
+    public Unsigned8(BigInteger value) {
+        super(value);
+    }
 
-  public Unsigned8(long value) {
-    super(value);
-  }
+    public Unsigned8(long value) {
+        super(value);
+    }
 }

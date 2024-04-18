@@ -8,19 +8,20 @@ import com.beanit.asn1bean.ber.types.BerBitString;
 
 public class ProtocolVersion extends BerBitString {
 
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  public ProtocolVersion() {}
+    public ProtocolVersion() {
+    }
 
-  public ProtocolVersion(byte[] code) {
-    super(code);
-  }
+    public ProtocolVersion(byte[] code) {
+        super(code);
+    }
 
-  public ProtocolVersion(byte[] value, int numBits) {
-    super(value, numBits);
-  }
+    public ProtocolVersion(byte[] value, int numBits) {
+        super(value, numBits);
+    }
 
-  public ProtocolVersion(boolean[] value) {
-    super(value);
-  }
+    public ProtocolVersion(boolean[] value) {
+        super(value);
+    }
 }

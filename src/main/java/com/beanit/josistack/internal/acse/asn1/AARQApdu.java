@@ -10,6 +10,7 @@ import com.beanit.asn1bean.ber.ReverseByteArrayOutputStream;
 import com.beanit.asn1bean.ber.types.BerBitString;
 import com.beanit.asn1bean.ber.types.BerObjectIdentifier;
 import com.beanit.asn1bean.ber.types.BerType;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -17,674 +18,675 @@ import java.io.Serializable;
 
 public class AARQApdu implements BerType, Serializable {
 
-  public static final BerTag tag = new BerTag(BerTag.APPLICATION_CLASS, BerTag.CONSTRUCTED, 0);
-  private static final long serialVersionUID = 1L;
-  private byte[] code = null;
-  private BerBitString protocolVersion = null;
-  private BerObjectIdentifier applicationContextName = null;
-  private APTitle calledAPTitle = null;
-  private AEQualifier calledAEQualifier = null;
-  private APInvocationIdentifier calledAPInvocationIdentifier = null;
-  private AEInvocationIdentifier calledAEInvocationIdentifier = null;
-  private APTitle callingAPTitle = null;
-  private AEQualifier callingAEQualifier = null;
-  private APInvocationIdentifier callingAPInvocationIdentifier = null;
-  private AEInvocationIdentifier callingAEInvocationIdentifier = null;
-  private ACSERequirements senderAcseRequirements = null;
-  private MechanismName mechanismName = null;
-  private AuthenticationValue callingAuthenticationValue = null;
-  private ApplicationContextNameList applicationContextNameList = null;
-  private ImplementationData implementationInformation = null;
-  private AssociationInformation userInformation = null;
+    public static final BerTag tag = new BerTag(BerTag.APPLICATION_CLASS, BerTag.CONSTRUCTED, 0);
+    private static final long serialVersionUID = 1L;
+    private byte[] code = null;
+    private BerBitString protocolVersion = null;
+    private BerObjectIdentifier applicationContextName = null;
+    private APTitle calledAPTitle = null;
+    private AEQualifier calledAEQualifier = null;
+    private APInvocationIdentifier calledAPInvocationIdentifier = null;
+    private AEInvocationIdentifier calledAEInvocationIdentifier = null;
+    private APTitle callingAPTitle = null;
+    private AEQualifier callingAEQualifier = null;
+    private APInvocationIdentifier callingAPInvocationIdentifier = null;
+    private AEInvocationIdentifier callingAEInvocationIdentifier = null;
+    private ACSERequirements senderAcseRequirements = null;
+    private MechanismName mechanismName = null;
+    private AuthenticationValue callingAuthenticationValue = null;
+    private ApplicationContextNameList applicationContextNameList = null;
+    private ImplementationData implementationInformation = null;
+    private AssociationInformation userInformation = null;
 
-  public AARQApdu() {}
-
-  public AARQApdu(byte[] code) {
-    this.code = code;
-  }
-
-  public BerBitString getProtocolVersion() {
-    return protocolVersion;
-  }
-
-  public void setProtocolVersion(BerBitString protocolVersion) {
-    this.protocolVersion = protocolVersion;
-  }
-
-  public BerObjectIdentifier getApplicationContextName() {
-    return applicationContextName;
-  }
-
-  public void setApplicationContextName(BerObjectIdentifier applicationContextName) {
-    this.applicationContextName = applicationContextName;
-  }
-
-  public APTitle getCalledAPTitle() {
-    return calledAPTitle;
-  }
-
-  public void setCalledAPTitle(APTitle calledAPTitle) {
-    this.calledAPTitle = calledAPTitle;
-  }
-
-  public AEQualifier getCalledAEQualifier() {
-    return calledAEQualifier;
-  }
-
-  public void setCalledAEQualifier(AEQualifier calledAEQualifier) {
-    this.calledAEQualifier = calledAEQualifier;
-  }
-
-  public APInvocationIdentifier getCalledAPInvocationIdentifier() {
-    return calledAPInvocationIdentifier;
-  }
-
-  public void setCalledAPInvocationIdentifier(APInvocationIdentifier calledAPInvocationIdentifier) {
-    this.calledAPInvocationIdentifier = calledAPInvocationIdentifier;
-  }
-
-  public AEInvocationIdentifier getCalledAEInvocationIdentifier() {
-    return calledAEInvocationIdentifier;
-  }
-
-  public void setCalledAEInvocationIdentifier(AEInvocationIdentifier calledAEInvocationIdentifier) {
-    this.calledAEInvocationIdentifier = calledAEInvocationIdentifier;
-  }
-
-  public APTitle getCallingAPTitle() {
-    return callingAPTitle;
-  }
-
-  public void setCallingAPTitle(APTitle callingAPTitle) {
-    this.callingAPTitle = callingAPTitle;
-  }
-
-  public AEQualifier getCallingAEQualifier() {
-    return callingAEQualifier;
-  }
-
-  public void setCallingAEQualifier(AEQualifier callingAEQualifier) {
-    this.callingAEQualifier = callingAEQualifier;
-  }
-
-  public APInvocationIdentifier getCallingAPInvocationIdentifier() {
-    return callingAPInvocationIdentifier;
-  }
-
-  public void setCallingAPInvocationIdentifier(
-      APInvocationIdentifier callingAPInvocationIdentifier) {
-    this.callingAPInvocationIdentifier = callingAPInvocationIdentifier;
-  }
-
-  public AEInvocationIdentifier getCallingAEInvocationIdentifier() {
-    return callingAEInvocationIdentifier;
-  }
-
-  public void setCallingAEInvocationIdentifier(
-      AEInvocationIdentifier callingAEInvocationIdentifier) {
-    this.callingAEInvocationIdentifier = callingAEInvocationIdentifier;
-  }
-
-  public ACSERequirements getSenderAcseRequirements() {
-    return senderAcseRequirements;
-  }
-
-  public void setSenderAcseRequirements(ACSERequirements senderAcseRequirements) {
-    this.senderAcseRequirements = senderAcseRequirements;
-  }
-
-  public MechanismName getMechanismName() {
-    return mechanismName;
-  }
-
-  public void setMechanismName(MechanismName mechanismName) {
-    this.mechanismName = mechanismName;
-  }
-
-  public AuthenticationValue getCallingAuthenticationValue() {
-    return callingAuthenticationValue;
-  }
-
-  public void setCallingAuthenticationValue(AuthenticationValue callingAuthenticationValue) {
-    this.callingAuthenticationValue = callingAuthenticationValue;
-  }
-
-  public ApplicationContextNameList getApplicationContextNameList() {
-    return applicationContextNameList;
-  }
-
-  public void setApplicationContextNameList(ApplicationContextNameList applicationContextNameList) {
-    this.applicationContextNameList = applicationContextNameList;
-  }
-
-  public ImplementationData getImplementationInformation() {
-    return implementationInformation;
-  }
-
-  public void setImplementationInformation(ImplementationData implementationInformation) {
-    this.implementationInformation = implementationInformation;
-  }
-
-  public AssociationInformation getUserInformation() {
-    return userInformation;
-  }
-
-  public void setUserInformation(AssociationInformation userInformation) {
-    this.userInformation = userInformation;
-  }
-
-  @Override
-  public int encode(OutputStream reverseOS) throws IOException {
-    return encode(reverseOS, true);
-  }
-
-  public int encode(OutputStream reverseOS, boolean withTag) throws IOException {
-
-    if (code != null) {
-      reverseOS.write(code);
-      if (withTag) {
-        return tag.encode(reverseOS) + code.length;
-      }
-      return code.length;
+    public AARQApdu() {
     }
 
-    int codeLength = 0;
-    int sublength;
-
-    if (userInformation != null) {
-      codeLength += userInformation.encode(reverseOS, false);
-      // write tag: CONTEXT_CLASS, CONSTRUCTED, 30
-      reverseOS.write(0xBE);
-      codeLength += 1;
+    public AARQApdu(byte[] code) {
+        this.code = code;
     }
 
-    if (implementationInformation != null) {
-      codeLength += implementationInformation.encode(reverseOS, false);
-      // write tag: CONTEXT_CLASS, PRIMITIVE, 29
-      reverseOS.write(0x9D);
-      codeLength += 1;
+    public BerBitString getProtocolVersion() {
+        return protocolVersion;
     }
 
-    if (applicationContextNameList != null) {
-      codeLength += applicationContextNameList.encode(reverseOS, false);
-      // write tag: CONTEXT_CLASS, CONSTRUCTED, 13
-      reverseOS.write(0xAD);
-      codeLength += 1;
+    public void setProtocolVersion(BerBitString protocolVersion) {
+        this.protocolVersion = protocolVersion;
     }
 
-    if (callingAuthenticationValue != null) {
-      sublength = callingAuthenticationValue.encode(reverseOS);
-      codeLength += sublength;
-      codeLength += BerLength.encodeLength(reverseOS, sublength);
-      // write tag: CONTEXT_CLASS, CONSTRUCTED, 12
-      reverseOS.write(0xAC);
-      codeLength += 1;
+    public BerObjectIdentifier getApplicationContextName() {
+        return applicationContextName;
     }
 
-    if (mechanismName != null) {
-      codeLength += mechanismName.encode(reverseOS, false);
-      // write tag: CONTEXT_CLASS, PRIMITIVE, 11
-      reverseOS.write(0x8B);
-      codeLength += 1;
+    public void setApplicationContextName(BerObjectIdentifier applicationContextName) {
+        this.applicationContextName = applicationContextName;
     }
 
-    if (senderAcseRequirements != null) {
-      codeLength += senderAcseRequirements.encode(reverseOS, false);
-      // write tag: CONTEXT_CLASS, PRIMITIVE, 10
-      reverseOS.write(0x8A);
-      codeLength += 1;
+    public APTitle getCalledAPTitle() {
+        return calledAPTitle;
     }
 
-    if (callingAEInvocationIdentifier != null) {
-      sublength = callingAEInvocationIdentifier.encode(reverseOS, true);
-      codeLength += sublength;
-      codeLength += BerLength.encodeLength(reverseOS, sublength);
-      // write tag: CONTEXT_CLASS, CONSTRUCTED, 9
-      reverseOS.write(0xA9);
-      codeLength += 1;
+    public void setCalledAPTitle(APTitle calledAPTitle) {
+        this.calledAPTitle = calledAPTitle;
     }
 
-    if (callingAPInvocationIdentifier != null) {
-      sublength = callingAPInvocationIdentifier.encode(reverseOS, true);
-      codeLength += sublength;
-      codeLength += BerLength.encodeLength(reverseOS, sublength);
-      // write tag: CONTEXT_CLASS, CONSTRUCTED, 8
-      reverseOS.write(0xA8);
-      codeLength += 1;
+    public AEQualifier getCalledAEQualifier() {
+        return calledAEQualifier;
     }
 
-    if (callingAEQualifier != null) {
-      sublength = callingAEQualifier.encode(reverseOS);
-      codeLength += sublength;
-      codeLength += BerLength.encodeLength(reverseOS, sublength);
-      // write tag: CONTEXT_CLASS, CONSTRUCTED, 7
-      reverseOS.write(0xA7);
-      codeLength += 1;
+    public void setCalledAEQualifier(AEQualifier calledAEQualifier) {
+        this.calledAEQualifier = calledAEQualifier;
     }
 
-    if (callingAPTitle != null) {
-      sublength = callingAPTitle.encode(reverseOS);
-      codeLength += sublength;
-      codeLength += BerLength.encodeLength(reverseOS, sublength);
-      // write tag: CONTEXT_CLASS, CONSTRUCTED, 6
-      reverseOS.write(0xA6);
-      codeLength += 1;
+    public APInvocationIdentifier getCalledAPInvocationIdentifier() {
+        return calledAPInvocationIdentifier;
     }
 
-    if (calledAEInvocationIdentifier != null) {
-      sublength = calledAEInvocationIdentifier.encode(reverseOS, true);
-      codeLength += sublength;
-      codeLength += BerLength.encodeLength(reverseOS, sublength);
-      // write tag: CONTEXT_CLASS, CONSTRUCTED, 5
-      reverseOS.write(0xA5);
-      codeLength += 1;
+    public void setCalledAPInvocationIdentifier(APInvocationIdentifier calledAPInvocationIdentifier) {
+        this.calledAPInvocationIdentifier = calledAPInvocationIdentifier;
     }
 
-    if (calledAPInvocationIdentifier != null) {
-      sublength = calledAPInvocationIdentifier.encode(reverseOS, true);
-      codeLength += sublength;
-      codeLength += BerLength.encodeLength(reverseOS, sublength);
-      // write tag: CONTEXT_CLASS, CONSTRUCTED, 4
-      reverseOS.write(0xA4);
-      codeLength += 1;
+    public AEInvocationIdentifier getCalledAEInvocationIdentifier() {
+        return calledAEInvocationIdentifier;
     }
 
-    if (calledAEQualifier != null) {
-      sublength = calledAEQualifier.encode(reverseOS);
-      codeLength += sublength;
-      codeLength += BerLength.encodeLength(reverseOS, sublength);
-      // write tag: CONTEXT_CLASS, CONSTRUCTED, 3
-      reverseOS.write(0xA3);
-      codeLength += 1;
+    public void setCalledAEInvocationIdentifier(AEInvocationIdentifier calledAEInvocationIdentifier) {
+        this.calledAEInvocationIdentifier = calledAEInvocationIdentifier;
     }
 
-    if (calledAPTitle != null) {
-      sublength = calledAPTitle.encode(reverseOS);
-      codeLength += sublength;
-      codeLength += BerLength.encodeLength(reverseOS, sublength);
-      // write tag: CONTEXT_CLASS, CONSTRUCTED, 2
-      reverseOS.write(0xA2);
-      codeLength += 1;
+    public APTitle getCallingAPTitle() {
+        return callingAPTitle;
     }
 
-    sublength = applicationContextName.encode(reverseOS, true);
-    codeLength += sublength;
-    codeLength += BerLength.encodeLength(reverseOS, sublength);
-    // write tag: CONTEXT_CLASS, CONSTRUCTED, 1
-    reverseOS.write(0xA1);
-    codeLength += 1;
-
-    if (protocolVersion != null) {
-      codeLength += protocolVersion.encode(reverseOS, false);
-      // write tag: CONTEXT_CLASS, PRIMITIVE, 0
-      reverseOS.write(0x80);
-      codeLength += 1;
+    public void setCallingAPTitle(APTitle callingAPTitle) {
+        this.callingAPTitle = callingAPTitle;
     }
 
-    codeLength += BerLength.encodeLength(reverseOS, codeLength);
-
-    if (withTag) {
-      codeLength += tag.encode(reverseOS);
+    public AEQualifier getCallingAEQualifier() {
+        return callingAEQualifier;
     }
 
-    return codeLength;
-  }
-
-  @Override
-  public int decode(InputStream is) throws IOException {
-    return decode(is, true);
-  }
-
-  public int decode(InputStream is, boolean withTag) throws IOException {
-    int tlByteCount = 0;
-    int vByteCount = 0;
-    BerTag berTag = new BerTag();
-
-    if (withTag) {
-      tlByteCount += tag.decodeAndCheck(is);
+    public void setCallingAEQualifier(AEQualifier callingAEQualifier) {
+        this.callingAEQualifier = callingAEQualifier;
     }
 
-    BerLength length = new BerLength();
-    tlByteCount += length.decode(is);
-    int lengthVal = length.val;
-    vByteCount += berTag.decode(is);
-
-    if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.PRIMITIVE, 0)) {
-      protocolVersion = new BerBitString();
-      vByteCount += protocolVersion.decode(is, false);
-      vByteCount += berTag.decode(is);
+    public APInvocationIdentifier getCallingAPInvocationIdentifier() {
+        return callingAPInvocationIdentifier;
     }
 
-    if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.CONSTRUCTED, 1)) {
-      vByteCount += length.decode(is);
-      applicationContextName = new BerObjectIdentifier();
-      vByteCount += applicationContextName.decode(is, true);
-      vByteCount += length.readEocIfIndefinite(is);
-      if (lengthVal >= 0 && vByteCount == lengthVal) {
-        return tlByteCount + vByteCount;
-      }
-      vByteCount += berTag.decode(is);
-    } else {
-      throw new IOException("Tag does not match mandatory sequence component.");
+    public void setCallingAPInvocationIdentifier(
+            APInvocationIdentifier callingAPInvocationIdentifier) {
+        this.callingAPInvocationIdentifier = callingAPInvocationIdentifier;
     }
 
-    if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.CONSTRUCTED, 2)) {
-      vByteCount += length.decode(is);
-      calledAPTitle = new APTitle();
-      vByteCount += calledAPTitle.decode(is, null);
-      vByteCount += length.readEocIfIndefinite(is);
-      if (lengthVal >= 0 && vByteCount == lengthVal) {
-        return tlByteCount + vByteCount;
-      }
-      vByteCount += berTag.decode(is);
+    public AEInvocationIdentifier getCallingAEInvocationIdentifier() {
+        return callingAEInvocationIdentifier;
     }
 
-    if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.CONSTRUCTED, 3)) {
-      vByteCount += length.decode(is);
-      calledAEQualifier = new AEQualifier();
-      vByteCount += calledAEQualifier.decode(is, null);
-      vByteCount += length.readEocIfIndefinite(is);
-      if (lengthVal >= 0 && vByteCount == lengthVal) {
-        return tlByteCount + vByteCount;
-      }
-      vByteCount += berTag.decode(is);
+    public void setCallingAEInvocationIdentifier(
+            AEInvocationIdentifier callingAEInvocationIdentifier) {
+        this.callingAEInvocationIdentifier = callingAEInvocationIdentifier;
     }
 
-    if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.CONSTRUCTED, 4)) {
-      vByteCount += length.decode(is);
-      calledAPInvocationIdentifier = new APInvocationIdentifier();
-      vByteCount += calledAPInvocationIdentifier.decode(is, true);
-      vByteCount += length.readEocIfIndefinite(is);
-      if (lengthVal >= 0 && vByteCount == lengthVal) {
-        return tlByteCount + vByteCount;
-      }
-      vByteCount += berTag.decode(is);
+    public ACSERequirements getSenderAcseRequirements() {
+        return senderAcseRequirements;
     }
 
-    if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.CONSTRUCTED, 5)) {
-      vByteCount += length.decode(is);
-      calledAEInvocationIdentifier = new AEInvocationIdentifier();
-      vByteCount += calledAEInvocationIdentifier.decode(is, true);
-      vByteCount += length.readEocIfIndefinite(is);
-      if (lengthVal >= 0 && vByteCount == lengthVal) {
-        return tlByteCount + vByteCount;
-      }
-      vByteCount += berTag.decode(is);
+    public void setSenderAcseRequirements(ACSERequirements senderAcseRequirements) {
+        this.senderAcseRequirements = senderAcseRequirements;
     }
 
-    if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.CONSTRUCTED, 6)) {
-      vByteCount += length.decode(is);
-      callingAPTitle = new APTitle();
-      vByteCount += callingAPTitle.decode(is, null);
-      vByteCount += length.readEocIfIndefinite(is);
-      if (lengthVal >= 0 && vByteCount == lengthVal) {
-        return tlByteCount + vByteCount;
-      }
-      vByteCount += berTag.decode(is);
+    public MechanismName getMechanismName() {
+        return mechanismName;
     }
 
-    if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.CONSTRUCTED, 7)) {
-      vByteCount += length.decode(is);
-      callingAEQualifier = new AEQualifier();
-      vByteCount += callingAEQualifier.decode(is, null);
-      vByteCount += length.readEocIfIndefinite(is);
-      if (lengthVal >= 0 && vByteCount == lengthVal) {
-        return tlByteCount + vByteCount;
-      }
-      vByteCount += berTag.decode(is);
+    public void setMechanismName(MechanismName mechanismName) {
+        this.mechanismName = mechanismName;
     }
 
-    if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.CONSTRUCTED, 8)) {
-      vByteCount += length.decode(is);
-      callingAPInvocationIdentifier = new APInvocationIdentifier();
-      vByteCount += callingAPInvocationIdentifier.decode(is, true);
-      vByteCount += length.readEocIfIndefinite(is);
-      if (lengthVal >= 0 && vByteCount == lengthVal) {
-        return tlByteCount + vByteCount;
-      }
-      vByteCount += berTag.decode(is);
+    public AuthenticationValue getCallingAuthenticationValue() {
+        return callingAuthenticationValue;
     }
 
-    if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.CONSTRUCTED, 9)) {
-      vByteCount += length.decode(is);
-      callingAEInvocationIdentifier = new AEInvocationIdentifier();
-      vByteCount += callingAEInvocationIdentifier.decode(is, true);
-      vByteCount += length.readEocIfIndefinite(is);
-      if (lengthVal >= 0 && vByteCount == lengthVal) {
-        return tlByteCount + vByteCount;
-      }
-      vByteCount += berTag.decode(is);
+    public void setCallingAuthenticationValue(AuthenticationValue callingAuthenticationValue) {
+        this.callingAuthenticationValue = callingAuthenticationValue;
     }
 
-    if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.PRIMITIVE, 10)) {
-      senderAcseRequirements = new ACSERequirements();
-      vByteCount += senderAcseRequirements.decode(is, false);
-      if (lengthVal >= 0 && vByteCount == lengthVal) {
-        return tlByteCount + vByteCount;
-      }
-      vByteCount += berTag.decode(is);
+    public ApplicationContextNameList getApplicationContextNameList() {
+        return applicationContextNameList;
     }
 
-    if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.PRIMITIVE, 11)) {
-      mechanismName = new MechanismName();
-      vByteCount += mechanismName.decode(is, false);
-      if (lengthVal >= 0 && vByteCount == lengthVal) {
-        return tlByteCount + vByteCount;
-      }
-      vByteCount += berTag.decode(is);
+    public void setApplicationContextNameList(ApplicationContextNameList applicationContextNameList) {
+        this.applicationContextNameList = applicationContextNameList;
     }
 
-    if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.CONSTRUCTED, 12)) {
-      vByteCount += length.decode(is);
-      callingAuthenticationValue = new AuthenticationValue();
-      vByteCount += callingAuthenticationValue.decode(is, null);
-      vByteCount += length.readEocIfIndefinite(is);
-      if (lengthVal >= 0 && vByteCount == lengthVal) {
-        return tlByteCount + vByteCount;
-      }
-      vByteCount += berTag.decode(is);
+    public ImplementationData getImplementationInformation() {
+        return implementationInformation;
     }
 
-    if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.CONSTRUCTED, 13)) {
-      applicationContextNameList = new ApplicationContextNameList();
-      vByteCount += applicationContextNameList.decode(is, false);
-      if (lengthVal >= 0 && vByteCount == lengthVal) {
-        return tlByteCount + vByteCount;
-      }
-      vByteCount += berTag.decode(is);
+    public void setImplementationInformation(ImplementationData implementationInformation) {
+        this.implementationInformation = implementationInformation;
     }
 
-    if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.PRIMITIVE, 29)) {
-      implementationInformation = new ImplementationData();
-      vByteCount += implementationInformation.decode(is, false);
-      if (lengthVal >= 0 && vByteCount == lengthVal) {
-        return tlByteCount + vByteCount;
-      }
-      vByteCount += berTag.decode(is);
+    public AssociationInformation getUserInformation() {
+        return userInformation;
     }
 
-    if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.CONSTRUCTED, 30)) {
-      userInformation = new AssociationInformation();
-      vByteCount += userInformation.decode(is, false);
-      if (lengthVal >= 0 && vByteCount == lengthVal) {
-        return tlByteCount + vByteCount;
-      }
-      vByteCount += berTag.decode(is);
+    public void setUserInformation(AssociationInformation userInformation) {
+        this.userInformation = userInformation;
     }
 
-    if (lengthVal < 0) {
-      if (!berTag.equals(0, 0, 0)) {
-        throw new IOException("Decoded sequence has wrong end of contents octets");
-      }
-      vByteCount += BerLength.readEocByte(is);
-      return tlByteCount + vByteCount;
+    @Override
+    public int encode(OutputStream reverseOS) throws IOException {
+        return encode(reverseOS, true);
     }
 
-    throw new IOException(
-        "Unexpected end of sequence, length tag: " + lengthVal + ", bytes decoded: " + vByteCount);
-  }
+    public int encode(OutputStream reverseOS, boolean withTag) throws IOException {
 
-  public void encodeAndSave(int encodingSizeGuess) throws IOException {
-    ReverseByteArrayOutputStream reverseOS = new ReverseByteArrayOutputStream(encodingSizeGuess);
-    encode(reverseOS, false);
-    code = reverseOS.getArray();
-  }
+        if (code != null) {
+            reverseOS.write(code);
+            if (withTag) {
+                return tag.encode(reverseOS) + code.length;
+            }
+            return code.length;
+        }
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    appendAsString(sb, 0);
-    return sb.toString();
-  }
+        int codeLength = 0;
+        int sublength;
 
-  public void appendAsString(StringBuilder sb, int indentLevel) {
+        if (userInformation != null) {
+            codeLength += userInformation.encode(reverseOS, false);
+            // write tag: CONTEXT_CLASS, CONSTRUCTED, 30
+            reverseOS.write(0xBE);
+            codeLength += 1;
+        }
 
-    sb.append("{");
-    boolean firstSelectedElement = true;
-    if (protocolVersion != null) {
-      sb.append("\n");
-      for (int i = 0; i < indentLevel + 1; i++) {
-        sb.append("\t");
-      }
-      sb.append("protocolVersion: ").append(protocolVersion);
-      firstSelectedElement = false;
+        if (implementationInformation != null) {
+            codeLength += implementationInformation.encode(reverseOS, false);
+            // write tag: CONTEXT_CLASS, PRIMITIVE, 29
+            reverseOS.write(0x9D);
+            codeLength += 1;
+        }
+
+        if (applicationContextNameList != null) {
+            codeLength += applicationContextNameList.encode(reverseOS, false);
+            // write tag: CONTEXT_CLASS, CONSTRUCTED, 13
+            reverseOS.write(0xAD);
+            codeLength += 1;
+        }
+
+        if (callingAuthenticationValue != null) {
+            sublength = callingAuthenticationValue.encode(reverseOS);
+            codeLength += sublength;
+            codeLength += BerLength.encodeLength(reverseOS, sublength);
+            // write tag: CONTEXT_CLASS, CONSTRUCTED, 12
+            reverseOS.write(0xAC);
+            codeLength += 1;
+        }
+
+        if (mechanismName != null) {
+            codeLength += mechanismName.encode(reverseOS, false);
+            // write tag: CONTEXT_CLASS, PRIMITIVE, 11
+            reverseOS.write(0x8B);
+            codeLength += 1;
+        }
+
+        if (senderAcseRequirements != null) {
+            codeLength += senderAcseRequirements.encode(reverseOS, false);
+            // write tag: CONTEXT_CLASS, PRIMITIVE, 10
+            reverseOS.write(0x8A);
+            codeLength += 1;
+        }
+
+        if (callingAEInvocationIdentifier != null) {
+            sublength = callingAEInvocationIdentifier.encode(reverseOS, true);
+            codeLength += sublength;
+            codeLength += BerLength.encodeLength(reverseOS, sublength);
+            // write tag: CONTEXT_CLASS, CONSTRUCTED, 9
+            reverseOS.write(0xA9);
+            codeLength += 1;
+        }
+
+        if (callingAPInvocationIdentifier != null) {
+            sublength = callingAPInvocationIdentifier.encode(reverseOS, true);
+            codeLength += sublength;
+            codeLength += BerLength.encodeLength(reverseOS, sublength);
+            // write tag: CONTEXT_CLASS, CONSTRUCTED, 8
+            reverseOS.write(0xA8);
+            codeLength += 1;
+        }
+
+        if (callingAEQualifier != null) {
+            sublength = callingAEQualifier.encode(reverseOS);
+            codeLength += sublength;
+            codeLength += BerLength.encodeLength(reverseOS, sublength);
+            // write tag: CONTEXT_CLASS, CONSTRUCTED, 7
+            reverseOS.write(0xA7);
+            codeLength += 1;
+        }
+
+        if (callingAPTitle != null) {
+            sublength = callingAPTitle.encode(reverseOS);
+            codeLength += sublength;
+            codeLength += BerLength.encodeLength(reverseOS, sublength);
+            // write tag: CONTEXT_CLASS, CONSTRUCTED, 6
+            reverseOS.write(0xA6);
+            codeLength += 1;
+        }
+
+        if (calledAEInvocationIdentifier != null) {
+            sublength = calledAEInvocationIdentifier.encode(reverseOS, true);
+            codeLength += sublength;
+            codeLength += BerLength.encodeLength(reverseOS, sublength);
+            // write tag: CONTEXT_CLASS, CONSTRUCTED, 5
+            reverseOS.write(0xA5);
+            codeLength += 1;
+        }
+
+        if (calledAPInvocationIdentifier != null) {
+            sublength = calledAPInvocationIdentifier.encode(reverseOS, true);
+            codeLength += sublength;
+            codeLength += BerLength.encodeLength(reverseOS, sublength);
+            // write tag: CONTEXT_CLASS, CONSTRUCTED, 4
+            reverseOS.write(0xA4);
+            codeLength += 1;
+        }
+
+        if (calledAEQualifier != null) {
+            sublength = calledAEQualifier.encode(reverseOS);
+            codeLength += sublength;
+            codeLength += BerLength.encodeLength(reverseOS, sublength);
+            // write tag: CONTEXT_CLASS, CONSTRUCTED, 3
+            reverseOS.write(0xA3);
+            codeLength += 1;
+        }
+
+        if (calledAPTitle != null) {
+            sublength = calledAPTitle.encode(reverseOS);
+            codeLength += sublength;
+            codeLength += BerLength.encodeLength(reverseOS, sublength);
+            // write tag: CONTEXT_CLASS, CONSTRUCTED, 2
+            reverseOS.write(0xA2);
+            codeLength += 1;
+        }
+
+        sublength = applicationContextName.encode(reverseOS, true);
+        codeLength += sublength;
+        codeLength += BerLength.encodeLength(reverseOS, sublength);
+        // write tag: CONTEXT_CLASS, CONSTRUCTED, 1
+        reverseOS.write(0xA1);
+        codeLength += 1;
+
+        if (protocolVersion != null) {
+            codeLength += protocolVersion.encode(reverseOS, false);
+            // write tag: CONTEXT_CLASS, PRIMITIVE, 0
+            reverseOS.write(0x80);
+            codeLength += 1;
+        }
+
+        codeLength += BerLength.encodeLength(reverseOS, codeLength);
+
+        if (withTag) {
+            codeLength += tag.encode(reverseOS);
+        }
+
+        return codeLength;
     }
 
-    if (!firstSelectedElement) {
-      sb.append(",\n");
-    }
-    for (int i = 0; i < indentLevel + 1; i++) {
-      sb.append("\t");
-    }
-    if (applicationContextName != null) {
-      sb.append("applicationContextName: ").append(applicationContextName);
-    } else {
-      sb.append("applicationContextName: <empty-required-field>");
+    @Override
+    public int decode(InputStream is) throws IOException {
+        return decode(is, true);
     }
 
-    if (calledAPTitle != null) {
-      sb.append(",\n");
-      for (int i = 0; i < indentLevel + 1; i++) {
-        sb.append("\t");
-      }
-      sb.append("calledAPTitle: ");
-      calledAPTitle.appendAsString(sb, indentLevel + 1);
+    public int decode(InputStream is, boolean withTag) throws IOException {
+        int tlByteCount = 0;
+        int vByteCount = 0;
+        BerTag berTag = new BerTag();
+
+        if (withTag) {
+            tlByteCount += tag.decodeAndCheck(is);
+        }
+
+        BerLength length = new BerLength();
+        tlByteCount += length.decode(is);
+        int lengthVal = length.val;
+        vByteCount += berTag.decode(is);
+
+        if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.PRIMITIVE, 0)) {
+            protocolVersion = new BerBitString();
+            vByteCount += protocolVersion.decode(is, false);
+            vByteCount += berTag.decode(is);
+        }
+
+        if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.CONSTRUCTED, 1)) {
+            vByteCount += length.decode(is);
+            applicationContextName = new BerObjectIdentifier();
+            vByteCount += applicationContextName.decode(is, true);
+            vByteCount += length.readEocIfIndefinite(is);
+            if (lengthVal >= 0 && vByteCount == lengthVal) {
+                return tlByteCount + vByteCount;
+            }
+            vByteCount += berTag.decode(is);
+        } else {
+            throw new IOException("Tag does not match mandatory sequence component.");
+        }
+
+        if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.CONSTRUCTED, 2)) {
+            vByteCount += length.decode(is);
+            calledAPTitle = new APTitle();
+            vByteCount += calledAPTitle.decode(is, null);
+            vByteCount += length.readEocIfIndefinite(is);
+            if (lengthVal >= 0 && vByteCount == lengthVal) {
+                return tlByteCount + vByteCount;
+            }
+            vByteCount += berTag.decode(is);
+        }
+
+        if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.CONSTRUCTED, 3)) {
+            vByteCount += length.decode(is);
+            calledAEQualifier = new AEQualifier();
+            vByteCount += calledAEQualifier.decode(is, null);
+            vByteCount += length.readEocIfIndefinite(is);
+            if (lengthVal >= 0 && vByteCount == lengthVal) {
+                return tlByteCount + vByteCount;
+            }
+            vByteCount += berTag.decode(is);
+        }
+
+        if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.CONSTRUCTED, 4)) {
+            vByteCount += length.decode(is);
+            calledAPInvocationIdentifier = new APInvocationIdentifier();
+            vByteCount += calledAPInvocationIdentifier.decode(is, true);
+            vByteCount += length.readEocIfIndefinite(is);
+            if (lengthVal >= 0 && vByteCount == lengthVal) {
+                return tlByteCount + vByteCount;
+            }
+            vByteCount += berTag.decode(is);
+        }
+
+        if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.CONSTRUCTED, 5)) {
+            vByteCount += length.decode(is);
+            calledAEInvocationIdentifier = new AEInvocationIdentifier();
+            vByteCount += calledAEInvocationIdentifier.decode(is, true);
+            vByteCount += length.readEocIfIndefinite(is);
+            if (lengthVal >= 0 && vByteCount == lengthVal) {
+                return tlByteCount + vByteCount;
+            }
+            vByteCount += berTag.decode(is);
+        }
+
+        if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.CONSTRUCTED, 6)) {
+            vByteCount += length.decode(is);
+            callingAPTitle = new APTitle();
+            vByteCount += callingAPTitle.decode(is, null);
+            vByteCount += length.readEocIfIndefinite(is);
+            if (lengthVal >= 0 && vByteCount == lengthVal) {
+                return tlByteCount + vByteCount;
+            }
+            vByteCount += berTag.decode(is);
+        }
+
+        if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.CONSTRUCTED, 7)) {
+            vByteCount += length.decode(is);
+            callingAEQualifier = new AEQualifier();
+            vByteCount += callingAEQualifier.decode(is, null);
+            vByteCount += length.readEocIfIndefinite(is);
+            if (lengthVal >= 0 && vByteCount == lengthVal) {
+                return tlByteCount + vByteCount;
+            }
+            vByteCount += berTag.decode(is);
+        }
+
+        if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.CONSTRUCTED, 8)) {
+            vByteCount += length.decode(is);
+            callingAPInvocationIdentifier = new APInvocationIdentifier();
+            vByteCount += callingAPInvocationIdentifier.decode(is, true);
+            vByteCount += length.readEocIfIndefinite(is);
+            if (lengthVal >= 0 && vByteCount == lengthVal) {
+                return tlByteCount + vByteCount;
+            }
+            vByteCount += berTag.decode(is);
+        }
+
+        if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.CONSTRUCTED, 9)) {
+            vByteCount += length.decode(is);
+            callingAEInvocationIdentifier = new AEInvocationIdentifier();
+            vByteCount += callingAEInvocationIdentifier.decode(is, true);
+            vByteCount += length.readEocIfIndefinite(is);
+            if (lengthVal >= 0 && vByteCount == lengthVal) {
+                return tlByteCount + vByteCount;
+            }
+            vByteCount += berTag.decode(is);
+        }
+
+        if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.PRIMITIVE, 10)) {
+            senderAcseRequirements = new ACSERequirements();
+            vByteCount += senderAcseRequirements.decode(is, false);
+            if (lengthVal >= 0 && vByteCount == lengthVal) {
+                return tlByteCount + vByteCount;
+            }
+            vByteCount += berTag.decode(is);
+        }
+
+        if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.PRIMITIVE, 11)) {
+            mechanismName = new MechanismName();
+            vByteCount += mechanismName.decode(is, false);
+            if (lengthVal >= 0 && vByteCount == lengthVal) {
+                return tlByteCount + vByteCount;
+            }
+            vByteCount += berTag.decode(is);
+        }
+
+        if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.CONSTRUCTED, 12)) {
+            vByteCount += length.decode(is);
+            callingAuthenticationValue = new AuthenticationValue();
+            vByteCount += callingAuthenticationValue.decode(is, null);
+            vByteCount += length.readEocIfIndefinite(is);
+            if (lengthVal >= 0 && vByteCount == lengthVal) {
+                return tlByteCount + vByteCount;
+            }
+            vByteCount += berTag.decode(is);
+        }
+
+        if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.CONSTRUCTED, 13)) {
+            applicationContextNameList = new ApplicationContextNameList();
+            vByteCount += applicationContextNameList.decode(is, false);
+            if (lengthVal >= 0 && vByteCount == lengthVal) {
+                return tlByteCount + vByteCount;
+            }
+            vByteCount += berTag.decode(is);
+        }
+
+        if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.PRIMITIVE, 29)) {
+            implementationInformation = new ImplementationData();
+            vByteCount += implementationInformation.decode(is, false);
+            if (lengthVal >= 0 && vByteCount == lengthVal) {
+                return tlByteCount + vByteCount;
+            }
+            vByteCount += berTag.decode(is);
+        }
+
+        if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.CONSTRUCTED, 30)) {
+            userInformation = new AssociationInformation();
+            vByteCount += userInformation.decode(is, false);
+            if (lengthVal >= 0 && vByteCount == lengthVal) {
+                return tlByteCount + vByteCount;
+            }
+            vByteCount += berTag.decode(is);
+        }
+
+        if (lengthVal < 0) {
+            if (!berTag.equals(0, 0, 0)) {
+                throw new IOException("Decoded sequence has wrong end of contents octets");
+            }
+            vByteCount += BerLength.readEocByte(is);
+            return tlByteCount + vByteCount;
+        }
+
+        throw new IOException(
+                "Unexpected end of sequence, length tag: " + lengthVal + ", bytes decoded: " + vByteCount);
     }
 
-    if (calledAEQualifier != null) {
-      sb.append(",\n");
-      for (int i = 0; i < indentLevel + 1; i++) {
-        sb.append("\t");
-      }
-      sb.append("calledAEQualifier: ");
-      calledAEQualifier.appendAsString(sb, indentLevel + 1);
+    public void encodeAndSave(int encodingSizeGuess) throws IOException {
+        ReverseByteArrayOutputStream reverseOS = new ReverseByteArrayOutputStream(encodingSizeGuess);
+        encode(reverseOS, false);
+        code = reverseOS.getArray();
     }
 
-    if (calledAPInvocationIdentifier != null) {
-      sb.append(",\n");
-      for (int i = 0; i < indentLevel + 1; i++) {
-        sb.append("\t");
-      }
-      sb.append("calledAPInvocationIdentifier: ").append(calledAPInvocationIdentifier);
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        appendAsString(sb, 0);
+        return sb.toString();
     }
 
-    if (calledAEInvocationIdentifier != null) {
-      sb.append(",\n");
-      for (int i = 0; i < indentLevel + 1; i++) {
-        sb.append("\t");
-      }
-      sb.append("calledAEInvocationIdentifier: ").append(calledAEInvocationIdentifier);
-    }
+    public void appendAsString(StringBuilder sb, int indentLevel) {
 
-    if (callingAPTitle != null) {
-      sb.append(",\n");
-      for (int i = 0; i < indentLevel + 1; i++) {
-        sb.append("\t");
-      }
-      sb.append("callingAPTitle: ");
-      callingAPTitle.appendAsString(sb, indentLevel + 1);
-    }
+        sb.append("{");
+        boolean firstSelectedElement = true;
+        if (protocolVersion != null) {
+            sb.append("\n");
+            for (int i = 0; i < indentLevel + 1; i++) {
+                sb.append("\t");
+            }
+            sb.append("protocolVersion: ").append(protocolVersion);
+            firstSelectedElement = false;
+        }
 
-    if (callingAEQualifier != null) {
-      sb.append(",\n");
-      for (int i = 0; i < indentLevel + 1; i++) {
-        sb.append("\t");
-      }
-      sb.append("callingAEQualifier: ");
-      callingAEQualifier.appendAsString(sb, indentLevel + 1);
-    }
+        if (!firstSelectedElement) {
+            sb.append(",\n");
+        }
+        for (int i = 0; i < indentLevel + 1; i++) {
+            sb.append("\t");
+        }
+        if (applicationContextName != null) {
+            sb.append("applicationContextName: ").append(applicationContextName);
+        } else {
+            sb.append("applicationContextName: <empty-required-field>");
+        }
 
-    if (callingAPInvocationIdentifier != null) {
-      sb.append(",\n");
-      for (int i = 0; i < indentLevel + 1; i++) {
-        sb.append("\t");
-      }
-      sb.append("callingAPInvocationIdentifier: ").append(callingAPInvocationIdentifier);
-    }
+        if (calledAPTitle != null) {
+            sb.append(",\n");
+            for (int i = 0; i < indentLevel + 1; i++) {
+                sb.append("\t");
+            }
+            sb.append("calledAPTitle: ");
+            calledAPTitle.appendAsString(sb, indentLevel + 1);
+        }
 
-    if (callingAEInvocationIdentifier != null) {
-      sb.append(",\n");
-      for (int i = 0; i < indentLevel + 1; i++) {
-        sb.append("\t");
-      }
-      sb.append("callingAEInvocationIdentifier: ").append(callingAEInvocationIdentifier);
-    }
+        if (calledAEQualifier != null) {
+            sb.append(",\n");
+            for (int i = 0; i < indentLevel + 1; i++) {
+                sb.append("\t");
+            }
+            sb.append("calledAEQualifier: ");
+            calledAEQualifier.appendAsString(sb, indentLevel + 1);
+        }
 
-    if (senderAcseRequirements != null) {
-      sb.append(",\n");
-      for (int i = 0; i < indentLevel + 1; i++) {
-        sb.append("\t");
-      }
-      sb.append("senderAcseRequirements: ").append(senderAcseRequirements);
-    }
+        if (calledAPInvocationIdentifier != null) {
+            sb.append(",\n");
+            for (int i = 0; i < indentLevel + 1; i++) {
+                sb.append("\t");
+            }
+            sb.append("calledAPInvocationIdentifier: ").append(calledAPInvocationIdentifier);
+        }
 
-    if (mechanismName != null) {
-      sb.append(",\n");
-      for (int i = 0; i < indentLevel + 1; i++) {
-        sb.append("\t");
-      }
-      sb.append("mechanismName: ").append(mechanismName);
-    }
+        if (calledAEInvocationIdentifier != null) {
+            sb.append(",\n");
+            for (int i = 0; i < indentLevel + 1; i++) {
+                sb.append("\t");
+            }
+            sb.append("calledAEInvocationIdentifier: ").append(calledAEInvocationIdentifier);
+        }
 
-    if (callingAuthenticationValue != null) {
-      sb.append(",\n");
-      for (int i = 0; i < indentLevel + 1; i++) {
-        sb.append("\t");
-      }
-      sb.append("callingAuthenticationValue: ");
-      callingAuthenticationValue.appendAsString(sb, indentLevel + 1);
-    }
+        if (callingAPTitle != null) {
+            sb.append(",\n");
+            for (int i = 0; i < indentLevel + 1; i++) {
+                sb.append("\t");
+            }
+            sb.append("callingAPTitle: ");
+            callingAPTitle.appendAsString(sb, indentLevel + 1);
+        }
 
-    if (applicationContextNameList != null) {
-      sb.append(",\n");
-      for (int i = 0; i < indentLevel + 1; i++) {
-        sb.append("\t");
-      }
-      sb.append("applicationContextNameList: ");
-      applicationContextNameList.appendAsString(sb, indentLevel + 1);
-    }
+        if (callingAEQualifier != null) {
+            sb.append(",\n");
+            for (int i = 0; i < indentLevel + 1; i++) {
+                sb.append("\t");
+            }
+            sb.append("callingAEQualifier: ");
+            callingAEQualifier.appendAsString(sb, indentLevel + 1);
+        }
 
-    if (implementationInformation != null) {
-      sb.append(",\n");
-      for (int i = 0; i < indentLevel + 1; i++) {
-        sb.append("\t");
-      }
-      sb.append("implementationInformation: ").append(implementationInformation);
-    }
+        if (callingAPInvocationIdentifier != null) {
+            sb.append(",\n");
+            for (int i = 0; i < indentLevel + 1; i++) {
+                sb.append("\t");
+            }
+            sb.append("callingAPInvocationIdentifier: ").append(callingAPInvocationIdentifier);
+        }
 
-    if (userInformation != null) {
-      sb.append(",\n");
-      for (int i = 0; i < indentLevel + 1; i++) {
-        sb.append("\t");
-      }
-      sb.append("userInformation: ");
-      userInformation.appendAsString(sb, indentLevel + 1);
-    }
+        if (callingAEInvocationIdentifier != null) {
+            sb.append(",\n");
+            for (int i = 0; i < indentLevel + 1; i++) {
+                sb.append("\t");
+            }
+            sb.append("callingAEInvocationIdentifier: ").append(callingAEInvocationIdentifier);
+        }
 
-    sb.append("\n");
-    for (int i = 0; i < indentLevel; i++) {
-      sb.append("\t");
+        if (senderAcseRequirements != null) {
+            sb.append(",\n");
+            for (int i = 0; i < indentLevel + 1; i++) {
+                sb.append("\t");
+            }
+            sb.append("senderAcseRequirements: ").append(senderAcseRequirements);
+        }
+
+        if (mechanismName != null) {
+            sb.append(",\n");
+            for (int i = 0; i < indentLevel + 1; i++) {
+                sb.append("\t");
+            }
+            sb.append("mechanismName: ").append(mechanismName);
+        }
+
+        if (callingAuthenticationValue != null) {
+            sb.append(",\n");
+            for (int i = 0; i < indentLevel + 1; i++) {
+                sb.append("\t");
+            }
+            sb.append("callingAuthenticationValue: ");
+            callingAuthenticationValue.appendAsString(sb, indentLevel + 1);
+        }
+
+        if (applicationContextNameList != null) {
+            sb.append(",\n");
+            for (int i = 0; i < indentLevel + 1; i++) {
+                sb.append("\t");
+            }
+            sb.append("applicationContextNameList: ");
+            applicationContextNameList.appendAsString(sb, indentLevel + 1);
+        }
+
+        if (implementationInformation != null) {
+            sb.append(",\n");
+            for (int i = 0; i < indentLevel + 1; i++) {
+                sb.append("\t");
+            }
+            sb.append("implementationInformation: ").append(implementationInformation);
+        }
+
+        if (userInformation != null) {
+            sb.append(",\n");
+            for (int i = 0; i < indentLevel + 1; i++) {
+                sb.append("\t");
+            }
+            sb.append("userInformation: ");
+            userInformation.appendAsString(sb, indentLevel + 1);
+        }
+
+        sb.append("\n");
+        for (int i = 0; i < indentLevel; i++) {
+            sb.append("\t");
+        }
+        sb.append("}");
     }
-    sb.append("}");
-  }
 }

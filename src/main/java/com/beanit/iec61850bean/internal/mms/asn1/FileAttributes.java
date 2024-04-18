@@ -9,6 +9,7 @@ import com.beanit.asn1bean.ber.BerTag;
 import com.beanit.asn1bean.ber.ReverseByteArrayOutputStream;
 import com.beanit.asn1bean.ber.types.BerGeneralizedTime;
 import com.beanit.asn1bean.ber.types.BerType;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -16,160 +17,161 @@ import java.io.Serializable;
 
 public class FileAttributes implements BerType, Serializable {
 
-  public static final BerTag tag = new BerTag(BerTag.UNIVERSAL_CLASS, BerTag.CONSTRUCTED, 16);
-  private static final long serialVersionUID = 1L;
-  private byte[] code = null;
-  private Unsigned32 sizeOfFile = null;
-  private BerGeneralizedTime lastModified = null;
+    public static final BerTag tag = new BerTag(BerTag.UNIVERSAL_CLASS, BerTag.CONSTRUCTED, 16);
+    private static final long serialVersionUID = 1L;
+    private byte[] code = null;
+    private Unsigned32 sizeOfFile = null;
+    private BerGeneralizedTime lastModified = null;
 
-  public FileAttributes() {}
-
-  public FileAttributes(byte[] code) {
-    this.code = code;
-  }
-
-  public Unsigned32 getSizeOfFile() {
-    return sizeOfFile;
-  }
-
-  public void setSizeOfFile(Unsigned32 sizeOfFile) {
-    this.sizeOfFile = sizeOfFile;
-  }
-
-  public BerGeneralizedTime getLastModified() {
-    return lastModified;
-  }
-
-  public void setLastModified(BerGeneralizedTime lastModified) {
-    this.lastModified = lastModified;
-  }
-
-  @Override
-  public int encode(OutputStream reverseOS) throws IOException {
-    return encode(reverseOS, true);
-  }
-
-  public int encode(OutputStream reverseOS, boolean withTag) throws IOException {
-
-    if (code != null) {
-      reverseOS.write(code);
-      if (withTag) {
-        return tag.encode(reverseOS) + code.length;
-      }
-      return code.length;
+    public FileAttributes() {
     }
 
-    int codeLength = 0;
-    if (lastModified != null) {
-      codeLength += lastModified.encode(reverseOS, false);
-      // write tag: CONTEXT_CLASS, PRIMITIVE, 1
-      reverseOS.write(0x81);
-      codeLength += 1;
+    public FileAttributes(byte[] code) {
+        this.code = code;
     }
 
-    codeLength += sizeOfFile.encode(reverseOS, false);
-    // write tag: CONTEXT_CLASS, PRIMITIVE, 0
-    reverseOS.write(0x80);
-    codeLength += 1;
-
-    codeLength += BerLength.encodeLength(reverseOS, codeLength);
-
-    if (withTag) {
-      codeLength += tag.encode(reverseOS);
+    public Unsigned32 getSizeOfFile() {
+        return sizeOfFile;
     }
 
-    return codeLength;
-  }
-
-  @Override
-  public int decode(InputStream is) throws IOException {
-    return decode(is, true);
-  }
-
-  public int decode(InputStream is, boolean withTag) throws IOException {
-    int tlByteCount = 0;
-    int vByteCount = 0;
-    BerTag berTag = new BerTag();
-
-    if (withTag) {
-      tlByteCount += tag.decodeAndCheck(is);
+    public void setSizeOfFile(Unsigned32 sizeOfFile) {
+        this.sizeOfFile = sizeOfFile;
     }
 
-    BerLength length = new BerLength();
-    tlByteCount += length.decode(is);
-    int lengthVal = length.val;
-    vByteCount += berTag.decode(is);
-
-    if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.PRIMITIVE, 0)) {
-      sizeOfFile = new Unsigned32();
-      vByteCount += sizeOfFile.decode(is, false);
-      if (lengthVal >= 0 && vByteCount == lengthVal) {
-        return tlByteCount + vByteCount;
-      }
-      vByteCount += berTag.decode(is);
-    } else {
-      throw new IOException("Tag does not match mandatory sequence component.");
+    public BerGeneralizedTime getLastModified() {
+        return lastModified;
     }
 
-    if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.PRIMITIVE, 1)) {
-      lastModified = new BerGeneralizedTime();
-      vByteCount += lastModified.decode(is, false);
-      if (lengthVal >= 0 && vByteCount == lengthVal) {
-        return tlByteCount + vByteCount;
-      }
-      vByteCount += berTag.decode(is);
+    public void setLastModified(BerGeneralizedTime lastModified) {
+        this.lastModified = lastModified;
     }
 
-    if (lengthVal < 0) {
-      if (!berTag.equals(0, 0, 0)) {
-        throw new IOException("Decoded sequence has wrong end of contents octets");
-      }
-      vByteCount += BerLength.readEocByte(is);
-      return tlByteCount + vByteCount;
+    @Override
+    public int encode(OutputStream reverseOS) throws IOException {
+        return encode(reverseOS, true);
     }
 
-    throw new IOException(
-        "Unexpected end of sequence, length tag: " + lengthVal + ", bytes decoded: " + vByteCount);
-  }
+    public int encode(OutputStream reverseOS, boolean withTag) throws IOException {
 
-  public void encodeAndSave(int encodingSizeGuess) throws IOException {
-    ReverseByteArrayOutputStream reverseOS = new ReverseByteArrayOutputStream(encodingSizeGuess);
-    encode(reverseOS, false);
-    code = reverseOS.getArray();
-  }
+        if (code != null) {
+            reverseOS.write(code);
+            if (withTag) {
+                return tag.encode(reverseOS) + code.length;
+            }
+            return code.length;
+        }
 
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    appendAsString(sb, 0);
-    return sb.toString();
-  }
+        int codeLength = 0;
+        if (lastModified != null) {
+            codeLength += lastModified.encode(reverseOS, false);
+            // write tag: CONTEXT_CLASS, PRIMITIVE, 1
+            reverseOS.write(0x81);
+            codeLength += 1;
+        }
 
-  public void appendAsString(StringBuilder sb, int indentLevel) {
+        codeLength += sizeOfFile.encode(reverseOS, false);
+        // write tag: CONTEXT_CLASS, PRIMITIVE, 0
+        reverseOS.write(0x80);
+        codeLength += 1;
 
-    sb.append("{");
-    sb.append("\n");
-    for (int i = 0; i < indentLevel + 1; i++) {
-      sb.append("\t");
-    }
-    if (sizeOfFile != null) {
-      sb.append("sizeOfFile: ").append(sizeOfFile);
-    } else {
-      sb.append("sizeOfFile: <empty-required-field>");
-    }
+        codeLength += BerLength.encodeLength(reverseOS, codeLength);
 
-    if (lastModified != null) {
-      sb.append(",\n");
-      for (int i = 0; i < indentLevel + 1; i++) {
-        sb.append("\t");
-      }
-      sb.append("lastModified: ").append(lastModified);
+        if (withTag) {
+            codeLength += tag.encode(reverseOS);
+        }
+
+        return codeLength;
     }
 
-    sb.append("\n");
-    for (int i = 0; i < indentLevel; i++) {
-      sb.append("\t");
+    @Override
+    public int decode(InputStream is) throws IOException {
+        return decode(is, true);
     }
-    sb.append("}");
-  }
+
+    public int decode(InputStream is, boolean withTag) throws IOException {
+        int tlByteCount = 0;
+        int vByteCount = 0;
+        BerTag berTag = new BerTag();
+
+        if (withTag) {
+            tlByteCount += tag.decodeAndCheck(is);
+        }
+
+        BerLength length = new BerLength();
+        tlByteCount += length.decode(is);
+        int lengthVal = length.val;
+        vByteCount += berTag.decode(is);
+
+        if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.PRIMITIVE, 0)) {
+            sizeOfFile = new Unsigned32();
+            vByteCount += sizeOfFile.decode(is, false);
+            if (lengthVal >= 0 && vByteCount == lengthVal) {
+                return tlByteCount + vByteCount;
+            }
+            vByteCount += berTag.decode(is);
+        } else {
+            throw new IOException("Tag does not match mandatory sequence component.");
+        }
+
+        if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.PRIMITIVE, 1)) {
+            lastModified = new BerGeneralizedTime();
+            vByteCount += lastModified.decode(is, false);
+            if (lengthVal >= 0 && vByteCount == lengthVal) {
+                return tlByteCount + vByteCount;
+            }
+            vByteCount += berTag.decode(is);
+        }
+
+        if (lengthVal < 0) {
+            if (!berTag.equals(0, 0, 0)) {
+                throw new IOException("Decoded sequence has wrong end of contents octets");
+            }
+            vByteCount += BerLength.readEocByte(is);
+            return tlByteCount + vByteCount;
+        }
+
+        throw new IOException(
+                "Unexpected end of sequence, length tag: " + lengthVal + ", bytes decoded: " + vByteCount);
+    }
+
+    public void encodeAndSave(int encodingSizeGuess) throws IOException {
+        ReverseByteArrayOutputStream reverseOS = new ReverseByteArrayOutputStream(encodingSizeGuess);
+        encode(reverseOS, false);
+        code = reverseOS.getArray();
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        appendAsString(sb, 0);
+        return sb.toString();
+    }
+
+    public void appendAsString(StringBuilder sb, int indentLevel) {
+
+        sb.append("{");
+        sb.append("\n");
+        for (int i = 0; i < indentLevel + 1; i++) {
+            sb.append("\t");
+        }
+        if (sizeOfFile != null) {
+            sb.append("sizeOfFile: ").append(sizeOfFile);
+        } else {
+            sb.append("sizeOfFile: <empty-required-field>");
+        }
+
+        if (lastModified != null) {
+            sb.append(",\n");
+            for (int i = 0; i < indentLevel + 1; i++) {
+                sb.append("\t");
+            }
+            sb.append("lastModified: ").append(lastModified);
+        }
+
+        sb.append("\n");
+        for (int i = 0; i < indentLevel; i++) {
+            sb.append("\t");
+        }
+        sb.append("}");
+    }
 }

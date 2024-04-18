@@ -9,6 +9,7 @@ import com.beanit.asn1bean.ber.ReverseByteArrayOutputStream;
 import com.beanit.asn1bean.ber.types.BerBitString;
 import com.beanit.asn1bean.ber.types.BerType;
 import com.beanit.asn1bean.ber.types.string.BerGraphicString;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -16,150 +17,151 @@ import java.io.Serializable;
 
 public class AuthenticationValue implements BerType, Serializable {
 
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  private byte[] code = null;
-  private BerGraphicString charstring = null;
-  private BerBitString bitstring = null;
-  private Myexternal2 external = null;
+    private byte[] code = null;
+    private BerGraphicString charstring = null;
+    private BerBitString bitstring = null;
+    private Myexternal2 external = null;
 
-  public AuthenticationValue() {}
-
-  public AuthenticationValue(byte[] code) {
-    this.code = code;
-  }
-
-  public BerGraphicString getCharstring() {
-    return charstring;
-  }
-
-  public void setCharstring(BerGraphicString charstring) {
-    this.charstring = charstring;
-  }
-
-  public BerBitString getBitstring() {
-    return bitstring;
-  }
-
-  public void setBitstring(BerBitString bitstring) {
-    this.bitstring = bitstring;
-  }
-
-  public Myexternal2 getExternal() {
-    return external;
-  }
-
-  public void setExternal(Myexternal2 external) {
-    this.external = external;
-  }
-
-  @Override
-  public int encode(OutputStream reverseOS) throws IOException {
-
-    if (code != null) {
-      reverseOS.write(code);
-      return code.length;
+    public AuthenticationValue() {
     }
 
-    int codeLength = 0;
-    if (external != null) {
-      codeLength += external.encode(reverseOS, false);
-      // write tag: CONTEXT_CLASS, CONSTRUCTED, 2
-      reverseOS.write(0xA2);
-      codeLength += 1;
-      return codeLength;
+    public AuthenticationValue(byte[] code) {
+        this.code = code;
     }
 
-    if (bitstring != null) {
-      codeLength += bitstring.encode(reverseOS, false);
-      // write tag: CONTEXT_CLASS, PRIMITIVE, 1
-      reverseOS.write(0x81);
-      codeLength += 1;
-      return codeLength;
+    public BerGraphicString getCharstring() {
+        return charstring;
     }
 
-    if (charstring != null) {
-      codeLength += charstring.encode(reverseOS, false);
-      // write tag: CONTEXT_CLASS, PRIMITIVE, 0
-      reverseOS.write(0x80);
-      codeLength += 1;
-      return codeLength;
+    public void setCharstring(BerGraphicString charstring) {
+        this.charstring = charstring;
     }
 
-    throw new IOException("Error encoding CHOICE: No element of CHOICE was selected.");
-  }
-
-  @Override
-  public int decode(InputStream is) throws IOException {
-    return decode(is, null);
-  }
-
-  public int decode(InputStream is, BerTag berTag) throws IOException {
-
-    int tlvByteCount = 0;
-    boolean tagWasPassed = (berTag != null);
-
-    if (berTag == null) {
-      berTag = new BerTag();
-      tlvByteCount += berTag.decode(is);
+    public BerBitString getBitstring() {
+        return bitstring;
     }
 
-    if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.PRIMITIVE, 0)) {
-      charstring = new BerGraphicString();
-      tlvByteCount += charstring.decode(is, false);
-      return tlvByteCount;
+    public void setBitstring(BerBitString bitstring) {
+        this.bitstring = bitstring;
     }
 
-    if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.PRIMITIVE, 1)) {
-      bitstring = new BerBitString();
-      tlvByteCount += bitstring.decode(is, false);
-      return tlvByteCount;
+    public Myexternal2 getExternal() {
+        return external;
     }
 
-    if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.CONSTRUCTED, 2)) {
-      external = new Myexternal2();
-      tlvByteCount += external.decode(is, false);
-      return tlvByteCount;
+    public void setExternal(Myexternal2 external) {
+        this.external = external;
     }
 
-    if (tagWasPassed) {
-      return 0;
+    @Override
+    public int encode(OutputStream reverseOS) throws IOException {
+
+        if (code != null) {
+            reverseOS.write(code);
+            return code.length;
+        }
+
+        int codeLength = 0;
+        if (external != null) {
+            codeLength += external.encode(reverseOS, false);
+            // write tag: CONTEXT_CLASS, CONSTRUCTED, 2
+            reverseOS.write(0xA2);
+            codeLength += 1;
+            return codeLength;
+        }
+
+        if (bitstring != null) {
+            codeLength += bitstring.encode(reverseOS, false);
+            // write tag: CONTEXT_CLASS, PRIMITIVE, 1
+            reverseOS.write(0x81);
+            codeLength += 1;
+            return codeLength;
+        }
+
+        if (charstring != null) {
+            codeLength += charstring.encode(reverseOS, false);
+            // write tag: CONTEXT_CLASS, PRIMITIVE, 0
+            reverseOS.write(0x80);
+            codeLength += 1;
+            return codeLength;
+        }
+
+        throw new IOException("Error encoding CHOICE: No element of CHOICE was selected.");
     }
 
-    throw new IOException("Error decoding CHOICE: Tag " + berTag + " matched to no item.");
-  }
-
-  public void encodeAndSave(int encodingSizeGuess) throws IOException {
-    ReverseByteArrayOutputStream reverseOS = new ReverseByteArrayOutputStream(encodingSizeGuess);
-    encode(reverseOS);
-    code = reverseOS.getArray();
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    appendAsString(sb, 0);
-    return sb.toString();
-  }
-
-  public void appendAsString(StringBuilder sb, int indentLevel) {
-
-    if (charstring != null) {
-      sb.append("charstring: ").append(charstring);
-      return;
+    @Override
+    public int decode(InputStream is) throws IOException {
+        return decode(is, null);
     }
 
-    if (bitstring != null) {
-      sb.append("bitstring: ").append(bitstring);
-      return;
+    public int decode(InputStream is, BerTag berTag) throws IOException {
+
+        int tlvByteCount = 0;
+        boolean tagWasPassed = (berTag != null);
+
+        if (berTag == null) {
+            berTag = new BerTag();
+            tlvByteCount += berTag.decode(is);
+        }
+
+        if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.PRIMITIVE, 0)) {
+            charstring = new BerGraphicString();
+            tlvByteCount += charstring.decode(is, false);
+            return tlvByteCount;
+        }
+
+        if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.PRIMITIVE, 1)) {
+            bitstring = new BerBitString();
+            tlvByteCount += bitstring.decode(is, false);
+            return tlvByteCount;
+        }
+
+        if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.CONSTRUCTED, 2)) {
+            external = new Myexternal2();
+            tlvByteCount += external.decode(is, false);
+            return tlvByteCount;
+        }
+
+        if (tagWasPassed) {
+            return 0;
+        }
+
+        throw new IOException("Error decoding CHOICE: Tag " + berTag + " matched to no item.");
     }
 
-    if (external != null) {
-      sb.append("external: ");
-      external.appendAsString(sb, indentLevel + 1);
-      return;
+    public void encodeAndSave(int encodingSizeGuess) throws IOException {
+        ReverseByteArrayOutputStream reverseOS = new ReverseByteArrayOutputStream(encodingSizeGuess);
+        encode(reverseOS);
+        code = reverseOS.getArray();
     }
 
-    sb.append("<none>");
-  }
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        appendAsString(sb, 0);
+        return sb.toString();
+    }
+
+    public void appendAsString(StringBuilder sb, int indentLevel) {
+
+        if (charstring != null) {
+            sb.append("charstring: ").append(charstring);
+            return;
+        }
+
+        if (bitstring != null) {
+            sb.append("bitstring: ").append(bitstring);
+            return;
+        }
+
+        if (external != null) {
+            sb.append("external: ");
+            external.appendAsString(sb, indentLevel + 1);
+            return;
+        }
+
+        sb.append("<none>");
+    }
 }

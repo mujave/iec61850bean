@@ -7,6 +7,7 @@ package com.beanit.josistack.internal.presentation.asn1;
 import com.beanit.asn1bean.ber.BerTag;
 import com.beanit.asn1bean.ber.ReverseByteArrayOutputStream;
 import com.beanit.asn1bean.ber.types.BerType;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -14,122 +15,123 @@ import java.io.Serializable;
 
 public class UserData implements BerType, Serializable {
 
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  private byte[] code = null;
-  private SimplyEncodedData simplyEncodedData = null;
-  private FullyEncodedData fullyEncodedData = null;
+    private byte[] code = null;
+    private SimplyEncodedData simplyEncodedData = null;
+    private FullyEncodedData fullyEncodedData = null;
 
-  public UserData() {}
-
-  public UserData(byte[] code) {
-    this.code = code;
-  }
-
-  public SimplyEncodedData getSimplyEncodedData() {
-    return simplyEncodedData;
-  }
-
-  public void setSimplyEncodedData(SimplyEncodedData simplyEncodedData) {
-    this.simplyEncodedData = simplyEncodedData;
-  }
-
-  public FullyEncodedData getFullyEncodedData() {
-    return fullyEncodedData;
-  }
-
-  public void setFullyEncodedData(FullyEncodedData fullyEncodedData) {
-    this.fullyEncodedData = fullyEncodedData;
-  }
-
-  @Override
-  public int encode(OutputStream reverseOS) throws IOException {
-
-    if (code != null) {
-      reverseOS.write(code);
-      return code.length;
+    public UserData() {
     }
 
-    int codeLength = 0;
-    if (fullyEncodedData != null) {
-      codeLength += fullyEncodedData.encode(reverseOS, false);
-      // write tag: APPLICATION_CLASS, CONSTRUCTED, 1
-      reverseOS.write(0x61);
-      codeLength += 1;
-      return codeLength;
+    public UserData(byte[] code) {
+        this.code = code;
     }
 
-    if (simplyEncodedData != null) {
-      codeLength += simplyEncodedData.encode(reverseOS, false);
-      // write tag: APPLICATION_CLASS, PRIMITIVE, 0
-      reverseOS.write(0x40);
-      codeLength += 1;
-      return codeLength;
+    public SimplyEncodedData getSimplyEncodedData() {
+        return simplyEncodedData;
     }
 
-    throw new IOException("Error encoding CHOICE: No element of CHOICE was selected.");
-  }
-
-  @Override
-  public int decode(InputStream is) throws IOException {
-    return decode(is, null);
-  }
-
-  public int decode(InputStream is, BerTag berTag) throws IOException {
-
-    int tlvByteCount = 0;
-    boolean tagWasPassed = (berTag != null);
-
-    if (berTag == null) {
-      berTag = new BerTag();
-      tlvByteCount += berTag.decode(is);
+    public void setSimplyEncodedData(SimplyEncodedData simplyEncodedData) {
+        this.simplyEncodedData = simplyEncodedData;
     }
 
-    if (berTag.equals(BerTag.APPLICATION_CLASS, BerTag.PRIMITIVE, 0)) {
-      simplyEncodedData = new SimplyEncodedData();
-      tlvByteCount += simplyEncodedData.decode(is, false);
-      return tlvByteCount;
+    public FullyEncodedData getFullyEncodedData() {
+        return fullyEncodedData;
     }
 
-    if (berTag.equals(BerTag.APPLICATION_CLASS, BerTag.CONSTRUCTED, 1)) {
-      fullyEncodedData = new FullyEncodedData();
-      tlvByteCount += fullyEncodedData.decode(is, false);
-      return tlvByteCount;
+    public void setFullyEncodedData(FullyEncodedData fullyEncodedData) {
+        this.fullyEncodedData = fullyEncodedData;
     }
 
-    if (tagWasPassed) {
-      return 0;
+    @Override
+    public int encode(OutputStream reverseOS) throws IOException {
+
+        if (code != null) {
+            reverseOS.write(code);
+            return code.length;
+        }
+
+        int codeLength = 0;
+        if (fullyEncodedData != null) {
+            codeLength += fullyEncodedData.encode(reverseOS, false);
+            // write tag: APPLICATION_CLASS, CONSTRUCTED, 1
+            reverseOS.write(0x61);
+            codeLength += 1;
+            return codeLength;
+        }
+
+        if (simplyEncodedData != null) {
+            codeLength += simplyEncodedData.encode(reverseOS, false);
+            // write tag: APPLICATION_CLASS, PRIMITIVE, 0
+            reverseOS.write(0x40);
+            codeLength += 1;
+            return codeLength;
+        }
+
+        throw new IOException("Error encoding CHOICE: No element of CHOICE was selected.");
     }
 
-    throw new IOException("Error decoding CHOICE: Tag " + berTag + " matched to no item.");
-  }
-
-  public void encodeAndSave(int encodingSizeGuess) throws IOException {
-    ReverseByteArrayOutputStream reverseOS = new ReverseByteArrayOutputStream(encodingSizeGuess);
-    encode(reverseOS);
-    code = reverseOS.getArray();
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    appendAsString(sb, 0);
-    return sb.toString();
-  }
-
-  public void appendAsString(StringBuilder sb, int indentLevel) {
-
-    if (simplyEncodedData != null) {
-      sb.append("simplyEncodedData: ").append(simplyEncodedData);
-      return;
+    @Override
+    public int decode(InputStream is) throws IOException {
+        return decode(is, null);
     }
 
-    if (fullyEncodedData != null) {
-      sb.append("fullyEncodedData: ");
-      fullyEncodedData.appendAsString(sb, indentLevel + 1);
-      return;
+    public int decode(InputStream is, BerTag berTag) throws IOException {
+
+        int tlvByteCount = 0;
+        boolean tagWasPassed = (berTag != null);
+
+        if (berTag == null) {
+            berTag = new BerTag();
+            tlvByteCount += berTag.decode(is);
+        }
+
+        if (berTag.equals(BerTag.APPLICATION_CLASS, BerTag.PRIMITIVE, 0)) {
+            simplyEncodedData = new SimplyEncodedData();
+            tlvByteCount += simplyEncodedData.decode(is, false);
+            return tlvByteCount;
+        }
+
+        if (berTag.equals(BerTag.APPLICATION_CLASS, BerTag.CONSTRUCTED, 1)) {
+            fullyEncodedData = new FullyEncodedData();
+            tlvByteCount += fullyEncodedData.decode(is, false);
+            return tlvByteCount;
+        }
+
+        if (tagWasPassed) {
+            return 0;
+        }
+
+        throw new IOException("Error decoding CHOICE: Tag " + berTag + " matched to no item.");
     }
 
-    sb.append("<none>");
-  }
+    public void encodeAndSave(int encodingSizeGuess) throws IOException {
+        ReverseByteArrayOutputStream reverseOS = new ReverseByteArrayOutputStream(encodingSizeGuess);
+        encode(reverseOS);
+        code = reverseOS.getArray();
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        appendAsString(sb, 0);
+        return sb.toString();
+    }
+
+    public void appendAsString(StringBuilder sb, int indentLevel) {
+
+        if (simplyEncodedData != null) {
+            sb.append("simplyEncodedData: ").append(simplyEncodedData);
+            return;
+        }
+
+        if (fullyEncodedData != null) {
+            sb.append("fullyEncodedData: ");
+            fullyEncodedData.appendAsString(sb, indentLevel + 1);
+            return;
+        }
+
+        sb.append("<none>");
+    }
 }

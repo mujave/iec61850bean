@@ -6,11 +6,12 @@ package com.beanit.iec61850bean.internal.mms.asn1;
 
 public class InitiateErrorPDU extends ServiceError {
 
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  public InitiateErrorPDU() {}
+    public InitiateErrorPDU() {
+    }
 
-  public InitiateErrorPDU(byte[] code) {
-    super(code);
-  }
+    public InitiateErrorPDU(byte[] code) {
+        super(code);
+    }
 }

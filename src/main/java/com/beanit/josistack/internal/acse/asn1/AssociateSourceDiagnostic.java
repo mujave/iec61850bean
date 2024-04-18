@@ -9,6 +9,7 @@ import com.beanit.asn1bean.ber.BerTag;
 import com.beanit.asn1bean.ber.ReverseByteArrayOutputStream;
 import com.beanit.asn1bean.ber.types.BerInteger;
 import com.beanit.asn1bean.ber.types.BerType;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -16,133 +17,134 @@ import java.io.Serializable;
 
 public class AssociateSourceDiagnostic implements BerType, Serializable {
 
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  private byte[] code = null;
-  private BerInteger acseServiceUser = null;
-  private BerInteger acseServiceProvider = null;
+    private byte[] code = null;
+    private BerInteger acseServiceUser = null;
+    private BerInteger acseServiceProvider = null;
 
-  public AssociateSourceDiagnostic() {}
-
-  public AssociateSourceDiagnostic(byte[] code) {
-    this.code = code;
-  }
-
-  public BerInteger getAcseServiceUser() {
-    return acseServiceUser;
-  }
-
-  public void setAcseServiceUser(BerInteger acseServiceUser) {
-    this.acseServiceUser = acseServiceUser;
-  }
-
-  public BerInteger getAcseServiceProvider() {
-    return acseServiceProvider;
-  }
-
-  public void setAcseServiceProvider(BerInteger acseServiceProvider) {
-    this.acseServiceProvider = acseServiceProvider;
-  }
-
-  @Override
-  public int encode(OutputStream reverseOS) throws IOException {
-
-    if (code != null) {
-      reverseOS.write(code);
-      return code.length;
+    public AssociateSourceDiagnostic() {
     }
 
-    int codeLength = 0;
-    int sublength;
-
-    if (acseServiceProvider != null) {
-      sublength = acseServiceProvider.encode(reverseOS, true);
-      codeLength += sublength;
-      codeLength += BerLength.encodeLength(reverseOS, sublength);
-      // write tag: CONTEXT_CLASS, CONSTRUCTED, 2
-      reverseOS.write(0xA2);
-      codeLength += 1;
-      return codeLength;
+    public AssociateSourceDiagnostic(byte[] code) {
+        this.code = code;
     }
 
-    if (acseServiceUser != null) {
-      sublength = acseServiceUser.encode(reverseOS, true);
-      codeLength += sublength;
-      codeLength += BerLength.encodeLength(reverseOS, sublength);
-      // write tag: CONTEXT_CLASS, CONSTRUCTED, 1
-      reverseOS.write(0xA1);
-      codeLength += 1;
-      return codeLength;
+    public BerInteger getAcseServiceUser() {
+        return acseServiceUser;
     }
 
-    throw new IOException("Error encoding CHOICE: No element of CHOICE was selected.");
-  }
-
-  @Override
-  public int decode(InputStream is) throws IOException {
-    return decode(is, null);
-  }
-
-  public int decode(InputStream is, BerTag berTag) throws IOException {
-
-    int tlvByteCount = 0;
-    boolean tagWasPassed = (berTag != null);
-
-    if (berTag == null) {
-      berTag = new BerTag();
-      tlvByteCount += berTag.decode(is);
+    public void setAcseServiceUser(BerInteger acseServiceUser) {
+        this.acseServiceUser = acseServiceUser;
     }
 
-    if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.CONSTRUCTED, 1)) {
-      BerLength length = new BerLength();
-      tlvByteCount += length.decode(is);
-      acseServiceUser = new BerInteger();
-      tlvByteCount += acseServiceUser.decode(is, true);
-      tlvByteCount += length.readEocIfIndefinite(is);
-      return tlvByteCount;
+    public BerInteger getAcseServiceProvider() {
+        return acseServiceProvider;
     }
 
-    if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.CONSTRUCTED, 2)) {
-      BerLength length = new BerLength();
-      tlvByteCount += length.decode(is);
-      acseServiceProvider = new BerInteger();
-      tlvByteCount += acseServiceProvider.decode(is, true);
-      tlvByteCount += length.readEocIfIndefinite(is);
-      return tlvByteCount;
+    public void setAcseServiceProvider(BerInteger acseServiceProvider) {
+        this.acseServiceProvider = acseServiceProvider;
     }
 
-    if (tagWasPassed) {
-      return 0;
+    @Override
+    public int encode(OutputStream reverseOS) throws IOException {
+
+        if (code != null) {
+            reverseOS.write(code);
+            return code.length;
+        }
+
+        int codeLength = 0;
+        int sublength;
+
+        if (acseServiceProvider != null) {
+            sublength = acseServiceProvider.encode(reverseOS, true);
+            codeLength += sublength;
+            codeLength += BerLength.encodeLength(reverseOS, sublength);
+            // write tag: CONTEXT_CLASS, CONSTRUCTED, 2
+            reverseOS.write(0xA2);
+            codeLength += 1;
+            return codeLength;
+        }
+
+        if (acseServiceUser != null) {
+            sublength = acseServiceUser.encode(reverseOS, true);
+            codeLength += sublength;
+            codeLength += BerLength.encodeLength(reverseOS, sublength);
+            // write tag: CONTEXT_CLASS, CONSTRUCTED, 1
+            reverseOS.write(0xA1);
+            codeLength += 1;
+            return codeLength;
+        }
+
+        throw new IOException("Error encoding CHOICE: No element of CHOICE was selected.");
     }
 
-    throw new IOException("Error decoding CHOICE: Tag " + berTag + " matched to no item.");
-  }
-
-  public void encodeAndSave(int encodingSizeGuess) throws IOException {
-    ReverseByteArrayOutputStream reverseOS = new ReverseByteArrayOutputStream(encodingSizeGuess);
-    encode(reverseOS);
-    code = reverseOS.getArray();
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    appendAsString(sb, 0);
-    return sb.toString();
-  }
-
-  public void appendAsString(StringBuilder sb, int indentLevel) {
-
-    if (acseServiceUser != null) {
-      sb.append("acseServiceUser: ").append(acseServiceUser);
-      return;
+    @Override
+    public int decode(InputStream is) throws IOException {
+        return decode(is, null);
     }
 
-    if (acseServiceProvider != null) {
-      sb.append("acseServiceProvider: ").append(acseServiceProvider);
-      return;
+    public int decode(InputStream is, BerTag berTag) throws IOException {
+
+        int tlvByteCount = 0;
+        boolean tagWasPassed = (berTag != null);
+
+        if (berTag == null) {
+            berTag = new BerTag();
+            tlvByteCount += berTag.decode(is);
+        }
+
+        if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.CONSTRUCTED, 1)) {
+            BerLength length = new BerLength();
+            tlvByteCount += length.decode(is);
+            acseServiceUser = new BerInteger();
+            tlvByteCount += acseServiceUser.decode(is, true);
+            tlvByteCount += length.readEocIfIndefinite(is);
+            return tlvByteCount;
+        }
+
+        if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.CONSTRUCTED, 2)) {
+            BerLength length = new BerLength();
+            tlvByteCount += length.decode(is);
+            acseServiceProvider = new BerInteger();
+            tlvByteCount += acseServiceProvider.decode(is, true);
+            tlvByteCount += length.readEocIfIndefinite(is);
+            return tlvByteCount;
+        }
+
+        if (tagWasPassed) {
+            return 0;
+        }
+
+        throw new IOException("Error decoding CHOICE: Tag " + berTag + " matched to no item.");
     }
 
-    sb.append("<none>");
-  }
+    public void encodeAndSave(int encodingSizeGuess) throws IOException {
+        ReverseByteArrayOutputStream reverseOS = new ReverseByteArrayOutputStream(encodingSizeGuess);
+        encode(reverseOS);
+        code = reverseOS.getArray();
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        appendAsString(sb, 0);
+        return sb.toString();
+    }
+
+    public void appendAsString(StringBuilder sb, int indentLevel) {
+
+        if (acseServiceUser != null) {
+            sb.append("acseServiceUser: ").append(acseServiceUser);
+            return;
+        }
+
+        if (acseServiceProvider != null) {
+            sb.append("acseServiceProvider: ").append(acseServiceProvider);
+            return;
+        }
+
+        sb.append("<none>");
+    }
 }

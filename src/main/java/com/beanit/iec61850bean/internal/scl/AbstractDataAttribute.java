@@ -20,60 +20,60 @@ import org.w3c.dom.NodeList;
 
 public abstract class AbstractDataAttribute extends AbstractElement {
 
-  // attributes not needed: valKind
+    // attributes not needed: valKind
 
-  public String value = null;
-  private String sAddr = null; /* optional - short address */
-  private String bType = null; /* mandatory - basic type */
-  private String type = null; /* conditional - if bType = "Enum" or "Struct" */
-  private int count = 0; /* optional - number of array elements */
+    public String value = null;
+    private String sAddr = null; /* optional - short address */
+    private String bType = null; /* mandatory - basic type */
+    private String type = null; /* conditional - if bType = "Enum" or "Struct" */
+    private int count = 0; /* optional - number of array elements */
 
-  AbstractDataAttribute(Node xmlNode) throws SclParseException {
-    super(xmlNode);
+    AbstractDataAttribute(Node xmlNode) throws SclParseException {
+        super(xmlNode);
 
-    NamedNodeMap attributes = xmlNode.getAttributes();
+        NamedNodeMap attributes = xmlNode.getAttributes();
 
-    for (int i = 0; i < attributes.getLength(); i++) {
-      Node node = attributes.item(i);
-      String nodeName = node.getNodeName();
+        for (int i = 0; i < attributes.getLength(); i++) {
+            Node node = attributes.item(i);
+            String nodeName = node.getNodeName();
 
-      if (nodeName.equals("type")) {
-        type = node.getNodeValue();
-      } else if (nodeName.equals("sAddr")) {
-        sAddr = node.getNodeValue();
-      } else if (nodeName.equals("bType")) {
-        bType = node.getNodeValue();
-      } else if (nodeName.equals("count")) {
-        count = Integer.parseInt(node.getNodeValue());
-      }
+            if (nodeName.equals("type")) {
+                type = node.getNodeValue();
+            } else if (nodeName.equals("sAddr")) {
+                sAddr = node.getNodeValue();
+            } else if (nodeName.equals("bType")) {
+                bType = node.getNodeValue();
+            } else if (nodeName.equals("count")) {
+                count = Integer.parseInt(node.getNodeValue());
+            }
+        }
+
+        if (bType == null) {
+            throw new SclParseException("Required attribute \"bType\" not found!");
+        }
+
+        NodeList elements = xmlNode.getChildNodes();
+        for (int i = 0; i < elements.getLength(); i++) {
+            Node node = elements.item(i);
+            if (node.getNodeName().equals("Val")) {
+                value = node.getTextContent();
+            }
+        }
     }
 
-    if (bType == null) {
-      throw new SclParseException("Required attribute \"bType\" not found!");
+    public String getsAddr() {
+        return sAddr;
     }
 
-    NodeList elements = xmlNode.getChildNodes();
-    for (int i = 0; i < elements.getLength(); i++) {
-      Node node = elements.item(i);
-      if (node.getNodeName().equals("Val")) {
-        value = node.getTextContent();
-      }
+    public String getbType() {
+        return bType;
     }
-  }
 
-  public String getsAddr() {
-    return sAddr;
-  }
+    public String getType() {
+        return type;
+    }
 
-  public String getbType() {
-    return bType;
-  }
-
-  public String getType() {
-    return type;
-  }
-
-  public int getCount() {
-    return count;
-  }
+    public int getCount() {
+        return count;
+    }
 }

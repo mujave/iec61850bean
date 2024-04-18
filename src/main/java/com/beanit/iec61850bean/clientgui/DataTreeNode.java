@@ -15,22 +15,23 @@ package com.beanit.iec61850bean.clientgui;
 
 import com.beanit.iec61850bean.ClientAssociation;
 import com.beanit.iec61850bean.ServiceError;
-import java.io.IOException;
+
 import javax.swing.tree.TreeNode;
+import java.io.IOException;
 
 public interface DataTreeNode {
 
-  BasicDataBind<?> getData();
+    BasicDataBind<?> getData();
 
-  void reset(ClientAssociation association) throws ServiceError, IOException;
+    void reset(ClientAssociation association) throws ServiceError, IOException;
 
-  void writeValues(ClientAssociation association) throws ServiceError, IOException;
+    void writeValues(ClientAssociation association) throws ServiceError, IOException;
 
-  int getChildCount();
+    int getChildCount();
 
-  TreeNode getChildAt(int index);
+    TreeNode getChildAt(int index);
 
-  boolean writable();
+    boolean writable();
 
-  boolean readable();
+    boolean readable();
 }

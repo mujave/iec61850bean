@@ -8,11 +8,12 @@ import com.beanit.asn1bean.ber.types.BerNull;
 
 public class FileDeleteResponse extends BerNull {
 
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  public FileDeleteResponse() {}
+    public FileDeleteResponse() {
+    }
 
-  public FileDeleteResponse(byte[] code) {
-    super(code);
-  }
+    public FileDeleteResponse(byte[] code) {
+        super(code);
+    }
 }

@@ -15,38 +15,39 @@ package com.beanit.iec61850bean.clientgui;
 
 import com.beanit.iec61850bean.BasicDataAttribute;
 import com.beanit.iec61850bean.FcModelNode;
-import java.awt.Component;
-import javax.swing.JTree;
+
+import javax.swing.*;
 import javax.swing.tree.DefaultTreeCellRenderer;
+import java.awt.*;
 
 public class DataObjectTreeCellRenderer extends DefaultTreeCellRenderer {
 
-  private static final long serialVersionUID = 1682378972258556129L;
+    private static final long serialVersionUID = 1682378972258556129L;
 
-  @Override
-  public Component getTreeCellRendererComponent(
-      JTree tree,
-      Object value,
-      boolean sel,
-      boolean expanded,
-      boolean leaf,
-      int row,
-      boolean hasFocus) {
-    super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
+    @Override
+    public Component getTreeCellRendererComponent(
+            JTree tree,
+            Object value,
+            boolean sel,
+            boolean expanded,
+            boolean leaf,
+            int row,
+            boolean hasFocus) {
+        super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
 
-    if (value instanceof DataObjectTreeNode) {
-      DataObjectTreeNode treeNode = (DataObjectTreeNode) value;
-      if (!leaf && treeNode.getNode() instanceof FcModelNode) {
-        setIcon(getLeafIcon());
-      }
+        if (value instanceof DataObjectTreeNode) {
+            DataObjectTreeNode treeNode = (DataObjectTreeNode) value;
+            if (!leaf && treeNode.getNode() instanceof FcModelNode) {
+                setIcon(getLeafIcon());
+            }
 
-      if (treeNode.getNode() instanceof BasicDataAttribute) {
-        BasicDataAttribute attribute = (BasicDataAttribute) treeNode.getNode();
-        String tooltip = attribute.getSAddr();
-        setToolTipText(tooltip);
-      }
+            if (treeNode.getNode() instanceof BasicDataAttribute) {
+                BasicDataAttribute attribute = (BasicDataAttribute) treeNode.getNode();
+                String tooltip = attribute.getSAddr();
+                setToolTipText(tooltip);
+            }
+        }
+
+        return this;
     }
-
-    return this;
-  }
 }

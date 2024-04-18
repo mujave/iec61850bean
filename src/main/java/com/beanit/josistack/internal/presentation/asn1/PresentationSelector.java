@@ -8,11 +8,12 @@ import com.beanit.asn1bean.ber.types.BerOctetString;
 
 public class PresentationSelector extends BerOctetString {
 
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  public PresentationSelector() {}
+    public PresentationSelector() {
+    }
 
-  public PresentationSelector(byte[] value) {
-    super(value);
-  }
+    public PresentationSelector(byte[] value) {
+        super(value);
+    }
 }

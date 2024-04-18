@@ -7,6 +7,7 @@ package com.beanit.iec61850bean.internal.mms.asn1;
 import com.beanit.asn1bean.ber.BerTag;
 import com.beanit.asn1bean.ber.ReverseByteArrayOutputStream;
 import com.beanit.asn1bean.ber.types.BerType;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -14,94 +15,95 @@ import java.io.Serializable;
 
 public class UnconfirmedService implements BerType, Serializable {
 
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  private byte[] code = null;
-  private InformationReport informationReport = null;
+    private byte[] code = null;
+    private InformationReport informationReport = null;
 
-  public UnconfirmedService() {}
-
-  public UnconfirmedService(byte[] code) {
-    this.code = code;
-  }
-
-  public InformationReport getInformationReport() {
-    return informationReport;
-  }
-
-  public void setInformationReport(InformationReport informationReport) {
-    this.informationReport = informationReport;
-  }
-
-  @Override
-  public int encode(OutputStream reverseOS) throws IOException {
-
-    if (code != null) {
-      reverseOS.write(code);
-      return code.length;
+    public UnconfirmedService() {
     }
 
-    int codeLength = 0;
-    if (informationReport != null) {
-      codeLength += informationReport.encode(reverseOS, false);
-      // write tag: CONTEXT_CLASS, CONSTRUCTED, 0
-      reverseOS.write(0xA0);
-      codeLength += 1;
-      return codeLength;
+    public UnconfirmedService(byte[] code) {
+        this.code = code;
     }
 
-    throw new IOException("Error encoding CHOICE: No element of CHOICE was selected.");
-  }
-
-  @Override
-  public int decode(InputStream is) throws IOException {
-    return decode(is, null);
-  }
-
-  public int decode(InputStream is, BerTag berTag) throws IOException {
-
-    int tlvByteCount = 0;
-    boolean tagWasPassed = (berTag != null);
-
-    if (berTag == null) {
-      berTag = new BerTag();
-      tlvByteCount += berTag.decode(is);
+    public InformationReport getInformationReport() {
+        return informationReport;
     }
 
-    if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.CONSTRUCTED, 0)) {
-      informationReport = new InformationReport();
-      tlvByteCount += informationReport.decode(is, false);
-      return tlvByteCount;
+    public void setInformationReport(InformationReport informationReport) {
+        this.informationReport = informationReport;
     }
 
-    if (tagWasPassed) {
-      return 0;
+    @Override
+    public int encode(OutputStream reverseOS) throws IOException {
+
+        if (code != null) {
+            reverseOS.write(code);
+            return code.length;
+        }
+
+        int codeLength = 0;
+        if (informationReport != null) {
+            codeLength += informationReport.encode(reverseOS, false);
+            // write tag: CONTEXT_CLASS, CONSTRUCTED, 0
+            reverseOS.write(0xA0);
+            codeLength += 1;
+            return codeLength;
+        }
+
+        throw new IOException("Error encoding CHOICE: No element of CHOICE was selected.");
     }
 
-    throw new IOException("Error decoding CHOICE: Tag " + berTag + " matched to no item.");
-  }
-
-  public void encodeAndSave(int encodingSizeGuess) throws IOException {
-    ReverseByteArrayOutputStream reverseOS = new ReverseByteArrayOutputStream(encodingSizeGuess);
-    encode(reverseOS);
-    code = reverseOS.getArray();
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    appendAsString(sb, 0);
-    return sb.toString();
-  }
-
-  public void appendAsString(StringBuilder sb, int indentLevel) {
-
-    if (informationReport != null) {
-      sb.append("informationReport: ");
-      informationReport.appendAsString(sb, indentLevel + 1);
-      return;
+    @Override
+    public int decode(InputStream is) throws IOException {
+        return decode(is, null);
     }
 
-    sb.append("<none>");
-  }
+    public int decode(InputStream is, BerTag berTag) throws IOException {
+
+        int tlvByteCount = 0;
+        boolean tagWasPassed = (berTag != null);
+
+        if (berTag == null) {
+            berTag = new BerTag();
+            tlvByteCount += berTag.decode(is);
+        }
+
+        if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.CONSTRUCTED, 0)) {
+            informationReport = new InformationReport();
+            tlvByteCount += informationReport.decode(is, false);
+            return tlvByteCount;
+        }
+
+        if (tagWasPassed) {
+            return 0;
+        }
+
+        throw new IOException("Error decoding CHOICE: Tag " + berTag + " matched to no item.");
+    }
+
+    public void encodeAndSave(int encodingSizeGuess) throws IOException {
+        ReverseByteArrayOutputStream reverseOS = new ReverseByteArrayOutputStream(encodingSizeGuess);
+        encode(reverseOS);
+        code = reverseOS.getArray();
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        appendAsString(sb, 0);
+        return sb.toString();
+    }
+
+    public void appendAsString(StringBuilder sb, int indentLevel) {
+
+        if (informationReport != null) {
+            sb.append("informationReport: ");
+            informationReport.appendAsString(sb, indentLevel + 1);
+            return;
+        }
+
+        sb.append("<none>");
+    }
 }

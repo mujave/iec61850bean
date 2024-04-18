@@ -19,27 +19,27 @@ import org.w3c.dom.Node;
 
 public final class Do extends AbstractElement {
 
-  private String type;
+    private String type;
 
-  public Do(String name, String desc, String type) {
-    super(name, desc);
-  }
-
-  public Do(Node xmlNode) throws SclParseException {
-    super(xmlNode);
-
-    NamedNodeMap attributes = xmlNode.getAttributes();
-
-    Node node = attributes.getNamedItem("type");
-
-    if (node == null) {
-      throw new SclParseException("Required attribute \"type\" not found!");
+    public Do(String name, String desc, String type) {
+        super(name, desc);
     }
 
-    type = node.getNodeValue();
-  }
+    public Do(Node xmlNode) throws SclParseException {
+        super(xmlNode);
 
-  public String getType() {
-    return type;
-  }
+        NamedNodeMap attributes = xmlNode.getAttributes();
+
+        Node node = attributes.getNamedItem("type");
+
+        if (node == null) {
+            throw new SclParseException("Required attribute \"type\" not found!");
+        }
+
+        type = node.getNodeValue();
+    }
+
+    public String getType() {
+        return type;
+    }
 }

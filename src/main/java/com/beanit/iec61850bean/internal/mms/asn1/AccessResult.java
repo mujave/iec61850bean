@@ -7,6 +7,7 @@ package com.beanit.iec61850bean.internal.mms.asn1;
 import com.beanit.asn1bean.ber.BerTag;
 import com.beanit.asn1bean.ber.ReverseByteArrayOutputStream;
 import com.beanit.asn1bean.ber.types.BerType;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -14,123 +15,124 @@ import java.io.Serializable;
 
 public class AccessResult implements BerType, Serializable {
 
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  private byte[] code = null;
-  private DataAccessError failure = null;
-  private Data success = null;
+    private byte[] code = null;
+    private DataAccessError failure = null;
+    private Data success = null;
 
-  public AccessResult() {}
-
-  public AccessResult(byte[] code) {
-    this.code = code;
-  }
-
-  public DataAccessError getFailure() {
-    return failure;
-  }
-
-  public void setFailure(DataAccessError failure) {
-    this.failure = failure;
-  }
-
-  public Data getSuccess() {
-    return success;
-  }
-
-  public void setSuccess(Data success) {
-    this.success = success;
-  }
-
-  @Override
-  public int encode(OutputStream reverseOS) throws IOException {
-
-    if (code != null) {
-      reverseOS.write(code);
-      return code.length;
+    public AccessResult() {
     }
 
-    int codeLength = 0;
-    if (success != null) {
-      codeLength += success.encode(reverseOS);
-      return codeLength;
+    public AccessResult(byte[] code) {
+        this.code = code;
     }
 
-    if (failure != null) {
-      codeLength += failure.encode(reverseOS, false);
-      // write tag: CONTEXT_CLASS, PRIMITIVE, 0
-      reverseOS.write(0x80);
-      codeLength += 1;
-      return codeLength;
+    public DataAccessError getFailure() {
+        return failure;
     }
 
-    throw new IOException("Error encoding CHOICE: No element of CHOICE was selected.");
-  }
-
-  @Override
-  public int decode(InputStream is) throws IOException {
-    return decode(is, null);
-  }
-
-  public int decode(InputStream is, BerTag berTag) throws IOException {
-
-    int tlvByteCount = 0;
-    boolean tagWasPassed = (berTag != null);
-
-    if (berTag == null) {
-      berTag = new BerTag();
-      tlvByteCount += berTag.decode(is);
+    public void setFailure(DataAccessError failure) {
+        this.failure = failure;
     }
 
-    int numDecodedBytes;
-
-    if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.PRIMITIVE, 0)) {
-      failure = new DataAccessError();
-      tlvByteCount += failure.decode(is, false);
-      return tlvByteCount;
+    public Data getSuccess() {
+        return success;
     }
 
-    success = new Data();
-    numDecodedBytes = success.decode(is, berTag);
-    if (numDecodedBytes != 0) {
-      return tlvByteCount + numDecodedBytes;
-    } else {
-      success = null;
+    public void setSuccess(Data success) {
+        this.success = success;
     }
 
-    if (tagWasPassed) {
-      return 0;
+    @Override
+    public int encode(OutputStream reverseOS) throws IOException {
+
+        if (code != null) {
+            reverseOS.write(code);
+            return code.length;
+        }
+
+        int codeLength = 0;
+        if (success != null) {
+            codeLength += success.encode(reverseOS);
+            return codeLength;
+        }
+
+        if (failure != null) {
+            codeLength += failure.encode(reverseOS, false);
+            // write tag: CONTEXT_CLASS, PRIMITIVE, 0
+            reverseOS.write(0x80);
+            codeLength += 1;
+            return codeLength;
+        }
+
+        throw new IOException("Error encoding CHOICE: No element of CHOICE was selected.");
     }
 
-    throw new IOException("Error decoding CHOICE: Tag " + berTag + " matched to no item.");
-  }
-
-  public void encodeAndSave(int encodingSizeGuess) throws IOException {
-    ReverseByteArrayOutputStream reverseOS = new ReverseByteArrayOutputStream(encodingSizeGuess);
-    encode(reverseOS);
-    code = reverseOS.getArray();
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    appendAsString(sb, 0);
-    return sb.toString();
-  }
-
-  public void appendAsString(StringBuilder sb, int indentLevel) {
-
-    if (failure != null) {
-      sb.append("failure: ").append(failure);
-      return;
+    @Override
+    public int decode(InputStream is) throws IOException {
+        return decode(is, null);
     }
 
-    if (success != null) {
-      sb.append("success: ");
-      success.appendAsString(sb, indentLevel + 1);
-      return;
+    public int decode(InputStream is, BerTag berTag) throws IOException {
+
+        int tlvByteCount = 0;
+        boolean tagWasPassed = (berTag != null);
+
+        if (berTag == null) {
+            berTag = new BerTag();
+            tlvByteCount += berTag.decode(is);
+        }
+
+        int numDecodedBytes;
+
+        if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.PRIMITIVE, 0)) {
+            failure = new DataAccessError();
+            tlvByteCount += failure.decode(is, false);
+            return tlvByteCount;
+        }
+
+        success = new Data();
+        numDecodedBytes = success.decode(is, berTag);
+        if (numDecodedBytes != 0) {
+            return tlvByteCount + numDecodedBytes;
+        } else {
+            success = null;
+        }
+
+        if (tagWasPassed) {
+            return 0;
+        }
+
+        throw new IOException("Error decoding CHOICE: Tag " + berTag + " matched to no item.");
     }
 
-    sb.append("<none>");
-  }
+    public void encodeAndSave(int encodingSizeGuess) throws IOException {
+        ReverseByteArrayOutputStream reverseOS = new ReverseByteArrayOutputStream(encodingSizeGuess);
+        encode(reverseOS);
+        code = reverseOS.getArray();
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        appendAsString(sb, 0);
+        return sb.toString();
+    }
+
+    public void appendAsString(StringBuilder sb, int indentLevel) {
+
+        if (failure != null) {
+            sb.append("failure: ").append(failure);
+            return;
+        }
+
+        if (success != null) {
+            sb.append("success: ");
+            success.appendAsString(sb, indentLevel + 1);
+            return;
+        }
+
+        sb.append("<none>");
+    }
 }

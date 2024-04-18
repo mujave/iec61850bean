@@ -6,11 +6,12 @@ package com.beanit.josistack.internal.presentation.asn1;
 
 public class CallingPresentationSelector extends PresentationSelector {
 
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  public CallingPresentationSelector() {}
+    public CallingPresentationSelector() {
+    }
 
-  public CallingPresentationSelector(byte[] value) {
-    super(value);
-  }
+    public CallingPresentationSelector(byte[] value) {
+        super(value);
+    }
 }

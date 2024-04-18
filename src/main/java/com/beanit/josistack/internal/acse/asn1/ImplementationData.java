@@ -8,11 +8,12 @@ import com.beanit.asn1bean.ber.types.string.BerGraphicString;
 
 public class ImplementationData extends BerGraphicString {
 
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  public ImplementationData() {}
+    public ImplementationData() {
+    }
 
-  public ImplementationData(byte[] value) {
-    super(value);
-  }
+    public ImplementationData(byte[] value) {
+        super(value);
+    }
 }

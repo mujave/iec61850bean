@@ -5,23 +5,25 @@
 package com.beanit.josistack.internal.acse.asn1;
 
 import com.beanit.asn1bean.ber.types.BerInteger;
+
 import java.math.BigInteger;
 
 public class ReleaseRequestReason extends BerInteger {
 
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  public ReleaseRequestReason() {}
+    public ReleaseRequestReason() {
+    }
 
-  public ReleaseRequestReason(byte[] code) {
-    super(code);
-  }
+    public ReleaseRequestReason(byte[] code) {
+        super(code);
+    }
 
-  public ReleaseRequestReason(BigInteger value) {
-    super(value);
-  }
+    public ReleaseRequestReason(BigInteger value) {
+        super(value);
+    }
 
-  public ReleaseRequestReason(long value) {
-    super(value);
-  }
+    public ReleaseRequestReason(long value) {
+        super(value);
+    }
 }

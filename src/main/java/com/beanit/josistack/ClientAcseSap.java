@@ -14,10 +14,11 @@
 package com.beanit.josistack;
 
 import com.beanit.jositransport.ClientTSap;
+
+import javax.net.SocketFactory;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
-import javax.net.SocketFactory;
 
 /**
  * This class implements the Service Access Point (SAP) for the Application Control Service Element
@@ -28,89 +29,89 @@ import javax.net.SocketFactory;
  */
 public final class ClientAcseSap {
 
-  static final byte[] P_SEL_DEFAULT = {0, 0, 0, 1};
-  static final byte[] S_SEL_DEFAULT = {0, 1};
-  public ClientTSap tSap = null;
-  public byte[] pSelRemote = P_SEL_DEFAULT;
-  public byte[] pSelLocal = P_SEL_DEFAULT;
-  public byte[] sSelRemote = S_SEL_DEFAULT;
-  public byte[] sSelLocal = S_SEL_DEFAULT;
+    static final byte[] P_SEL_DEFAULT = {0, 0, 0, 1};
+    static final byte[] S_SEL_DEFAULT = {0, 1};
+    public ClientTSap tSap = null;
+    public byte[] pSelRemote = P_SEL_DEFAULT;
+    public byte[] pSelLocal = P_SEL_DEFAULT;
+    public byte[] sSelRemote = S_SEL_DEFAULT;
+    public byte[] sSelLocal = S_SEL_DEFAULT;
 
-  private int[] apTitleCalled = new int[] {1, 1, 999, 1, 1};
-  private int[] apTitleCalling = new int[] {1, 1, 999, 1};
-  private int aeQualifierCalled = 12;
-  private int aeQualifierCalling = 12;
+    private int[] apTitleCalled = new int[]{1, 1, 999, 1, 1};
+    private int[] apTitleCalling = new int[]{1, 1, 999, 1};
+    private int aeQualifierCalled = 12;
+    private int aeQualifierCalling = 12;
 
-  /**
-   * Use this constructor to create a client ACSE Service Access Point (SAP) that will start
-   * connections to remote ACSE SAPs. Once constructed the AcseSAP contains a public TSAP that can
-   * be accessed to set its configuration.
-   */
-  public ClientAcseSap() {
-    tSap = new ClientTSap();
-  }
-
-  public ClientAcseSap(SocketFactory socketFactory) {
-    tSap = new ClientTSap(socketFactory);
-  }
-
-  public void setApTitleCalled(int[] title) {
-    this.apTitleCalled = title;
-  }
-
-  public void setApTitleCalling(int[] title) {
-    this.apTitleCalling = title;
-  }
-
-  public void setAeQualifierCalled(int qualifier) {
-    this.aeQualifierCalled = qualifier;
-  }
-
-  public void setAeQualifierCalling(int qualifier) {
-    this.aeQualifierCalling = qualifier;
-  }
-
-  /**
-   * Associate to a remote ServerAcseSAP that is listening at the destination address.
-   *
-   * @param address remote InetAddress
-   * @param port remote port
-   * @param localAddr local InetAddress
-   * @param localPort local port
-   * @param authenticationParameter an authentication parameter
-   * @param apdu the payload to send with the association request
-   * @return the association object
-   * @throws IOException if an error occurs connecting
-   */
-  public AcseAssociation associate(
-      InetAddress address,
-      int port,
-      InetAddress localAddr,
-      int localPort,
-      String authenticationParameter,
-      ByteBuffer apdu)
-      throws IOException {
-    AcseAssociation acseAssociation = new AcseAssociation(null, pSelLocal);
-    try {
-      acseAssociation.startAssociation(
-          apdu,
-          address,
-          port,
-          localAddr,
-          localPort,
-          authenticationParameter,
-          sSelRemote,
-          sSelLocal,
-          pSelRemote,
-          tSap,
-          apTitleCalled,
-          apTitleCalling,
-          aeQualifierCalled,
-          aeQualifierCalling);
-    } catch (IOException e) {
-      acseAssociation.disconnect();
-      throw e;
+    /**
+     * Use this constructor to create a client ACSE Service Access Point (SAP) that will start
+     * connections to remote ACSE SAPs. Once constructed the AcseSAP contains a public TSAP that can
+     * be accessed to set its configuration.
+     */
+    public ClientAcseSap() {
+        tSap = new ClientTSap();
     }
-    return acseAssociation;
-  }
+
+    public ClientAcseSap(SocketFactory socketFactory) {
+        tSap = new ClientTSap(socketFactory);
+    }
+
+    public void setApTitleCalled(int[] title) {
+        this.apTitleCalled = title;
+    }
+
+    public void setApTitleCalling(int[] title) {
+        this.apTitleCalling = title;
+    }
+
+    public void setAeQualifierCalled(int qualifier) {
+        this.aeQualifierCalled = qualifier;
+    }
+
+    public void setAeQualifierCalling(int qualifier) {
+        this.aeQualifierCalling = qualifier;
+    }
+
+    /**
+     * Associate to a remote ServerAcseSAP that is listening at the destination address.
+     *
+     * @param address                 remote InetAddress
+     * @param port                    remote port
+     * @param localAddr               local InetAddress
+     * @param localPort               local port
+     * @param authenticationParameter an authentication parameter
+     * @param apdu                    the payload to send with the association request
+     * @return the association object
+     * @throws IOException if an error occurs connecting
+     */
+    public AcseAssociation associate(
+            InetAddress address,
+            int port,
+            InetAddress localAddr,
+            int localPort,
+            String authenticationParameter,
+            ByteBuffer apdu)
+            throws IOException {
+        AcseAssociation acseAssociation = new AcseAssociation(null, pSelLocal);
+        try {
+            acseAssociation.startAssociation(
+                    apdu,
+                    address,
+                    port,
+                    localAddr,
+                    localPort,
+                    authenticationParameter,
+                    sSelRemote,
+                    sSelLocal,
+                    pSelRemote,
+                    tSap,
+                    apTitleCalled,
+                    apTitleCalling,
+                    aeQualifierCalled,
+                    aeQualifierCalling);
+        } catch (IOException e) {
+            acseAssociation.disconnect();
+            throw e;
+        }
+        return acseAssociation;
+    }
 }

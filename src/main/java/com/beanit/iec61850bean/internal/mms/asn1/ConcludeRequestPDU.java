@@ -8,11 +8,12 @@ import com.beanit.asn1bean.ber.types.BerNull;
 
 public class ConcludeRequestPDU extends BerNull {
 
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  public ConcludeRequestPDU() {}
+    public ConcludeRequestPDU() {
+    }
 
-  public ConcludeRequestPDU(byte[] code) {
-    super(code);
-  }
+    public ConcludeRequestPDU(byte[] code) {
+        super(code);
+    }
 }

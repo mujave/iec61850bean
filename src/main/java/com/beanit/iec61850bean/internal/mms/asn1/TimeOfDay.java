@@ -8,11 +8,12 @@ import com.beanit.asn1bean.ber.types.BerOctetString;
 
 public class TimeOfDay extends BerOctetString {
 
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  public TimeOfDay() {}
+    public TimeOfDay() {
+    }
 
-  public TimeOfDay(byte[] value) {
-    super(value);
-  }
+    public TimeOfDay(byte[] value) {
+        super(value);
+    }
 }

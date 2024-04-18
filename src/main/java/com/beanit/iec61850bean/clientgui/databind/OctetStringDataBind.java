@@ -16,38 +16,38 @@ package com.beanit.iec61850bean.clientgui.databind;
 import com.beanit.iec61850bean.BdaOctetString;
 import com.beanit.iec61850bean.BdaType;
 import com.beanit.iec61850bean.clientgui.BasicDataBind;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
+
+import javax.swing.*;
 
 public class OctetStringDataBind extends BasicDataBind<BdaOctetString> {
 
-  public OctetStringDataBind(BdaOctetString data) {
-    super(data, BdaType.OCTET_STRING);
-  }
-
-  @Override
-  protected JComponent init() {
-    byte[] value = data.getValue();
-    StringBuilder sb;
-
-    sb = new StringBuilder("OctetString [");
-    for (int i = 0; i < value.length; i++) {
-      sb.append(Integer.toHexString(value[i] & 0xff));
-      if (i != value.length - 1) {
-        sb.append(", ");
-      }
+    public OctetStringDataBind(BdaOctetString data) {
+        super(data, BdaType.OCTET_STRING);
     }
-    sb.append("]");
-    return new JLabel(sb.toString());
-  }
 
-  @Override
-  protected void resetImpl() {
-    // ignore for now
-  }
+    @Override
+    protected JComponent init() {
+        byte[] value = data.getValue();
+        StringBuilder sb;
 
-  @Override
-  protected void writeImpl() {
-    // ignore for now
-  }
+        sb = new StringBuilder("OctetString [");
+        for (int i = 0; i < value.length; i++) {
+            sb.append(Integer.toHexString(value[i] & 0xff));
+            if (i != value.length - 1) {
+                sb.append(", ");
+            }
+        }
+        sb.append("]");
+        return new JLabel(sb.toString());
+    }
+
+    @Override
+    protected void resetImpl() {
+        // ignore for now
+    }
+
+    @Override
+    protected void writeImpl() {
+        // ignore for now
+    }
 }

@@ -15,24 +15,25 @@ package com.beanit.iec61850bean;
 
 import com.beanit.josistack.AcseAssociation;
 import com.beanit.josistack.AcseAssociationListener;
+
 import java.io.IOException;
 import java.nio.ByteBuffer;
 
 final class AcseListener implements AcseAssociationListener {
 
-  ServerSap serverSap;
+    ServerSap serverSap;
 
-  AcseListener(ServerSap serverSap) {
-    this.serverSap = serverSap;
-  }
+    AcseListener(ServerSap serverSap) {
+        this.serverSap = serverSap;
+    }
 
-  @Override
-  public void connectionIndication(AcseAssociation acseAssociation, ByteBuffer psdu) {
-    serverSap.connectionIndication(acseAssociation, psdu);
-  }
+    @Override
+    public void connectionIndication(AcseAssociation acseAssociation, ByteBuffer psdu) {
+        serverSap.connectionIndication(acseAssociation, psdu);
+    }
 
-  @Override
-  public void serverStoppedListeningIndication(IOException e) {
-    serverSap.serverStoppedListeningIndication(e);
-  }
+    @Override
+    public void serverStoppedListeningIndication(IOException e) {
+        serverSap.serverStoppedListeningIndication(e);
+    }
 }

@@ -8,11 +8,12 @@ import com.beanit.asn1bean.ber.types.string.BerVisibleString;
 
 public class MMSString extends BerVisibleString {
 
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  public MMSString() {}
+    public MMSString() {
+    }
 
-  public MMSString(byte[] value) {
-    super(value);
-  }
+    public MMSString(byte[] value) {
+        super(value);
+    }
 }

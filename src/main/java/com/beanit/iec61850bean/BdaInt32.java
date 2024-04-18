@@ -20,74 +20,74 @@ import com.beanit.iec61850bean.internal.mms.asn1.Unsigned8;
 
 public final class BdaInt32 extends BasicDataAttribute {
 
-  private volatile int value;
+    private volatile int value;
 
-  public BdaInt32(
-      ObjectReference objectReference, Fc fc, String sAddr, boolean dchg, boolean dupd) {
-    super(objectReference, fc, sAddr, dchg, dupd);
-    basicType = BdaType.INT32;
-    setDefault();
-  }
-
-  @Override
-  public void setValueFrom(BasicDataAttribute bda) {
-    value = ((BdaInt32) bda).getValue();
-  }
-
-  public int getValue() {
-    return value;
-  }
-
-  public void setValue(int value) {
-    this.value = value;
-  }
-
-  @Override
-  public void setDefault() {
-    value = 0;
-  }
-
-  @Override
-  public BdaInt32 copy() {
-    BdaInt32 copy = new BdaInt32(objectReference, fc, sAddr, dchg, dupd);
-    copy.setValue(value);
-    if (mirror == null) {
-      copy.mirror = this;
-    } else {
-      copy.mirror = mirror;
+    public BdaInt32(
+            ObjectReference objectReference, Fc fc, String sAddr, boolean dchg, boolean dupd) {
+        super(objectReference, fc, sAddr, dchg, dupd);
+        basicType = BdaType.INT32;
+        setDefault();
     }
-    return copy;
-  }
 
-  @Override
-  Data getMmsDataObj() {
-    Data data = new Data();
-    data.setInteger(new BerInteger(value));
-    return data;
-  }
-
-  @Override
-  void setValueFromMmsDataObj(Data data) throws ServiceError {
-    if (data.getInteger() == null) {
-      throw new ServiceError(ServiceError.TYPE_CONFLICT, "expected type: integer");
+    @Override
+    public void setValueFrom(BasicDataAttribute bda) {
+        value = ((BdaInt32) bda).getValue();
     }
-    value = data.getInteger().value.intValue();
-  }
 
-  @Override
-  TypeDescription getMmsTypeSpec() {
-    TypeDescription typeDescription = new TypeDescription();
-    typeDescription.setInteger(new Unsigned8(32));
-    return typeDescription;
-  }
+    public int getValue() {
+        return value;
+    }
 
-  @Override
-  public String toString() {
-    return getReference().toString() + ": " + value;
-  }
+    public void setValue(int value) {
+        this.value = value;
+    }
 
-  @Override
-  public String getValueString() {
-    return "" + value;
-  }
+    @Override
+    public void setDefault() {
+        value = 0;
+    }
+
+    @Override
+    public BdaInt32 copy() {
+        BdaInt32 copy = new BdaInt32(objectReference, fc, sAddr, dchg, dupd);
+        copy.setValue(value);
+        if (mirror == null) {
+            copy.mirror = this;
+        } else {
+            copy.mirror = mirror;
+        }
+        return copy;
+    }
+
+    @Override
+    Data getMmsDataObj() {
+        Data data = new Data();
+        data.setInteger(new BerInteger(value));
+        return data;
+    }
+
+    @Override
+    void setValueFromMmsDataObj(Data data) throws ServiceError {
+        if (data.getInteger() == null) {
+            throw new ServiceError(ServiceError.TYPE_CONFLICT, "expected type: integer");
+        }
+        value = data.getInteger().value.intValue();
+    }
+
+    @Override
+    TypeDescription getMmsTypeSpec() {
+        TypeDescription typeDescription = new TypeDescription();
+        typeDescription.setInteger(new Unsigned8(32));
+        return typeDescription;
+    }
+
+    @Override
+    public String toString() {
+        return getReference().toString() + ": " + value;
+    }
+
+    @Override
+    public String getValueString() {
+        return "" + value;
+    }
 }

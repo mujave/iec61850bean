@@ -15,38 +15,38 @@ package com.beanit.iec61850bean.internal.util;
 
 public class SequenceNumber {
 
-  private final int maxValue;
-  private final int minValue;
-  private int value;
+    private final int maxValue;
+    private final int minValue;
+    private int value;
 
-  public SequenceNumber(int initValue, int minValue, int maxValue) {
-    assert (initValue >= minValue) && (initValue <= maxValue);
-    this.minValue = minValue;
-    this.maxValue = maxValue;
-    this.value = initValue;
-  }
+    public SequenceNumber(int initValue, int minValue, int maxValue) {
+        assert (initValue >= minValue) && (initValue <= maxValue);
+        this.minValue = minValue;
+        this.maxValue = maxValue;
+        this.value = initValue;
+    }
 
-  public static int getIncrement(int value, int minValue, int maxValue) {
-    assert (value >= minValue) && (value <= maxValue);
-    return (value == maxValue) ? minValue : value + 1;
-  }
+    public static int getIncrement(int value, int minValue, int maxValue) {
+        assert (value >= minValue) && (value <= maxValue);
+        return (value == maxValue) ? minValue : value + 1;
+    }
 
-  public int getAndIncrement() {
-    int oldValue = value;
-    value = (value == maxValue) ? minValue : value + 1;
-    return oldValue;
-  }
+    public int getAndIncrement() {
+        int oldValue = value;
+        value = (value == maxValue) ? minValue : value + 1;
+        return oldValue;
+    }
 
-  public int get() {
-    return value;
-  }
+    public int get() {
+        return value;
+    }
 
-  public void increment() {
-    value = (value == maxValue) ? minValue : value + 1;
-  }
+    public void increment() {
+        value = (value == maxValue) ? minValue : value + 1;
+    }
 
-  public int incrementAndGet() {
-    value = (value == maxValue) ? minValue : value + 1;
-    return value;
-  }
+    public int incrementAndGet() {
+        value = (value == maxValue) ? minValue : value + 1;
+        return value;
+    }
 }

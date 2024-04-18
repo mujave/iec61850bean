@@ -8,15 +8,16 @@ import com.beanit.asn1bean.ber.types.BerObjectIdentifier;
 
 public class MechanismName extends BerObjectIdentifier {
 
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  public MechanismName() {}
+    public MechanismName() {
+    }
 
-  public MechanismName(byte[] code) {
-    super(code);
-  }
+    public MechanismName(byte[] code) {
+        super(code);
+    }
 
-  public MechanismName(int[] value) {
-    super(value);
-  }
+    public MechanismName(int[] value) {
+        super(value);
+    }
 }

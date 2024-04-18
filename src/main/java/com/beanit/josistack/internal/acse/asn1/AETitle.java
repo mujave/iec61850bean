@@ -7,6 +7,7 @@ package com.beanit.josistack.internal.acse.asn1;
 import com.beanit.asn1bean.ber.BerTag;
 import com.beanit.asn1bean.ber.ReverseByteArrayOutputStream;
 import com.beanit.asn1bean.ber.types.BerType;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -14,90 +15,91 @@ import java.io.Serializable;
 
 public class AETitle implements BerType, Serializable {
 
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  private byte[] code = null;
-  private AETitleForm2 aeTitleForm2 = null;
+    private byte[] code = null;
+    private AETitleForm2 aeTitleForm2 = null;
 
-  public AETitle() {}
-
-  public AETitle(byte[] code) {
-    this.code = code;
-  }
-
-  public AETitleForm2 getAeTitleForm2() {
-    return aeTitleForm2;
-  }
-
-  public void setAeTitleForm2(AETitleForm2 aeTitleForm2) {
-    this.aeTitleForm2 = aeTitleForm2;
-  }
-
-  @Override
-  public int encode(OutputStream reverseOS) throws IOException {
-
-    if (code != null) {
-      reverseOS.write(code);
-      return code.length;
+    public AETitle() {
     }
 
-    int codeLength = 0;
-    if (aeTitleForm2 != null) {
-      codeLength += aeTitleForm2.encode(reverseOS, true);
-      return codeLength;
+    public AETitle(byte[] code) {
+        this.code = code;
     }
 
-    throw new IOException("Error encoding CHOICE: No element of CHOICE was selected.");
-  }
-
-  @Override
-  public int decode(InputStream is) throws IOException {
-    return decode(is, null);
-  }
-
-  public int decode(InputStream is, BerTag berTag) throws IOException {
-
-    int tlvByteCount = 0;
-    boolean tagWasPassed = (berTag != null);
-
-    if (berTag == null) {
-      berTag = new BerTag();
-      tlvByteCount += berTag.decode(is);
+    public AETitleForm2 getAeTitleForm2() {
+        return aeTitleForm2;
     }
 
-    if (berTag.equals(AETitleForm2.tag)) {
-      aeTitleForm2 = new AETitleForm2();
-      tlvByteCount += aeTitleForm2.decode(is, false);
-      return tlvByteCount;
+    public void setAeTitleForm2(AETitleForm2 aeTitleForm2) {
+        this.aeTitleForm2 = aeTitleForm2;
     }
 
-    if (tagWasPassed) {
-      return 0;
+    @Override
+    public int encode(OutputStream reverseOS) throws IOException {
+
+        if (code != null) {
+            reverseOS.write(code);
+            return code.length;
+        }
+
+        int codeLength = 0;
+        if (aeTitleForm2 != null) {
+            codeLength += aeTitleForm2.encode(reverseOS, true);
+            return codeLength;
+        }
+
+        throw new IOException("Error encoding CHOICE: No element of CHOICE was selected.");
     }
 
-    throw new IOException("Error decoding CHOICE: Tag " + berTag + " matched to no item.");
-  }
-
-  public void encodeAndSave(int encodingSizeGuess) throws IOException {
-    ReverseByteArrayOutputStream reverseOS = new ReverseByteArrayOutputStream(encodingSizeGuess);
-    encode(reverseOS);
-    code = reverseOS.getArray();
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    appendAsString(sb, 0);
-    return sb.toString();
-  }
-
-  public void appendAsString(StringBuilder sb, int indentLevel) {
-
-    if (aeTitleForm2 != null) {
-      sb.append("aeTitleForm2: ").append(aeTitleForm2);
-      return;
+    @Override
+    public int decode(InputStream is) throws IOException {
+        return decode(is, null);
     }
 
-    sb.append("<none>");
-  }
+    public int decode(InputStream is, BerTag berTag) throws IOException {
+
+        int tlvByteCount = 0;
+        boolean tagWasPassed = (berTag != null);
+
+        if (berTag == null) {
+            berTag = new BerTag();
+            tlvByteCount += berTag.decode(is);
+        }
+
+        if (berTag.equals(AETitleForm2.tag)) {
+            aeTitleForm2 = new AETitleForm2();
+            tlvByteCount += aeTitleForm2.decode(is, false);
+            return tlvByteCount;
+        }
+
+        if (tagWasPassed) {
+            return 0;
+        }
+
+        throw new IOException("Error decoding CHOICE: Tag " + berTag + " matched to no item.");
+    }
+
+    public void encodeAndSave(int encodingSizeGuess) throws IOException {
+        ReverseByteArrayOutputStream reverseOS = new ReverseByteArrayOutputStream(encodingSizeGuess);
+        encode(reverseOS);
+        code = reverseOS.getArray();
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        appendAsString(sb, 0);
+        return sb.toString();
+    }
+
+    public void appendAsString(StringBuilder sb, int indentLevel) {
+
+        if (aeTitleForm2 != null) {
+            sb.append("aeTitleForm2: ").append(aeTitleForm2);
+            return;
+        }
+
+        sb.append("<none>");
+    }
 }

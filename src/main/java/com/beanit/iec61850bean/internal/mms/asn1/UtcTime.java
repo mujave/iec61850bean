@@ -8,11 +8,12 @@ import com.beanit.asn1bean.ber.types.BerOctetString;
 
 public class UtcTime extends BerOctetString {
 
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  public UtcTime() {}
+    public UtcTime() {
+    }
 
-  public UtcTime(byte[] value) {
-    super(value);
-  }
+    public UtcTime(byte[] value) {
+        super(value);
+    }
 }

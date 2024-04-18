@@ -15,7 +15,7 @@ package com.beanit.iec61850bean.internal.cli;
 
 public interface ActionListener {
 
-  void actionCalled(String actionKey) throws ActionException;
+    void actionCalled(String actionKey) throws ActionException;
 
-  void quit();
+    void quit();
 }

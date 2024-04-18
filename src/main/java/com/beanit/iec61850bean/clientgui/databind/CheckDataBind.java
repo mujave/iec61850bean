@@ -16,40 +16,38 @@ package com.beanit.iec61850bean.clientgui.databind;
 import com.beanit.iec61850bean.BdaCheck;
 import com.beanit.iec61850bean.BdaType;
 import com.beanit.iec61850bean.clientgui.BasicDataBind;
-import java.awt.Component;
-import javax.swing.BoxLayout;
-import javax.swing.JCheckBox;
-import javax.swing.JComponent;
-import javax.swing.JPanel;
+
+import javax.swing.*;
+import java.awt.*;
 
 public class CheckDataBind extends BasicDataBind<BdaCheck> {
 
-  private final JCheckBox interlock = new JCheckBox("Interlock");
-  private final JCheckBox synchron = new JCheckBox("Synchron");
+    private final JCheckBox interlock = new JCheckBox("Interlock");
+    private final JCheckBox synchron = new JCheckBox("Synchron");
 
-  public CheckDataBind(BdaCheck data) {
-    super(data, BdaType.CHECK);
-  }
+    public CheckDataBind(BdaCheck data) {
+        super(data, BdaType.CHECK);
+    }
 
-  @Override
-  protected JComponent init() {
-    interlock.setAlignmentX(Component.LEFT_ALIGNMENT);
-    JPanel valuePanel = new JPanel();
-    valuePanel.setLayout(new BoxLayout(valuePanel, BoxLayout.PAGE_AXIS));
-    valuePanel.add(interlock);
-    valuePanel.add(synchron);
-    return valuePanel;
-  }
+    @Override
+    protected JComponent init() {
+        interlock.setAlignmentX(Component.LEFT_ALIGNMENT);
+        JPanel valuePanel = new JPanel();
+        valuePanel.setLayout(new BoxLayout(valuePanel, BoxLayout.PAGE_AXIS));
+        valuePanel.add(interlock);
+        valuePanel.add(synchron);
+        return valuePanel;
+    }
 
-  @Override
-  protected void resetImpl() {
-    interlock.setSelected(data.getInterlockCheck());
-    synchron.setSelected(data.getSynchrocheck());
-  }
+    @Override
+    protected void resetImpl() {
+        interlock.setSelected(data.getInterlockCheck());
+        synchron.setSelected(data.getSynchrocheck());
+    }
 
-  @Override
-  protected void writeImpl() {
-    data.setInterlockCheck(interlock.isSelected());
-    data.setSynchrocheck(synchron.isSelected());
-  }
+    @Override
+    protected void writeImpl() {
+        data.setInterlockCheck(interlock.isSelected());
+        data.setSynchrocheck(synchron.isSelected());
+    }
 }

@@ -5,23 +5,25 @@
 package com.beanit.josistack.internal.acse.asn1;
 
 import com.beanit.asn1bean.ber.types.BerInteger;
+
 import java.math.BigInteger;
 
 public class APInvocationIdentifier extends BerInteger {
 
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  public APInvocationIdentifier() {}
+    public APInvocationIdentifier() {
+    }
 
-  public APInvocationIdentifier(byte[] code) {
-    super(code);
-  }
+    public APInvocationIdentifier(byte[] code) {
+        super(code);
+    }
 
-  public APInvocationIdentifier(BigInteger value) {
-    super(value);
-  }
+    public APInvocationIdentifier(BigInteger value) {
+        super(value);
+    }
 
-  public APInvocationIdentifier(long value) {
-    super(value);
-  }
+    public APInvocationIdentifier(long value) {
+        super(value);
+    }
 }

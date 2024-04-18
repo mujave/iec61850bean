@@ -15,6 +15,6 @@ package com.beanit.iec61850bean.internal.scl;
 
 public final class Value {
 
-  public int sGroup;
-  public String value;
+    public int sGroup;
+    public String value;
 }

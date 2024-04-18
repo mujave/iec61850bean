@@ -15,37 +15,39 @@ package com.beanit.iec61850bean;
 
 import java.util.Calendar;
 
-/** Contains file information received by the GetFileDirectory service */
+/**
+ * Contains file information received by the GetFileDirectory service
+ */
 public class FileInformation {
 
-  private final String filename;
+    private final String filename;
 
-  private final long fileSize;
+    private final long fileSize;
 
-  private final Calendar lastModified;
+    private final Calendar lastModified;
 
-  public FileInformation(String filename, long fileSize, Calendar lastModified) {
-    super();
-    this.filename = filename;
-    this.fileSize = fileSize;
-    this.lastModified = lastModified;
-  }
+    public FileInformation(String filename, long fileSize, Calendar lastModified) {
+        super();
+        this.filename = filename;
+        this.fileSize = fileSize;
+        this.lastModified = lastModified;
+    }
 
-  public String getFilename() {
-    return filename;
-  }
+    public String getFilename() {
+        return filename;
+    }
 
-  public long getFileSize() {
-    return fileSize;
-  }
+    public long getFileSize() {
+        return fileSize;
+    }
 
-  /**
-   * Get the time stamp of last modification. As it is an optional attribute the return value can be
-   * null
-   *
-   * @return the time stamp of last modification, or null if the time stamp is not present
-   */
-  public Calendar getLastModified() {
-    return lastModified;
-  }
+    /**
+     * Get the time stamp of last modification. As it is an optional attribute the return value can be
+     * null
+     *
+     * @return the time stamp of last modification, or null if the time stamp is not present
+     */
+    public Calendar getLastModified() {
+        return lastModified;
+    }
 }

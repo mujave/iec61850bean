@@ -8,11 +8,12 @@ import com.beanit.asn1bean.ber.types.BerNull;
 
 public class DefineNamedVariableListResponse extends BerNull {
 
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  public DefineNamedVariableListResponse() {}
+    public DefineNamedVariableListResponse() {
+    }
 
-  public DefineNamedVariableListResponse(byte[] code) {
-    super(code);
-  }
+    public DefineNamedVariableListResponse(byte[] code) {
+        super(code);
+    }
 }

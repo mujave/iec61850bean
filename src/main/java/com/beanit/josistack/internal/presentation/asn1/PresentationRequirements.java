@@ -8,19 +8,20 @@ import com.beanit.asn1bean.ber.types.BerBitString;
 
 public class PresentationRequirements extends BerBitString {
 
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  public PresentationRequirements() {}
+    public PresentationRequirements() {
+    }
 
-  public PresentationRequirements(byte[] code) {
-    super(code);
-  }
+    public PresentationRequirements(byte[] code) {
+        super(code);
+    }
 
-  public PresentationRequirements(byte[] value, int numBits) {
-    super(value, numBits);
-  }
+    public PresentationRequirements(byte[] value, int numBits) {
+        super(value, numBits);
+    }
 
-  public PresentationRequirements(boolean[] value) {
-    super(value);
-  }
+    public PresentationRequirements(boolean[] value) {
+        super(value);
+    }
 }

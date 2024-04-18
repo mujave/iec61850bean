@@ -8,15 +8,16 @@ import com.beanit.asn1bean.ber.types.BerObjectIdentifier;
 
 public class AbstractSyntaxName extends BerObjectIdentifier {
 
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  public AbstractSyntaxName() {}
+    public AbstractSyntaxName() {
+    }
 
-  public AbstractSyntaxName(byte[] code) {
-    super(code);
-  }
+    public AbstractSyntaxName(byte[] code) {
+        super(code);
+    }
 
-  public AbstractSyntaxName(int[] value) {
-    super(value);
-  }
+    public AbstractSyntaxName(int[] value) {
+        super(value);
+    }
 }

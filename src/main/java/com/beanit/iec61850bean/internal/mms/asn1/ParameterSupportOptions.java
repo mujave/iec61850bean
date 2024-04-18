@@ -8,19 +8,20 @@ import com.beanit.asn1bean.ber.types.BerBitString;
 
 public class ParameterSupportOptions extends BerBitString {
 
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  public ParameterSupportOptions() {}
+    public ParameterSupportOptions() {
+    }
 
-  public ParameterSupportOptions(byte[] code) {
-    super(code);
-  }
+    public ParameterSupportOptions(byte[] code) {
+        super(code);
+    }
 
-  public ParameterSupportOptions(byte[] value, int numBits) {
-    super(value, numBits);
-  }
+    public ParameterSupportOptions(byte[] value, int numBits) {
+        super(value, numBits);
+    }
 
-  public ParameterSupportOptions(boolean[] value) {
-    super(value);
-  }
+    public ParameterSupportOptions(boolean[] value) {
+        super(value);
+    }
 }

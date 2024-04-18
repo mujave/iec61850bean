@@ -24,33 +24,33 @@ import java.nio.ByteBuffer;
  */
 public final class ByteBufferInputStream extends InputStream {
 
-  private final ByteBuffer buf;
+    private final ByteBuffer buf;
 
-  public ByteBufferInputStream(ByteBuffer buf) {
-    this.buf = buf;
-  }
-
-  @Override
-  public int read() throws IOException {
-    if (buf.hasRemaining() == false) {
-      return -1;
+    public ByteBufferInputStream(ByteBuffer buf) {
+        this.buf = buf;
     }
-    return buf.get() & 0xFF;
-  }
 
-  @Override
-  public int read(byte[] b, int off, int len) throws IOException {
-    if (buf.hasRemaining() == false) {
-      return -1;
+    @Override
+    public int read() throws IOException {
+        if (buf.hasRemaining() == false) {
+            return -1;
+        }
+        return buf.get() & 0xFF;
     }
-    int size = Math.min(len, available());
 
-    buf.get(b, off, size);
-    return size;
-  }
+    @Override
+    public int read(byte[] b, int off, int len) throws IOException {
+        if (buf.hasRemaining() == false) {
+            return -1;
+        }
+        int size = Math.min(len, available());
 
-  @Override
-  public int available() throws IOException {
-    return buf.limit() - buf.position();
-  }
+        buf.get(b, off, size);
+        return size;
+    }
+
+    @Override
+    public int available() throws IOException {
+        return buf.limit() - buf.position();
+    }
 }

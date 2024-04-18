@@ -9,6 +9,7 @@ import com.beanit.asn1bean.ber.BerTag;
 import com.beanit.asn1bean.ber.ReverseByteArrayOutputStream;
 import com.beanit.asn1bean.ber.types.BerInteger;
 import com.beanit.asn1bean.ber.types.BerType;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -19,332 +20,333 @@ import java.util.List;
 
 public class ResultList implements BerType, Serializable {
 
-  public static final BerTag tag = new BerTag(BerTag.UNIVERSAL_CLASS, BerTag.CONSTRUCTED, 16);
-  private static final long serialVersionUID = 1L;
-  private byte[] code = null;
-  private List<SEQUENCE> seqOf = null;
-
-  public ResultList() {
-    seqOf = new ArrayList<SEQUENCE>();
-  }
-
-  public ResultList(byte[] code) {
-    this.code = code;
-  }
-
-  public List<SEQUENCE> getSEQUENCE() {
-    if (seqOf == null) {
-      seqOf = new ArrayList<SEQUENCE>();
-    }
-    return seqOf;
-  }
-
-  @Override
-  public int encode(OutputStream reverseOS) throws IOException {
-    return encode(reverseOS, true);
-  }
-
-  public int encode(OutputStream reverseOS, boolean withTag) throws IOException {
-
-    if (code != null) {
-      reverseOS.write(code);
-      if (withTag) {
-        return tag.encode(reverseOS) + code.length;
-      }
-      return code.length;
-    }
-
-    int codeLength = 0;
-    for (int i = (seqOf.size() - 1); i >= 0; i--) {
-      codeLength += seqOf.get(i).encode(reverseOS, true);
-    }
-
-    codeLength += BerLength.encodeLength(reverseOS, codeLength);
-
-    if (withTag) {
-      codeLength += tag.encode(reverseOS);
-    }
-
-    return codeLength;
-  }
-
-  @Override
-  public int decode(InputStream is) throws IOException {
-    return decode(is, true);
-  }
-
-  public int decode(InputStream is, boolean withTag) throws IOException {
-    int tlByteCount = 0;
-    int vByteCount = 0;
-    BerTag berTag = new BerTag();
-    if (withTag) {
-      tlByteCount += tag.decodeAndCheck(is);
-    }
-
-    BerLength length = new BerLength();
-    tlByteCount += length.decode(is);
-    int lengthVal = length.val;
-
-    while (vByteCount < lengthVal || lengthVal < 0) {
-      vByteCount += berTag.decode(is);
-
-      if (lengthVal < 0 && berTag.equals(0, 0, 0)) {
-        vByteCount += BerLength.readEocByte(is);
-        break;
-      }
-
-      if (!berTag.equals(SEQUENCE.tag)) {
-        throw new IOException("Tag does not match mandatory sequence of/set of component.");
-      }
-      SEQUENCE element = new SEQUENCE();
-      vByteCount += element.decode(is, false);
-      seqOf.add(element);
-    }
-    if (lengthVal >= 0 && vByteCount != lengthVal) {
-      throw new IOException(
-          "Decoded SequenceOf or SetOf has wrong length. Expected "
-              + lengthVal
-              + " but has "
-              + vByteCount);
-    }
-    return tlByteCount + vByteCount;
-  }
-
-  public void encodeAndSave(int encodingSizeGuess) throws IOException {
-    ReverseByteArrayOutputStream reverseOS = new ReverseByteArrayOutputStream(encodingSizeGuess);
-    encode(reverseOS, false);
-    code = reverseOS.getArray();
-  }
-
-  @Override
-  public String toString() {
-    StringBuilder sb = new StringBuilder();
-    appendAsString(sb, 0);
-    return sb.toString();
-  }
-
-  public void appendAsString(StringBuilder sb, int indentLevel) {
-
-    sb.append("{\n");
-    for (int i = 0; i < indentLevel + 1; i++) {
-      sb.append("\t");
-    }
-    if (seqOf == null) {
-      sb.append("null");
-    } else {
-      Iterator<SEQUENCE> it = seqOf.iterator();
-      if (it.hasNext()) {
-        it.next().appendAsString(sb, indentLevel + 1);
-        while (it.hasNext()) {
-          sb.append(",\n");
-          for (int i = 0; i < indentLevel + 1; i++) {
-            sb.append("\t");
-          }
-          it.next().appendAsString(sb, indentLevel + 1);
-        }
-      }
-    }
-
-    sb.append("\n");
-    for (int i = 0; i < indentLevel; i++) {
-      sb.append("\t");
-    }
-    sb.append("}");
-  }
-
-  public static class SEQUENCE implements BerType, Serializable {
-
     public static final BerTag tag = new BerTag(BerTag.UNIVERSAL_CLASS, BerTag.CONSTRUCTED, 16);
     private static final long serialVersionUID = 1L;
     private byte[] code = null;
-    private Result result = null;
-    private TransferSyntaxName transferSyntaxName = null;
-    private BerInteger providerReason = null;
+    private List<SEQUENCE> seqOf = null;
 
-    public SEQUENCE() {}
-
-    public SEQUENCE(byte[] code) {
-      this.code = code;
+    public ResultList() {
+        seqOf = new ArrayList<SEQUENCE>();
     }
 
-    public Result getResult() {
-      return result;
+    public ResultList(byte[] code) {
+        this.code = code;
     }
 
-    public void setResult(Result result) {
-      this.result = result;
-    }
-
-    public TransferSyntaxName getTransferSyntaxName() {
-      return transferSyntaxName;
-    }
-
-    public void setTransferSyntaxName(TransferSyntaxName transferSyntaxName) {
-      this.transferSyntaxName = transferSyntaxName;
-    }
-
-    public BerInteger getProviderReason() {
-      return providerReason;
-    }
-
-    public void setProviderReason(BerInteger providerReason) {
-      this.providerReason = providerReason;
+    public List<SEQUENCE> getSEQUENCE() {
+        if (seqOf == null) {
+            seqOf = new ArrayList<SEQUENCE>();
+        }
+        return seqOf;
     }
 
     @Override
     public int encode(OutputStream reverseOS) throws IOException {
-      return encode(reverseOS, true);
+        return encode(reverseOS, true);
     }
 
     public int encode(OutputStream reverseOS, boolean withTag) throws IOException {
 
-      if (code != null) {
-        reverseOS.write(code);
-        if (withTag) {
-          return tag.encode(reverseOS) + code.length;
+        if (code != null) {
+            reverseOS.write(code);
+            if (withTag) {
+                return tag.encode(reverseOS) + code.length;
+            }
+            return code.length;
         }
-        return code.length;
-      }
 
-      int codeLength = 0;
-      if (providerReason != null) {
-        codeLength += providerReason.encode(reverseOS, false);
-        // write tag: CONTEXT_CLASS, PRIMITIVE, 2
-        reverseOS.write(0x82);
-        codeLength += 1;
-      }
+        int codeLength = 0;
+        for (int i = (seqOf.size() - 1); i >= 0; i--) {
+            codeLength += seqOf.get(i).encode(reverseOS, true);
+        }
 
-      if (transferSyntaxName != null) {
-        codeLength += transferSyntaxName.encode(reverseOS, false);
-        // write tag: CONTEXT_CLASS, PRIMITIVE, 1
-        reverseOS.write(0x81);
-        codeLength += 1;
-      }
+        codeLength += BerLength.encodeLength(reverseOS, codeLength);
 
-      codeLength += result.encode(reverseOS, false);
-      // write tag: CONTEXT_CLASS, PRIMITIVE, 0
-      reverseOS.write(0x80);
-      codeLength += 1;
+        if (withTag) {
+            codeLength += tag.encode(reverseOS);
+        }
 
-      codeLength += BerLength.encodeLength(reverseOS, codeLength);
-
-      if (withTag) {
-        codeLength += tag.encode(reverseOS);
-      }
-
-      return codeLength;
+        return codeLength;
     }
 
     @Override
     public int decode(InputStream is) throws IOException {
-      return decode(is, true);
+        return decode(is, true);
     }
 
     public int decode(InputStream is, boolean withTag) throws IOException {
-      int tlByteCount = 0;
-      int vByteCount = 0;
-      BerTag berTag = new BerTag();
-
-      if (withTag) {
-        tlByteCount += tag.decodeAndCheck(is);
-      }
-
-      BerLength length = new BerLength();
-      tlByteCount += length.decode(is);
-      int lengthVal = length.val;
-      vByteCount += berTag.decode(is);
-
-      if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.PRIMITIVE, 0)) {
-        result = new Result();
-        vByteCount += result.decode(is, false);
-        if (lengthVal >= 0 && vByteCount == lengthVal) {
-          return tlByteCount + vByteCount;
+        int tlByteCount = 0;
+        int vByteCount = 0;
+        BerTag berTag = new BerTag();
+        if (withTag) {
+            tlByteCount += tag.decodeAndCheck(is);
         }
-        vByteCount += berTag.decode(is);
-      } else {
-        throw new IOException("Tag does not match mandatory sequence component.");
-      }
 
-      if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.PRIMITIVE, 1)) {
-        transferSyntaxName = new TransferSyntaxName();
-        vByteCount += transferSyntaxName.decode(is, false);
-        if (lengthVal >= 0 && vByteCount == lengthVal) {
-          return tlByteCount + vByteCount;
-        }
-        vByteCount += berTag.decode(is);
-      }
+        BerLength length = new BerLength();
+        tlByteCount += length.decode(is);
+        int lengthVal = length.val;
 
-      if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.PRIMITIVE, 2)) {
-        providerReason = new BerInteger();
-        vByteCount += providerReason.decode(is, false);
-        if (lengthVal >= 0 && vByteCount == lengthVal) {
-          return tlByteCount + vByteCount;
-        }
-        vByteCount += berTag.decode(is);
-      }
+        while (vByteCount < lengthVal || lengthVal < 0) {
+            vByteCount += berTag.decode(is);
 
-      if (lengthVal < 0) {
-        if (!berTag.equals(0, 0, 0)) {
-          throw new IOException("Decoded sequence has wrong end of contents octets");
+            if (lengthVal < 0 && berTag.equals(0, 0, 0)) {
+                vByteCount += BerLength.readEocByte(is);
+                break;
+            }
+
+            if (!berTag.equals(SEQUENCE.tag)) {
+                throw new IOException("Tag does not match mandatory sequence of/set of component.");
+            }
+            SEQUENCE element = new SEQUENCE();
+            vByteCount += element.decode(is, false);
+            seqOf.add(element);
         }
-        vByteCount += BerLength.readEocByte(is);
+        if (lengthVal >= 0 && vByteCount != lengthVal) {
+            throw new IOException(
+                    "Decoded SequenceOf or SetOf has wrong length. Expected "
+                            + lengthVal
+                            + " but has "
+                            + vByteCount);
+        }
         return tlByteCount + vByteCount;
-      }
-
-      throw new IOException(
-          "Unexpected end of sequence, length tag: "
-              + lengthVal
-              + ", bytes decoded: "
-              + vByteCount);
     }
 
     public void encodeAndSave(int encodingSizeGuess) throws IOException {
-      ReverseByteArrayOutputStream reverseOS = new ReverseByteArrayOutputStream(encodingSizeGuess);
-      encode(reverseOS, false);
-      code = reverseOS.getArray();
+        ReverseByteArrayOutputStream reverseOS = new ReverseByteArrayOutputStream(encodingSizeGuess);
+        encode(reverseOS, false);
+        code = reverseOS.getArray();
     }
 
     @Override
     public String toString() {
-      StringBuilder sb = new StringBuilder();
-      appendAsString(sb, 0);
-      return sb.toString();
+        StringBuilder sb = new StringBuilder();
+        appendAsString(sb, 0);
+        return sb.toString();
     }
 
     public void appendAsString(StringBuilder sb, int indentLevel) {
 
-      sb.append("{");
-      sb.append("\n");
-      for (int i = 0; i < indentLevel + 1; i++) {
-        sb.append("\t");
-      }
-      if (result != null) {
-        sb.append("result: ").append(result);
-      } else {
-        sb.append("result: <empty-required-field>");
-      }
-
-      if (transferSyntaxName != null) {
-        sb.append(",\n");
+        sb.append("{\n");
         for (int i = 0; i < indentLevel + 1; i++) {
-          sb.append("\t");
+            sb.append("\t");
         }
-        sb.append("transferSyntaxName: ").append(transferSyntaxName);
-      }
-
-      if (providerReason != null) {
-        sb.append(",\n");
-        for (int i = 0; i < indentLevel + 1; i++) {
-          sb.append("\t");
+        if (seqOf == null) {
+            sb.append("null");
+        } else {
+            Iterator<SEQUENCE> it = seqOf.iterator();
+            if (it.hasNext()) {
+                it.next().appendAsString(sb, indentLevel + 1);
+                while (it.hasNext()) {
+                    sb.append(",\n");
+                    for (int i = 0; i < indentLevel + 1; i++) {
+                        sb.append("\t");
+                    }
+                    it.next().appendAsString(sb, indentLevel + 1);
+                }
+            }
         }
-        sb.append("providerReason: ").append(providerReason);
-      }
 
-      sb.append("\n");
-      for (int i = 0; i < indentLevel; i++) {
-        sb.append("\t");
-      }
-      sb.append("}");
+        sb.append("\n");
+        for (int i = 0; i < indentLevel; i++) {
+            sb.append("\t");
+        }
+        sb.append("}");
     }
-  }
+
+    public static class SEQUENCE implements BerType, Serializable {
+
+        public static final BerTag tag = new BerTag(BerTag.UNIVERSAL_CLASS, BerTag.CONSTRUCTED, 16);
+        private static final long serialVersionUID = 1L;
+        private byte[] code = null;
+        private Result result = null;
+        private TransferSyntaxName transferSyntaxName = null;
+        private BerInteger providerReason = null;
+
+        public SEQUENCE() {
+        }
+
+        public SEQUENCE(byte[] code) {
+            this.code = code;
+        }
+
+        public Result getResult() {
+            return result;
+        }
+
+        public void setResult(Result result) {
+            this.result = result;
+        }
+
+        public TransferSyntaxName getTransferSyntaxName() {
+            return transferSyntaxName;
+        }
+
+        public void setTransferSyntaxName(TransferSyntaxName transferSyntaxName) {
+            this.transferSyntaxName = transferSyntaxName;
+        }
+
+        public BerInteger getProviderReason() {
+            return providerReason;
+        }
+
+        public void setProviderReason(BerInteger providerReason) {
+            this.providerReason = providerReason;
+        }
+
+        @Override
+        public int encode(OutputStream reverseOS) throws IOException {
+            return encode(reverseOS, true);
+        }
+
+        public int encode(OutputStream reverseOS, boolean withTag) throws IOException {
+
+            if (code != null) {
+                reverseOS.write(code);
+                if (withTag) {
+                    return tag.encode(reverseOS) + code.length;
+                }
+                return code.length;
+            }
+
+            int codeLength = 0;
+            if (providerReason != null) {
+                codeLength += providerReason.encode(reverseOS, false);
+                // write tag: CONTEXT_CLASS, PRIMITIVE, 2
+                reverseOS.write(0x82);
+                codeLength += 1;
+            }
+
+            if (transferSyntaxName != null) {
+                codeLength += transferSyntaxName.encode(reverseOS, false);
+                // write tag: CONTEXT_CLASS, PRIMITIVE, 1
+                reverseOS.write(0x81);
+                codeLength += 1;
+            }
+
+            codeLength += result.encode(reverseOS, false);
+            // write tag: CONTEXT_CLASS, PRIMITIVE, 0
+            reverseOS.write(0x80);
+            codeLength += 1;
+
+            codeLength += BerLength.encodeLength(reverseOS, codeLength);
+
+            if (withTag) {
+                codeLength += tag.encode(reverseOS);
+            }
+
+            return codeLength;
+        }
+
+        @Override
+        public int decode(InputStream is) throws IOException {
+            return decode(is, true);
+        }
+
+        public int decode(InputStream is, boolean withTag) throws IOException {
+            int tlByteCount = 0;
+            int vByteCount = 0;
+            BerTag berTag = new BerTag();
+
+            if (withTag) {
+                tlByteCount += tag.decodeAndCheck(is);
+            }
+
+            BerLength length = new BerLength();
+            tlByteCount += length.decode(is);
+            int lengthVal = length.val;
+            vByteCount += berTag.decode(is);
+
+            if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.PRIMITIVE, 0)) {
+                result = new Result();
+                vByteCount += result.decode(is, false);
+                if (lengthVal >= 0 && vByteCount == lengthVal) {
+                    return tlByteCount + vByteCount;
+                }
+                vByteCount += berTag.decode(is);
+            } else {
+                throw new IOException("Tag does not match mandatory sequence component.");
+            }
+
+            if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.PRIMITIVE, 1)) {
+                transferSyntaxName = new TransferSyntaxName();
+                vByteCount += transferSyntaxName.decode(is, false);
+                if (lengthVal >= 0 && vByteCount == lengthVal) {
+                    return tlByteCount + vByteCount;
+                }
+                vByteCount += berTag.decode(is);
+            }
+
+            if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.PRIMITIVE, 2)) {
+                providerReason = new BerInteger();
+                vByteCount += providerReason.decode(is, false);
+                if (lengthVal >= 0 && vByteCount == lengthVal) {
+                    return tlByteCount + vByteCount;
+                }
+                vByteCount += berTag.decode(is);
+            }
+
+            if (lengthVal < 0) {
+                if (!berTag.equals(0, 0, 0)) {
+                    throw new IOException("Decoded sequence has wrong end of contents octets");
+                }
+                vByteCount += BerLength.readEocByte(is);
+                return tlByteCount + vByteCount;
+            }
+
+            throw new IOException(
+                    "Unexpected end of sequence, length tag: "
+                            + lengthVal
+                            + ", bytes decoded: "
+                            + vByteCount);
+        }
+
+        public void encodeAndSave(int encodingSizeGuess) throws IOException {
+            ReverseByteArrayOutputStream reverseOS = new ReverseByteArrayOutputStream(encodingSizeGuess);
+            encode(reverseOS, false);
+            code = reverseOS.getArray();
+        }
+
+        @Override
+        public String toString() {
+            StringBuilder sb = new StringBuilder();
+            appendAsString(sb, 0);
+            return sb.toString();
+        }
+
+        public void appendAsString(StringBuilder sb, int indentLevel) {
+
+            sb.append("{");
+            sb.append("\n");
+            for (int i = 0; i < indentLevel + 1; i++) {
+                sb.append("\t");
+            }
+            if (result != null) {
+                sb.append("result: ").append(result);
+            } else {
+                sb.append("result: <empty-required-field>");
+            }
+
+            if (transferSyntaxName != null) {
+                sb.append(",\n");
+                for (int i = 0; i < indentLevel + 1; i++) {
+                    sb.append("\t");
+                }
+                sb.append("transferSyntaxName: ").append(transferSyntaxName);
+            }
+
+            if (providerReason != null) {
+                sb.append(",\n");
+                for (int i = 0; i < indentLevel + 1; i++) {
+                    sb.append("\t");
+                }
+                sb.append("providerReason: ").append(providerReason);
+            }
+
+            sb.append("\n");
+            for (int i = 0; i < indentLevel; i++) {
+                sb.append("\t");
+            }
+            sb.append("}");
+        }
+    }
 }

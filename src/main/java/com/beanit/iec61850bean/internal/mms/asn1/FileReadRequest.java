@@ -8,19 +8,20 @@ import java.math.BigInteger;
 
 public class FileReadRequest extends Integer32 {
 
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  public FileReadRequest() {}
+    public FileReadRequest() {
+    }
 
-  public FileReadRequest(byte[] code) {
-    super(code);
-  }
+    public FileReadRequest(byte[] code) {
+        super(code);
+    }
 
-  public FileReadRequest(BigInteger value) {
-    super(value);
-  }
+    public FileReadRequest(BigInteger value) {
+        super(value);
+    }
 
-  public FileReadRequest(long value) {
-    super(value);
-  }
+    public FileReadRequest(long value) {
+        super(value);
+    }
 }

@@ -8,19 +8,20 @@ import java.math.BigInteger;
 
 public class FileCloseRequest extends Integer32 {
 
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  public FileCloseRequest() {}
+    public FileCloseRequest() {
+    }
 
-  public FileCloseRequest(byte[] code) {
-    super(code);
-  }
+    public FileCloseRequest(byte[] code) {
+        super(code);
+    }
 
-  public FileCloseRequest(BigInteger value) {
-    super(value);
-  }
+    public FileCloseRequest(BigInteger value) {
+        super(value);
+    }
 
-  public FileCloseRequest(long value) {
-    super(value);
-  }
+    public FileCloseRequest(long value) {
+        super(value);
+    }
 }

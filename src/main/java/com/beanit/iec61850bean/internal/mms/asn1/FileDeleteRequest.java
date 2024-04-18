@@ -6,11 +6,12 @@ package com.beanit.iec61850bean.internal.mms.asn1;
 
 public class FileDeleteRequest extends FileName {
 
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  public FileDeleteRequest() {}
+    public FileDeleteRequest() {
+    }
 
-  public FileDeleteRequest(byte[] code) {
-    super(code);
-  }
+    public FileDeleteRequest(byte[] code) {
+        super(code);
+    }
 }

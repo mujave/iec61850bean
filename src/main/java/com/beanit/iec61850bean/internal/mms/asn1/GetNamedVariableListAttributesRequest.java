@@ -6,11 +6,12 @@ package com.beanit.iec61850bean.internal.mms.asn1;
 
 public class GetNamedVariableListAttributesRequest extends ObjectName {
 
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  public GetNamedVariableListAttributesRequest() {}
+    public GetNamedVariableListAttributesRequest() {
+    }
 
-  public GetNamedVariableListAttributesRequest(byte[] code) {
-    super(code);
-  }
+    public GetNamedVariableListAttributesRequest(byte[] code) {
+        super(code);
+    }
 }

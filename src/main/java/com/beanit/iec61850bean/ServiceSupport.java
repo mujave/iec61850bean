@@ -15,13 +15,13 @@ package com.beanit.iec61850bean;
 
 public final class ServiceSupport {
 
-  public boolean dynAssociation = false;
-  public boolean getDirectory = false;
-  public boolean getDataObjectDefinition = false;
-  public boolean getDataSetValue = false;
-  public boolean dataSetDirectory = false;
-  public boolean readWrite = false;
-  public boolean getCBValues = false;
-  public boolean goose = false;
-  public int gooseMax = 0;
+    public boolean dynAssociation = false;
+    public boolean getDirectory = false;
+    public boolean getDataObjectDefinition = false;
+    public boolean getDataSetValue = false;
+    public boolean dataSetDirectory = false;
+    public boolean readWrite = false;
+    public boolean getCBValues = false;
+    public boolean goose = false;
+    public int gooseMax = 0;
 }

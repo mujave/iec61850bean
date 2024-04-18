@@ -8,11 +8,12 @@ import com.beanit.asn1bean.ber.types.string.BerVisibleString;
 
 public class BasicIdentifier extends BerVisibleString {
 
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  public BasicIdentifier() {}
+    public BasicIdentifier() {
+    }
 
-  public BasicIdentifier(byte[] value) {
-    super(value);
-  }
+    public BasicIdentifier(byte[] value) {
+        super(value);
+    }
 }

@@ -18,15 +18,15 @@ import org.w3c.dom.Node;
 
 public abstract class AbstractType {
 
-  public String id = null;
+    public String id = null;
 
-  // attributes not needed: desc
+    // attributes not needed: desc
 
-  AbstractType(Node xmlNode) throws SclParseException {
-    Node idNode = xmlNode.getAttributes().getNamedItem("id");
-    if (idNode == null) {
-      throw new SclParseException("Required attribute \"id\" not found!");
+    AbstractType(Node xmlNode) throws SclParseException {
+        Node idNode = xmlNode.getAttributes().getNamedItem("id");
+        if (idNode == null) {
+            throw new SclParseException("Required attribute \"id\" not found!");
+        }
+        id = idNode.getNodeValue();
     }
-    id = idNode.getNodeValue();
-  }
 }

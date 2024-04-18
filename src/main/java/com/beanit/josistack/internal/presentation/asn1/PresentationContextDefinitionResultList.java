@@ -6,11 +6,12 @@ package com.beanit.josistack.internal.presentation.asn1;
 
 public class PresentationContextDefinitionResultList extends ResultList {
 
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  public PresentationContextDefinitionResultList() {}
+    public PresentationContextDefinitionResultList() {
+    }
 
-  public PresentationContextDefinitionResultList(byte[] code) {
-    super(code);
-  }
+    public PresentationContextDefinitionResultList(byte[] code) {
+        super(code);
+    }
 }

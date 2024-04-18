@@ -8,11 +8,12 @@ import com.beanit.asn1bean.ber.types.BerOctetString;
 
 public class SimplyEncodedData extends BerOctetString {
 
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  public SimplyEncodedData() {}
+    public SimplyEncodedData() {
+    }
 
-  public SimplyEncodedData(byte[] value) {
-    super(value);
-  }
+    public SimplyEncodedData(byte[] value) {
+        super(value);
+    }
 }

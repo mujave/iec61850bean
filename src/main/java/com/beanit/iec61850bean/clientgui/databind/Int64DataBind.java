@@ -18,31 +18,31 @@ import com.beanit.iec61850bean.BdaType;
 
 public class Int64DataBind extends TextFieldDataBind<BdaInt64> {
 
-  private static final Int64Filter FILTER = new Int64Filter();
+    private static final Int64Filter FILTER = new Int64Filter();
 
-  public Int64DataBind(BdaInt64 data) {
-    super(data, BdaType.INT64, FILTER);
-  }
-
-  @Override
-  protected void resetImpl() {
-    inputField.setText(Long.toString(data.getValue()));
-  }
-
-  @Override
-  protected void writeImpl() {
-    data.setValue(Long.parseLong(inputField.getText()));
-  }
-
-  private static class Int64Filter extends AbstractFilter {
-    @Override
-    protected boolean test(String text) {
-      try {
-        Long.parseLong(text);
-        return true;
-      } catch (NumberFormatException e) {
-        return false;
-      }
+    public Int64DataBind(BdaInt64 data) {
+        super(data, BdaType.INT64, FILTER);
     }
-  }
+
+    @Override
+    protected void resetImpl() {
+        inputField.setText(Long.toString(data.getValue()));
+    }
+
+    @Override
+    protected void writeImpl() {
+        data.setValue(Long.parseLong(inputField.getText()));
+    }
+
+    private static class Int64Filter extends AbstractFilter {
+        @Override
+        protected boolean test(String text) {
+            try {
+                Long.parseLong(text);
+                return true;
+            } catch (NumberFormatException e) {
+                return false;
+            }
+        }
+    }
 }

@@ -8,11 +8,12 @@ import com.beanit.asn1bean.ber.types.BerOctetString;
 
 public class FloatingPoint extends BerOctetString {
 
-  private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-  public FloatingPoint() {}
+    public FloatingPoint() {
+    }
 
-  public FloatingPoint(byte[] value) {
-    super(value);
-  }
+    public FloatingPoint(byte[] value) {
+        super(value);
+    }
 }

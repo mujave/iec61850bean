@@ -18,24 +18,24 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class NamedThreadFactory implements ThreadFactory {
 
-  private final AtomicInteger threadCounter = new AtomicInteger(1);
-  private final String namePrefix;
+    private final AtomicInteger threadCounter = new AtomicInteger(1);
+    private final String namePrefix;
 
-  /**
-   * Creates a thread factory with the given pool name as a name prefix. Threads created will have
-   * the name {@code <poolName>-thread-<thread-counter>}. A common pool name is of format {@code
-   * <pool-name>-<pool-id>}.
-   *
-   * @param poolName the thread pool name
-   */
-  public NamedThreadFactory(String poolName) {
-    this.namePrefix = poolName + "-thread-";
-  }
+    /**
+     * Creates a thread factory with the given pool name as a name prefix. Threads created will have
+     * the name {@code <poolName>-thread-<thread-counter>}. A common pool name is of format {@code
+     * <pool-name>-<pool-id>}.
+     *
+     * @param poolName the thread pool name
+     */
+    public NamedThreadFactory(String poolName) {
+        this.namePrefix = poolName + "-thread-";
+    }
 
-  @Override
-  public Thread newThread(Runnable r) {
-    Thread thread = new Thread(r);
-    thread.setName(namePrefix + threadCounter.getAndIncrement());
-    return thread;
-  }
+    @Override
+    public Thread newThread(Runnable r) {
+        Thread thread = new Thread(r);
+        thread.setName(namePrefix + threadCounter.getAndIncrement());
+        return thread;
+    }
 }

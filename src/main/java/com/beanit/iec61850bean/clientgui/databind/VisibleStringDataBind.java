@@ -15,6 +15,7 @@ package com.beanit.iec61850bean.clientgui.databind;
 
 import com.beanit.iec61850bean.BdaType;
 import com.beanit.iec61850bean.BdaVisibleString;
+
 import java.nio.CharBuffer;
 import java.nio.charset.CharacterCodingException;
 import java.nio.charset.Charset;
@@ -23,38 +24,38 @@ import java.nio.charset.StandardCharsets;
 
 public class VisibleStringDataBind extends TextFieldDataBind<BdaVisibleString> {
 
-  private static final Charset ASCII = StandardCharsets.US_ASCII;
+    private static final Charset ASCII = StandardCharsets.US_ASCII;
 
-  public VisibleStringDataBind(BdaVisibleString data) {
-    super(data, BdaType.VISIBLE_STRING, new AsciiFilter(data.getMaxLength()));
-  }
-
-  @Override
-  protected void resetImpl() {
-    inputField.setText(new String(data.getValue(), ASCII));
-  }
-
-  @Override
-  protected void writeImpl() {
-    data.setValue(ASCII.encode(inputField.getText()).array());
-  }
-
-  private static class AsciiFilter extends TextFieldDataBind.AbstractFilter {
-    private final CharsetEncoder encoder = StandardCharsets.US_ASCII.newEncoder();
-    private final int maxBytes;
-
-    public AsciiFilter(int maxBytes) {
-      this.maxBytes = maxBytes;
+    public VisibleStringDataBind(BdaVisibleString data) {
+        super(data, BdaType.VISIBLE_STRING, new AsciiFilter(data.getMaxLength()));
     }
 
     @Override
-    protected boolean test(String text) {
-      try {
-        byte[] codedString = encoder.encode(CharBuffer.wrap(text)).array();
-        return codedString.length <= maxBytes;
-      } catch (CharacterCodingException e) {
-        return false;
-      }
+    protected void resetImpl() {
+        inputField.setText(new String(data.getValue(), ASCII));
     }
-  }
+
+    @Override
+    protected void writeImpl() {
+        data.setValue(ASCII.encode(inputField.getText()).array());
+    }
+
+    private static class AsciiFilter extends TextFieldDataBind.AbstractFilter {
+        private final CharsetEncoder encoder = StandardCharsets.US_ASCII.newEncoder();
+        private final int maxBytes;
+
+        public AsciiFilter(int maxBytes) {
+            this.maxBytes = maxBytes;
+        }
+
+        @Override
+        protected boolean test(String text) {
+            try {
+                byte[] codedString = encoder.encode(CharBuffer.wrap(text)).array();
+                return codedString.length <= maxBytes;
+            } catch (CharacterCodingException e) {
+                return false;
+            }
+        }
+    }
 }

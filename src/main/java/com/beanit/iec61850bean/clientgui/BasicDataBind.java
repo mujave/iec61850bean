@@ -15,52 +15,52 @@ package com.beanit.iec61850bean.clientgui;
 
 import com.beanit.iec61850bean.BasicDataAttribute;
 import com.beanit.iec61850bean.BdaType;
-import javax.swing.JComponent;
-import javax.swing.JLabel;
+
+import javax.swing.*;
 
 public abstract class BasicDataBind<E extends BasicDataAttribute> {
-  protected final E data;
+    protected final E data;
 
-  private JComponent valueField;
+    private JComponent valueField;
 
-  protected BasicDataBind(E data, BdaType type) {
-    if (data.getBasicType() != type) {
-      throw new IllegalArgumentException(data.getName() + " is no " + type);
-    }
-    this.data = data;
-  }
-
-  public JLabel getNameLabel() {
-    return new JLabel(data.getName());
-  }
-
-  public JComponent getValueField() {
-    if (valueField == null) {
-      valueField = init();
+    protected BasicDataBind(E data, BdaType type) {
+        if (data.getBasicType() != type) {
+            throw new IllegalArgumentException(data.getName() + " is no " + type);
+        }
+        this.data = data;
     }
 
-    return valueField;
-  }
-
-  public void reset() {
-    if (valueField == null) {
-      valueField = init();
+    public JLabel getNameLabel() {
+        return new JLabel(data.getName());
     }
 
-    resetImpl();
-  }
+    public JComponent getValueField() {
+        if (valueField == null) {
+            valueField = init();
+        }
 
-  public void write() {
-    if (valueField == null) {
-      valueField = init();
+        return valueField;
     }
 
-    writeImpl();
-  }
+    public void reset() {
+        if (valueField == null) {
+            valueField = init();
+        }
 
-  protected abstract JComponent init();
+        resetImpl();
+    }
 
-  protected abstract void resetImpl();
+    public void write() {
+        if (valueField == null) {
+            valueField = init();
+        }
 
-  protected abstract void writeImpl();
+        writeImpl();
+    }
+
+    protected abstract JComponent init();
+
+    protected abstract void resetImpl();
+
+    protected abstract void writeImpl();
 }

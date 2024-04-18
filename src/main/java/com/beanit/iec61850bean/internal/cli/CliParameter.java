@@ -15,36 +15,36 @@ package com.beanit.iec61850bean.internal.cli;
 
 public abstract class CliParameter {
 
-  final String name;
-  final String description;
-  final boolean optional;
-  boolean selected;
+    final String name;
+    final String description;
+    final boolean optional;
+    boolean selected;
 
-  CliParameter(CliParameterBuilder builder) {
-    name = builder.name;
-    description = builder.description;
-    optional = builder.optional;
-  }
+    CliParameter(CliParameterBuilder builder) {
+        name = builder.name;
+        description = builder.description;
+        optional = builder.optional;
+    }
 
-  public String getName() {
-    return name;
-  }
+    public String getName() {
+        return name;
+    }
 
-  public String getDescription() {
-    return description;
-  }
+    public String getDescription() {
+        return description;
+    }
 
-  public boolean isOptional() {
-    return optional;
-  }
+    public boolean isOptional() {
+        return optional;
+    }
 
-  public boolean isSelected() {
-    return selected;
-  }
+    public boolean isSelected() {
+        return selected;
+    }
 
-  abstract int parse(String[] args, int i) throws CliParseException;
+    abstract int parse(String[] args, int i) throws CliParseException;
 
-  abstract int appendSynopsis(StringBuilder sb);
+    abstract int appendSynopsis(StringBuilder sb);
 
-  abstract void appendDescription(StringBuilder sb);
+    abstract void appendDescription(StringBuilder sb);
 }

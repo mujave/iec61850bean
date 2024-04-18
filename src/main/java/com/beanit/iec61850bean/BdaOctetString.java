@@ -17,94 +17,95 @@ import com.beanit.asn1bean.ber.types.BerOctetString;
 import com.beanit.iec61850bean.internal.mms.asn1.Data;
 import com.beanit.iec61850bean.internal.mms.asn1.Integer32;
 import com.beanit.iec61850bean.internal.mms.asn1.TypeDescription;
+
 import java.util.Arrays;
 
 public final class BdaOctetString extends BasicDataAttribute {
 
-  private final int maxLength;
-  private volatile byte[] value;
+    private final int maxLength;
+    private volatile byte[] value;
 
-  public BdaOctetString(
-      ObjectReference objectReference,
-      Fc fc,
-      String sAddr,
-      int maxLength,
-      boolean dchg,
-      boolean dupd) {
-    super(objectReference, fc, sAddr, dchg, dupd);
-    basicType = BdaType.OCTET_STRING;
-    this.maxLength = maxLength;
-    setDefault();
-  }
-
-  public byte[] getValue() {
-    return value;
-  }
-
-  public void setValue(byte[] value) {
-    if (value != null && value.length > maxLength) {
-      throw new IllegalArgumentException(
-          "OCTET_STRING value size exceeds maxLength of " + maxLength);
+    public BdaOctetString(
+            ObjectReference objectReference,
+            Fc fc,
+            String sAddr,
+            int maxLength,
+            boolean dchg,
+            boolean dupd) {
+        super(objectReference, fc, sAddr, dchg, dupd);
+        basicType = BdaType.OCTET_STRING;
+        this.maxLength = maxLength;
+        setDefault();
     }
-    this.value = value;
-  }
 
-  @Override
-  public void setValueFrom(BasicDataAttribute bda) {
-    byte[] srcValue = ((BdaOctetString) bda).getValue();
-    if (value.length != srcValue.length) {
-      value = new byte[srcValue.length];
+    public byte[] getValue() {
+        return value;
     }
-    System.arraycopy(srcValue, 0, value, 0, srcValue.length);
-  }
 
-  public int getMaxLength() {
-    return maxLength;
-  }
-
-  @Override
-  public void setDefault() {
-    value = new byte[0];
-  }
-
-  @Override
-  public BdaOctetString copy() {
-    BdaOctetString copy = new BdaOctetString(objectReference, fc, sAddr, maxLength, dchg, dupd);
-    byte[] valueCopy = new byte[value.length];
-    System.arraycopy(value, 0, valueCopy, 0, value.length);
-    copy.setValue(valueCopy);
-    if (mirror == null) {
-      copy.mirror = this;
-    } else {
-      copy.mirror = mirror;
+    public void setValue(byte[] value) {
+        if (value != null && value.length > maxLength) {
+            throw new IllegalArgumentException(
+                    "OCTET_STRING value size exceeds maxLength of " + maxLength);
+        }
+        this.value = value;
     }
-    return copy;
-  }
 
-  @Override
-  Data getMmsDataObj() {
-    Data data = new Data();
-    data.setOctetString(new BerOctetString(value));
-    return data;
-  }
-
-  @Override
-  void setValueFromMmsDataObj(Data data) throws ServiceError {
-    if (data.getOctetString() == null) {
-      throw new ServiceError(ServiceError.TYPE_CONFLICT, "expected type: octet_string");
+    @Override
+    public void setValueFrom(BasicDataAttribute bda) {
+        byte[] srcValue = ((BdaOctetString) bda).getValue();
+        if (value.length != srcValue.length) {
+            value = new byte[srcValue.length];
+        }
+        System.arraycopy(srcValue, 0, value, 0, srcValue.length);
     }
-    value = data.getOctetString().value;
-  }
 
-  @Override
-  TypeDescription getMmsTypeSpec() {
-    TypeDescription typeDescription = new TypeDescription();
-    typeDescription.setOctetString(new Integer32(maxLength * -1));
-    return typeDescription;
-  }
+    public int getMaxLength() {
+        return maxLength;
+    }
 
-  @Override
-  public String toString() {
-    return getReference().toString() + ": " + Arrays.toString(value);
-  }
+    @Override
+    public void setDefault() {
+        value = new byte[0];
+    }
+
+    @Override
+    public BdaOctetString copy() {
+        BdaOctetString copy = new BdaOctetString(objectReference, fc, sAddr, maxLength, dchg, dupd);
+        byte[] valueCopy = new byte[value.length];
+        System.arraycopy(value, 0, valueCopy, 0, value.length);
+        copy.setValue(valueCopy);
+        if (mirror == null) {
+            copy.mirror = this;
+        } else {
+            copy.mirror = mirror;
+        }
+        return copy;
+    }
+
+    @Override
+    Data getMmsDataObj() {
+        Data data = new Data();
+        data.setOctetString(new BerOctetString(value));
+        return data;
+    }
+
+    @Override
+    void setValueFromMmsDataObj(Data data) throws ServiceError {
+        if (data.getOctetString() == null) {
+            throw new ServiceError(ServiceError.TYPE_CONFLICT, "expected type: octet_string");
+        }
+        value = data.getOctetString().value;
+    }
+
+    @Override
+    TypeDescription getMmsTypeSpec() {
+        TypeDescription typeDescription = new TypeDescription();
+        typeDescription.setOctetString(new Integer32(maxLength * -1));
+        return typeDescription;
+    }
+
+    @Override
+    public String toString() {
+        return getReference().toString() + ": " + Arrays.toString(value);
+    }
 }

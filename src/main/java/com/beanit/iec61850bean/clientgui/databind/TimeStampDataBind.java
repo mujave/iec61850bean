@@ -15,36 +15,37 @@ package com.beanit.iec61850bean.clientgui.databind;
 
 import com.beanit.iec61850bean.BdaTimestamp;
 import com.beanit.iec61850bean.BdaType;
+
 import java.time.Instant;
 import java.time.format.DateTimeParseException;
 
 public class TimeStampDataBind extends TextFieldDataBind<BdaTimestamp> {
 
-  private static final TimestampFilter FILTER = new TimestampFilter();
+    private static final TimestampFilter FILTER = new TimestampFilter();
 
-  public TimeStampDataBind(BdaTimestamp data) {
-    super(data, BdaType.TIMESTAMP, FILTER);
-  }
-
-  @Override
-  protected void resetImpl() {
-    inputField.setText(data.getInstant().toString());
-  }
-
-  @Override
-  protected void writeImpl() {
-    data.setInstant(Instant.parse(inputField.getText()));
-  }
-
-  private static class TimestampFilter extends AbstractFilter {
-    @Override
-    protected boolean test(String text) {
-      try {
-        Instant.parse(text);
-        return true;
-      } catch (DateTimeParseException e) {
-        return false;
-      }
+    public TimeStampDataBind(BdaTimestamp data) {
+        super(data, BdaType.TIMESTAMP, FILTER);
     }
-  }
+
+    @Override
+    protected void resetImpl() {
+        inputField.setText(data.getInstant().toString());
+    }
+
+    @Override
+    protected void writeImpl() {
+        data.setInstant(Instant.parse(inputField.getText()));
+    }
+
+    private static class TimestampFilter extends AbstractFilter {
+        @Override
+        protected boolean test(String text) {
+            try {
+                Instant.parse(text);
+                return true;
+            } catch (DateTimeParseException e) {
+                return false;
+            }
+        }
+    }
 }

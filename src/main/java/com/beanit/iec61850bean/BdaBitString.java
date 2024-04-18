@@ -21,88 +21,90 @@ import com.beanit.iec61850bean.internal.mms.asn1.TypeDescription;
 
 public abstract class BdaBitString extends BasicDataAttribute {
 
-  final int maxNumBits;
-  volatile byte[] value;
+    final int maxNumBits;
+    volatile byte[] value;
 
-  protected BdaBitString(
-      ObjectReference objectReference,
-      Fc fc,
-      String sAddr,
-      int maxNumBits,
-      boolean dchg,
-      boolean dupd) {
-    super(objectReference, fc, sAddr, dchg, dupd);
-    this.maxNumBits = maxNumBits;
-  }
-
-  public byte[] getValue() {
-    return value;
-  }
-
-  public void setValue(byte[] value) {
-    if (value.length != ((maxNumBits - 1) / 8 + 1)) {
-      throw new IllegalArgumentException("value does not have correct length.");
+    protected BdaBitString(
+            ObjectReference objectReference,
+            Fc fc,
+            String sAddr,
+            int maxNumBits,
+            boolean dchg,
+            boolean dupd) {
+        super(objectReference, fc, sAddr, dchg, dupd);
+        this.maxNumBits = maxNumBits;
     }
-    this.value = value;
-  }
 
-  @Override
-  public void setValueFrom(BasicDataAttribute bda) {
-    byte[] srcValue = ((BdaBitString) bda).getValue();
-    if (value.length != srcValue.length) {
-      value = new byte[srcValue.length];
+    public byte[] getValue() {
+        return value;
     }
-    System.arraycopy(srcValue, 0, value, 0, srcValue.length);
-  }
 
-  public int getMaxNumBits() {
-    return maxNumBits;
-  }
-
-  /** Initializes BIT_STRING with all zeros */
-  @Override
-  public void setDefault() {
-    value = new byte[(maxNumBits - 1) / 8 + 1];
-  }
-
-  @Override
-  Data getMmsDataObj() {
-    Data data = new Data();
-    data.setBitString(new BerBitString(value, maxNumBits));
-    return data;
-  }
-
-  @Override
-  void setValueFromMmsDataObj(Data data) throws ServiceError {
-    if (data.getBitString() == null) {
-      throw new ServiceError(ServiceError.TYPE_CONFLICT, "expected type: bit_string");
+    public void setValue(byte[] value) {
+        if (value.length != ((maxNumBits - 1) / 8 + 1)) {
+            throw new IllegalArgumentException("value does not have correct length.");
+        }
+        this.value = value;
     }
-    if (data.getBitString().numBits > maxNumBits) {
-      throw new ServiceError(
-          ServiceError.TYPE_CONFLICT,
-          objectReference
-              + ": bit_string is bigger than type's size: "
-              + data.getBitString().numBits
-              + ">"
-              + maxNumBits);
+
+    @Override
+    public void setValueFrom(BasicDataAttribute bda) {
+        byte[] srcValue = ((BdaBitString) bda).getValue();
+        if (value.length != srcValue.length) {
+            value = new byte[srcValue.length];
+        }
+        System.arraycopy(srcValue, 0, value, 0, srcValue.length);
     }
-    value = data.getBitString().value;
-  }
 
-  @Override
-  TypeDescription getMmsTypeSpec() {
-    TypeDescription typeDescription = new TypeDescription();
-    typeDescription.setBitString(new Integer32(maxNumBits * -1));
-    return typeDescription;
-  }
+    public int getMaxNumBits() {
+        return maxNumBits;
+    }
 
-  @Override
-  public String toString() {
-    return getReference().toString() + ": " + HexString.fromBytes(value);
-  }
+    /**
+     * Initializes BIT_STRING with all zeros
+     */
+    @Override
+    public void setDefault() {
+        value = new byte[(maxNumBits - 1) / 8 + 1];
+    }
 
-  @Override
-  public String getValueString() {
-    return HexString.fromBytes(value);
-  }
+    @Override
+    Data getMmsDataObj() {
+        Data data = new Data();
+        data.setBitString(new BerBitString(value, maxNumBits));
+        return data;
+    }
+
+    @Override
+    void setValueFromMmsDataObj(Data data) throws ServiceError {
+        if (data.getBitString() == null) {
+            throw new ServiceError(ServiceError.TYPE_CONFLICT, "expected type: bit_string");
+        }
+        if (data.getBitString().numBits > maxNumBits) {
+            throw new ServiceError(
+                    ServiceError.TYPE_CONFLICT,
+                    objectReference
+                            + ": bit_string is bigger than type's size: "
+                            + data.getBitString().numBits
+                            + ">"
+                            + maxNumBits);
+        }
+        value = data.getBitString().value;
+    }
+
+    @Override
+    TypeDescription getMmsTypeSpec() {
+        TypeDescription typeDescription = new TypeDescription();
+        typeDescription.setBitString(new Integer32(maxNumBits * -1));
+        return typeDescription;
+    }
+
+    @Override
+    public String toString() {
+        return getReference().toString() + ": " + HexString.fromBytes(value);
+    }
+
+    @Override
+    public String getValueString() {
+        return HexString.fromBytes(value);
+    }
 }

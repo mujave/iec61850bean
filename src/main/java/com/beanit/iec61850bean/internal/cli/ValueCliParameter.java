@@ -15,36 +15,36 @@ package com.beanit.iec61850bean.internal.cli;
 
 abstract class ValueCliParameter extends CliParameter {
 
-  final String parameterName;
+    final String parameterName;
 
-  ValueCliParameter(CliParameterBuilder builder, String parameterName) {
-    super(builder);
-    this.parameterName = parameterName;
-  }
-
-  @Override
-  int appendSynopsis(StringBuilder sb) {
-    int length = 0;
-    if (optional) {
-      sb.append("[");
-      length++;
+    ValueCliParameter(CliParameterBuilder builder, String parameterName) {
+        super(builder);
+        this.parameterName = parameterName;
     }
-    sb.append(name).append(" <").append(parameterName).append(">");
-    length += (name.length() + 3 + parameterName.length());
-    if (optional) {
-      sb.append("]");
-      length++;
-    }
-    return length;
-  }
 
-  @Override
-  void appendDescription(StringBuilder sb) {
-    sb.append("\t")
-        .append(name)
-        .append(" <")
-        .append(parameterName)
-        .append(">\n\t    ")
-        .append(description);
-  }
+    @Override
+    int appendSynopsis(StringBuilder sb) {
+        int length = 0;
+        if (optional) {
+            sb.append("[");
+            length++;
+        }
+        sb.append(name).append(" <").append(parameterName).append(">");
+        length += (name.length() + 3 + parameterName.length());
+        if (optional) {
+            sb.append("]");
+            length++;
+        }
+        return length;
+    }
+
+    @Override
+    void appendDescription(StringBuilder sb) {
+        sb.append("\t")
+                .append(name)
+                .append(" <")
+                .append(parameterName)
+                .append(">\n\t    ")
+                .append(description);
+    }
 }

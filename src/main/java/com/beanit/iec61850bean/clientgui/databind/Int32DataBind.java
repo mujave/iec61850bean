@@ -18,31 +18,31 @@ import com.beanit.iec61850bean.BdaType;
 
 public class Int32DataBind extends TextFieldDataBind<BdaInt32> {
 
-  private static final Int32Filter FILTER = new Int32Filter();
+    private static final Int32Filter FILTER = new Int32Filter();
 
-  public Int32DataBind(BdaInt32 data) {
-    super(data, BdaType.INT32, FILTER);
-  }
-
-  @Override
-  protected void resetImpl() {
-    inputField.setText(Integer.toString(data.getValue()));
-  }
-
-  @Override
-  protected void writeImpl() {
-    data.setValue(Integer.parseInt(inputField.getText()));
-  }
-
-  private static class Int32Filter extends AbstractFilter {
-    @Override
-    protected boolean test(String text) {
-      try {
-        Integer.parseInt(text);
-        return true;
-      } catch (NumberFormatException e) {
-        return false;
-      }
+    public Int32DataBind(BdaInt32 data) {
+        super(data, BdaType.INT32, FILTER);
     }
-  }
+
+    @Override
+    protected void resetImpl() {
+        inputField.setText(Integer.toString(data.getValue()));
+    }
+
+    @Override
+    protected void writeImpl() {
+        data.setValue(Integer.parseInt(inputField.getText()));
+    }
+
+    private static class Int32Filter extends AbstractFilter {
+        @Override
+        protected boolean test(String text) {
+            try {
+                Integer.parseInt(text);
+                return true;
+            } catch (NumberFormatException e) {
+                return false;
+            }
+        }
+    }
 }

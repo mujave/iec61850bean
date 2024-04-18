@@ -15,75 +15,77 @@ package com.beanit.iec61850bean;
 
 public final class BdaTapCommand extends BdaBitString {
 
-  public BdaTapCommand(
-      ObjectReference objectReference, Fc fc, String sAddr, boolean dchg, boolean dupd) {
-    super(objectReference, fc, sAddr, 2, dchg, dupd);
-    basicType = BdaType.TAP_COMMAND;
-    setDefault();
-  }
-
-  /** Sets the value to TapCommand.STOP */
-  @Override
-  public void setDefault() {
-    value = new byte[] {0x00};
-  }
-
-  @Override
-  public BdaTapCommand copy() {
-    BdaTapCommand copy = new BdaTapCommand(objectReference, fc, sAddr, dchg, dupd);
-    byte[] valueCopy = new byte[value.length];
-    System.arraycopy(value, 0, valueCopy, 0, value.length);
-    copy.setValue(valueCopy);
-    if (mirror == null) {
-      copy.mirror = this;
-    } else {
-      copy.mirror = mirror;
-    }
-    return copy;
-  }
-
-  public TapCommand getTapCommand() {
-
-    if ((value[0] & 0xC0) == 0xC0) {
-      return TapCommand.RESERVED;
+    public BdaTapCommand(
+            ObjectReference objectReference, Fc fc, String sAddr, boolean dchg, boolean dupd) {
+        super(objectReference, fc, sAddr, 2, dchg, dupd);
+        basicType = BdaType.TAP_COMMAND;
+        setDefault();
     }
 
-    if ((value[0] & 0x80) == 0x80) {
-      return TapCommand.HIGHER;
+    /**
+     * Sets the value to TapCommand.STOP
+     */
+    @Override
+    public void setDefault() {
+        value = new byte[]{0x00};
     }
 
-    if ((value[0] & 0x40) == 0x40) {
-      return TapCommand.LOWER;
+    @Override
+    public BdaTapCommand copy() {
+        BdaTapCommand copy = new BdaTapCommand(objectReference, fc, sAddr, dchg, dupd);
+        byte[] valueCopy = new byte[value.length];
+        System.arraycopy(value, 0, valueCopy, 0, value.length);
+        copy.setValue(valueCopy);
+        if (mirror == null) {
+            copy.mirror = this;
+        } else {
+            copy.mirror = mirror;
+        }
+        return copy;
     }
 
-    return TapCommand.STOP;
-  }
+    public TapCommand getTapCommand() {
 
-  public void setTapCommand(TapCommand tapCommand) {
-    if (tapCommand == TapCommand.RESERVED) {
-      value[0] = (byte) 0xC0;
-    } else if (tapCommand == TapCommand.HIGHER) {
-      value[0] = (byte) 0x80;
-    } else if (tapCommand == TapCommand.LOWER) {
-      value[0] = (byte) 0x40;
-    } else {
-      value[0] = (byte) 0x00;
-    }
-  }
+        if ((value[0] & 0xC0) == 0xC0) {
+            return TapCommand.RESERVED;
+        }
 
-  public enum TapCommand {
-    STOP(0),
-    LOWER(1),
-    HIGHER(2),
-    RESERVED(3);
-    private final int value;
+        if ((value[0] & 0x80) == 0x80) {
+            return TapCommand.HIGHER;
+        }
 
-    TapCommand(int value) {
-      this.value = value;
+        if ((value[0] & 0x40) == 0x40) {
+            return TapCommand.LOWER;
+        }
+
+        return TapCommand.STOP;
     }
 
-    public int getIntValue() {
-      return value;
+    public void setTapCommand(TapCommand tapCommand) {
+        if (tapCommand == TapCommand.RESERVED) {
+            value[0] = (byte) 0xC0;
+        } else if (tapCommand == TapCommand.HIGHER) {
+            value[0] = (byte) 0x80;
+        } else if (tapCommand == TapCommand.LOWER) {
+            value[0] = (byte) 0x40;
+        } else {
+            value[0] = (byte) 0x00;
+        }
     }
-  }
+
+    public enum TapCommand {
+        STOP(0),
+        LOWER(1),
+        HIGHER(2),
+        RESERVED(3);
+        private final int value;
+
+        TapCommand(int value) {
+            this.value = value;
+        }
+
+        public int getIntValue() {
+            return value;
+        }
+    }
 }
