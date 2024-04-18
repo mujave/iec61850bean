@@ -1,16 +1,1 @@
-# Gradle
-.gradle/
-build/
-gradle.properties
-
-# IntelliJ IDEA
-.idea
-out/
-
-# Eclipse
-.settings/
-.project
-.classpath
-.metadata/
-**/bin/main/
-**/bin/test/
+/target/
