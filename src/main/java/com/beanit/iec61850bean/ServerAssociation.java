@@ -1120,7 +1120,10 @@ final class ServerAssociation {
           }
         }
         for (BasicDataAttribute bda : totalBdasToBeWritten) {
-          bda.mirror.setValueFrom(bda);
+           if (bda.mirror == null) {
+               bda.setMirror(bda);
+           }
+           bda.mirror.setValueFrom(bda);
         }
       } else {
         i = -1;
@@ -1138,7 +1141,10 @@ final class ServerAssociation {
                     new DataAccessError(serviceErrorToMmsError(serviceError)));
                 mmsResponseIterator.set(writeResponseChoice);
               } else {
-                bda.mirror.setValueFrom(bda);
+                 if (bda.mirror == null) {
+                     bda.setMirror(bda);
+                 }
+                 bda.mirror.setValueFrom(bda);
               }
             }
           }
@@ -1156,9 +1162,8 @@ final class ServerAssociation {
       Data mmsData) {
     WriteResponse.CHOICE writeResult = getWriteResult(fcModelNode, mmsData);
     if (writeResult == null) {
-      FcModelNode fcModelNodeCopy = (FcModelNode) fcModelNode.copy();
       try {
-        fcModelNodeCopy.setValueFromMmsDataObj(mmsData);
+                fcModelNode.setValueFromMmsDataObj(mmsData);
       } catch (ServiceError e) {
         logger.warn("SetDataValues failed because of data missmatch.", e);
         WriteResponse.CHOICE writeResponseChoice = new WriteResponse.CHOICE();
@@ -1167,15 +1172,20 @@ final class ServerAssociation {
         return;
       }
 
-      if (fcModelNodeCopy.fc == Fc.CO) {
+      if (fcModelNode.fc == Fc.CO) {
+          if (fcModelNode.getReference().toString().contains("Oper")) {
+              while (!fcModelNode.getName().equals("Oper")) {
+                  fcModelNode = (FcModelNode) fcModelNode.getParent();
+              }
+          }
         // TODO timeactivate operate
-        fcModelNodeCopy = (FcModelNode) fcModelNodeCopy.getChild("ctlVal");
+        fcModelNode = (FcModelNode) fcModelNode.getChild("ctlVal");
         // TODO write origin and ctlNum if they exist
       } else {
 
       }
 
-      List<BasicDataAttribute> bdas = fcModelNodeCopy.getBasicDataAttributes();
+      List<BasicDataAttribute> bdas = fcModelNode.getBasicDataAttributes();
       totalBdasToBeWritten.addAll(bdas);
       numBdas[i] = bdas.size();
       mmsResponseValues.add(null);
@@ -1229,12 +1239,13 @@ final class ServerAssociation {
     }
 
     if (fc == Fc.CO) {
-      String nodeName = modelNode.getName();
-
-      if (nodeName.equals("Oper")) {
-        FcModelNode cdcParent = (FcModelNode) modelNode.getParent();
+      if (modelNode.getReference().toString().contains("Oper")) {
+        FcModelNode cdcParent = modelNode;
+        while (!cdcParent.getName().equals("Oper")) {
+          cdcParent = (FcModelNode) cdcParent.getParent();
+        }
         ModelNode ctlModelNode =
-            serverModel.findModelNode(cdcParent.getReference(), Fc.CF).getChild("ctlModel");
+            serverModel.findModelNode(cdcParent.getParent().getReference(), Fc.CF).getChild("ctlModel");
         if (ctlModelNode == null || !(ctlModelNode instanceof BdaInt8)) {
           logger.warn("Operatring controle DO failed because ctlModel is not set.");
           // 3 indicates error "object_access_denied"

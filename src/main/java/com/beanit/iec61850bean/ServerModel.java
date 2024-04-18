@@ -310,9 +310,14 @@ public final class ServerModel extends ModelNode {
 
     int index2 = mmsItemId.indexOf('$', index1 + 1);
 
+
     if (index2 == -1) {
-      throw new ServiceError(
-          ServiceError.FAILED_DUE_TO_COMMUNICATIONS_CONSTRAINT, "invalid mms item id");
+        if (mmsItemId.length() - index1 == 3) {
+            index2 = mmsItemId.length();
+        } else {
+            throw new ServiceError(
+                    ServiceError.FAILED_DUE_TO_COMMUNICATIONS_CONSTRAINT, "invalid mms item id");
+        }
     }
 
     Fc fc = Fc.fromString(mmsItemId.substring(index1 + 1, index2));
