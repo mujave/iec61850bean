@@ -1042,4 +1042,29 @@ public final class AcseAssociation {
     public void setMessageTimeout(int i) {
         tConnection.setMessageTimeout(i);
     }
+
+
+    public boolean getSocketIsOpen(){
+        return !this.tConnection.getSocketIsOpen();
+    }
+
+    public boolean getSocketIsConnected(){
+        return this.tConnection.getSocketIsConnected();
+    }
+
+    public boolean getSocketIsInputShutdown(){
+        return this.tConnection.getSocketIsInputShutdown();
+    }
+
+    public boolean getSocketIsOutputShutdown(){
+        return this.tConnection.getSocketIsOutputShutdown();
+    }
+
+    public boolean getSocketIsbind(){
+        return this.tConnection.getSocketIsbind();
+    }
+
+    public boolean testConnected(){
+        return this.tConnection.testConnected();
+    }
 }
