@@ -1,4 +1,5 @@
-# IEC61850bean
-IEC61850bean (previously known as OpenIEC61850) is a library implementing the IEC 61850 standard based on the MMS mapping for client and server communication.
+# IEC61850bean（maven）
+1. 修改原项目的构建方式，从gradle改为maven
+2. 为了适配兼容南瑞V1.0 的客户段（ClientMmi.exe）测试程序，修改一些问题。
 
-For detailed information on IEC61850bean visit https://www.beanit.com/iec-61850/.
+原仓库官网 [https://www.beanit.com/iec-61850/](https://gitee.com/link?target=https%3A%2F%2Fwww.beanit.com%2Fiec-61850%2F).
