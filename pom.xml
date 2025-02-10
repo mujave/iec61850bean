@@ -1,18 +1,43 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.beanit</groupId>
+    <groupId>com.github.mujave</groupId>
     <artifactId>iec61850bean</artifactId>
-    <version>1.9.1.5</version>
+    <version>1.9.1.6</version>
+
+    <name>${project.groupId}:${project.artifactId}</name>
+    <description></description>
+    <url>https://gitee.com/mujave/iec61850bean</url>
+
+    <scm>
+        <connection>scm:git@gitee.com:mujave/iec61850bean.git</connection>
+        <developerConnection>scm:git@gitee.com:mujave/iec61850bean.git</developerConnection>
+        <url>https://gitee.com/mujave/iec61850bean.git</url>
+    </scm>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+
+    <licenses>
+        <license>
+            <name>The Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <name>mujave</name>
+            <email>mr.zhangyu.me@qq.com</email>
+            <organization>mujave</organization>
+            <organizationUrl>https://gitee.com/mujave</organizationUrl>
+        </developer>
+    </developers>
 
     <dependencies>
         <dependency>
@@ -50,6 +75,48 @@
     </dependencies>
     <build>
         <plugins>
+            <!--   central发布插件    -->
+            <plugin>
+                <groupId>org.sonatype.central</groupId>
+                <artifactId>central-publishing-maven-plugin</artifactId>
+                <version>0.4.0</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <publishingServerId>ossrh</publishingServerId>
+                    <tokenAuth>true</tokenAuth>
+                </configuration>
+            </plugin>
+            <!--   source源码插件 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <configuration>
+                    <attach>true</attach>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <phase>compile</phase>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <!--   javadoc插件 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.9.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -62,15 +129,18 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>1.6</version>
                 <configuration>
-                    <attach>true</attach>
+                    <!-- 改成你自己的路径 -->
+                    <executable>D:\GnuPG\bin\gpg.exe</executable>
                 </configuration>
                 <executions>
                     <execution>
-                        <phase>compile</phase>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
                         <goals>
-                            <goal>jar</goal>
+                            <goal>sign</goal>
                         </goals>
                     </execution>
                 </executions>

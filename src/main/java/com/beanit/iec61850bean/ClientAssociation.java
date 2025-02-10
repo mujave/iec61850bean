@@ -1893,6 +1893,30 @@ public final class ClientAssociation {
         return !closed;
     }
 
+    public boolean getSocketIsOpen(){
+        return !this.acseAssociation.getSocketIsOpen();
+    }
+
+    public boolean getSocketIsConnected(){
+        return this.acseAssociation.getSocketIsConnected();
+    }
+
+    public boolean getSocketIsInputShutdown(){
+        return this.acseAssociation.getSocketIsInputShutdown();
+    }
+
+    public boolean getSocketIsOutputShutdown(){
+        return this.acseAssociation.getSocketIsOutputShutdown();
+    }
+
+    public boolean getSocketIsbind(){
+        return this.acseAssociation.getSocketIsbind();
+    }
+
+    public boolean testConnected(){
+        return this.acseAssociation.testConnected();
+    }
+
     /**
      * Will close the connection simply by closing the TCP socket.
      */

@@ -397,4 +397,89 @@ public final class ServerModel extends ModelNode {
                     ((Array) modelNode).getChild(altAccIt.getSelectAccess().getIndex().intValue());
         }
     }
+
+    List<FcModelNode> getNodeFromParentVariableDef(VariableDefs.SEQUENCE variableDef) throws ServiceError {
+
+        ObjectName objectName = variableDef.getVariableSpecification().getName();
+
+        if (objectName == null) {
+            throw new ServiceError(
+                    ServiceError.FAILED_DUE_TO_COMMUNICATIONS_CONSTRAINT,
+                    "name in objectName is not selected");
+        }
+
+        DomainSpecific domainSpecific = objectName.getDomainSpecific();
+
+        if (domainSpecific == null) {
+            throw new ServiceError(
+                    ServiceError.FAILED_DUE_TO_COMMUNICATIONS_CONSTRAINT,
+                    "domain_specific in name is not selected");
+        }
+
+        ModelNode modelNode = getChild(domainSpecific.getDomainID().toString());
+
+        if (modelNode == null) {
+            return null;
+        }
+
+        String mmsItemId = domainSpecific.getItemID().toString();
+        int index1 = mmsItemId.indexOf('$');
+
+        if (index1 == -1) {
+            throw new ServiceError(
+                    ServiceError.FAILED_DUE_TO_COMMUNICATIONS_CONSTRAINT,
+                    "invalid mms item id: " + domainSpecific.getItemID());
+        }
+
+        LogicalNode ln = (LogicalNode) modelNode.getChild(mmsItemId.substring(0, index1));
+
+        if (ln == null) {
+            return null;
+        }
+
+        int index2 = mmsItemId.indexOf('$', index1 + 1);
+
+
+        if (index2 == -1) {
+            if (mmsItemId.length() - index1 == 3) {
+                index2 = mmsItemId.length();
+            } else {
+                throw new ServiceError(
+                        ServiceError.FAILED_DUE_TO_COMMUNICATIONS_CONSTRAINT, "invalid mms item id");
+            }
+        }
+
+        Fc fc = Fc.fromString(mmsItemId.substring(index1 + 1, index2));
+
+        if (fc == null) {
+            throw new ServiceError(
+                    ServiceError.FAILED_DUE_TO_COMMUNICATIONS_CONSTRAINT,
+                    "unknown functional constraint: " + mmsItemId.substring(index1 + 1, index2));
+        }
+
+        ArrayList<FcModelNode> list = new ArrayList<>();
+        if (index2 == mmsItemId.length()) {
+            if (fc == Fc.RP) {
+                Collection<Urcb> urcbs = ln.getUrcbs();
+                for (Urcb urcb : urcbs) {
+                    list.add(urcb);
+                }
+            } else if (fc == Fc.BR) {
+                Collection<Brcb> brcbs = ln.getBrcbs();
+                for (Brcb brcb : brcbs) {
+                    list.add(brcb);
+                }
+            } else {
+                List<FcDataObject> lnChildren = ln.getChildren(fc);
+                for (FcDataObject fcDataObject : lnChildren) {
+                    list.add(fcDataObject);
+                }
+            }
+        } else {
+            FcModelNode nodeFromVariableDef = getNodeFromVariableDef(variableDef);
+            list.add(nodeFromVariableDef);
+        }
+        return list;
+
+    }
 }

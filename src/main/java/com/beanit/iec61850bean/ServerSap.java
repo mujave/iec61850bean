@@ -55,6 +55,10 @@ public final class ServerSap {
     private int backlog = 0;
     private InetAddress bindAddr = null;
     private ServerSocketFactory serverSocketFactory = null;
+    /**
+     * 客户端读取目录时的列表最大长度
+     */
+    private int proposedMaxGetNameResponseLength = 100;
 
     /**
      * Creates a ServerSap.
@@ -233,6 +237,14 @@ public final class ServerSap {
      */
     public void setProposedDataStructureNestingLevel(int nestingLevel) {
         proposedDataStructureNestingLevel = nestingLevel;
+    }
+
+    public int getProposedMaxGetNameResponseLength() {
+        return proposedMaxGetNameResponseLength;
+    }
+
+    public void setProposedMaxGetNameResponseLength(int proposedMaxGetNameResponseLength) {
+        this.proposedMaxGetNameResponseLength = proposedMaxGetNameResponseLength;
     }
 
     /**

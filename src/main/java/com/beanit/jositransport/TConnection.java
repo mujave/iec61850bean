@@ -654,4 +654,34 @@ public final class TConnection {
             }
         }
     }
+
+    public boolean getSocketIsOpen(){
+        return !socket.isClosed();
+    }
+
+    public boolean getSocketIsConnected(){
+        return socket.isConnected();
+    }
+
+    public boolean getSocketIsInputShutdown(){
+        return socket.isInputShutdown();
+    }
+
+    public boolean getSocketIsOutputShutdown(){
+        return socket.isOutputShutdown();
+    }
+
+    public boolean getSocketIsbind(){
+        return socket.isBound();
+    }
+
+    public boolean testConnected(){
+        try {
+            socket.sendUrgentData(0xFF);
+            return true;
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
 }
