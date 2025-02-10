@@ -13,6 +13,7 @@
  */
 package com.beanit.iec61850bean;
 
+import cn.hutool.core.util.StrUtil;
 import com.beanit.asn1bean.ber.ReverseByteArrayOutputStream;
 import com.beanit.asn1bean.ber.types.BerInteger;
 import com.beanit.asn1bean.ber.types.BerNull;
@@ -537,9 +538,10 @@ final class ServerAssociation {
 
                     List<FcDataObject> fcDataObjects = logicalNode.getChildren(fc);
                     if (fcDataObjects != null) {
-                        mmsReferences.add(logicalNode.getName() + "$" + mmsFC);
+                        String ref = logicalNode.getName() + "$" + mmsFC;
+                        mmsReferences.add(ref);
                         for (FcDataObject dataObject : fcDataObjects) {
-                            insertMmsRef(dataObject, mmsReferences, logicalNode.getName() + "$" + mmsFC);
+                            insertMmsRef(dataObject, mmsReferences, ref);
                         }
                     }
                 }
@@ -549,22 +551,17 @@ final class ServerAssociation {
         ListOfIdentifier listOfIden = new ListOfIdentifier();
         List<Identifier> identifiers = listOfIden.getIdentifier();
 
-        int identifierSize = 0;
         boolean moreFollows = false;
+        int proposedMaxGetNameResponseLength = serverSap.getProposedMaxGetNameResponseLength();
         for (String mmsReference : mmsReferences) {
             if (insertRef == true) {
-                if (identifierSize > negotiatedMaxPduSize - 200) {
+                if (identifiers.size() == proposedMaxGetNameResponseLength) {
                     moreFollows = true;
-                    logger.debug(" ->maxMMSPduSize of " + negotiatedMaxPduSize + " Bytes reached");
+                    logger.debug(" ->maxMMSPduSize of " + proposedMaxGetNameResponseLength + " items reached");
                     break;
                 }
-
-                Identifier identifier;
-
-                identifier = new Identifier(mmsReference.getBytes(UTF_8));
-
+                Identifier identifier = new Identifier(mmsReference.getBytes(UTF_8));
                 identifiers.add(identifier);
-                identifierSize += mmsReference.length() + 2;
             } else {
                 if (mmsReference.equals(continueAfter)) {
                     insertRef = true;
@@ -850,27 +847,57 @@ final class ServerAssociation {
             ListOfAccessResult listOfAccessResult = new ListOfAccessResult();
             List<AccessResult> accessResults = listOfAccessResult.getAccessResult();
 
+
             synchronized (serverModel) {
                 for (VariableDefs.SEQUENCE variableDef : listOfVariable) {
-
-                    FcModelNode modelNode = serverModel.getNodeFromVariableDef(variableDef);
-
-                    if (modelNode == null) {
-                        logger.debug("Got a GetDataValues request for a non existent model node.");
-                        // 10 indicates error "object-non-existent"
-                        AccessResult accessResult = new AccessResult();
-                        accessResult.setFailure(new DataAccessError(10L));
-                        accessResults.add(accessResult);
-                    } else {
-                        if (logger.isDebugEnabled()) {
-                            logger.debug("Got a GetDataValues request for node: " + modelNode);
-                            if (!(modelNode instanceof BasicDataAttribute)) {
-                                for (BasicDataAttribute bda : modelNode.getBasicDataAttributes()) {
-                                    logger.debug("sub BDA is:" + bda);
+                    String itemName = variableDef.getVariableSpecification().getName().getDomainSpecific().getItemID().toString();
+                    int level = StrUtil.count(itemName, '$');
+                    if (level == 1){
+                        List<FcModelNode> modelNodeList = serverModel.getNodeFromParentVariableDef(variableDef);
+                        Data.Structure structure = new Data.Structure();
+                        List<Data> dataList = structure.getData();
+                        for (FcModelNode modelNode : modelNodeList) {
+                            if (modelNode == null) {
+                                logger.debug("Got a GetDataValues request for a non existent model node.");
+                                // 10 indicates error "object-non-existent"
+                            } else {
+                                if (logger.isDebugEnabled()) {
+                                    logger.debug("Got a GetDataValues request for node: " + modelNode);
+                                    if (!(modelNode instanceof BasicDataAttribute)) {
+                                        for (BasicDataAttribute bda : modelNode.getBasicDataAttributes()) {
+                                            logger.debug("sub BDA is:" + bda);
+                                        }
+                                    }
                                 }
+                                AccessResult readResult = getReadResult(modelNode);
+                                dataList.add(readResult.getSuccess()) ;
                             }
                         }
-                        accessResults.add(getReadResult(modelNode));
+                        Data accessResultData = new Data();
+                        accessResultData.setStructure(structure);
+                        AccessResult accessResult = new AccessResult();
+                        accessResult.setFailure(new DataAccessError(10L));
+                        accessResult.setSuccess(accessResultData);
+                        accessResults.add(accessResult);
+                    } else {
+                        FcModelNode modelNode = serverModel.getNodeFromVariableDef(variableDef);
+                        if (modelNode == null) {
+                            logger.debug("Got a GetDataValues request for a non existent model node.");
+                            // 10 indicates error "object-non-existent"
+                            AccessResult accessResult = new AccessResult();
+                            accessResult.setFailure(new DataAccessError(10L));
+                            accessResults.add(accessResult);
+                        } else {
+                            if (logger.isDebugEnabled()) {
+                                logger.debug("Got a GetDataValues request for node: " + modelNode);
+                                if (!(modelNode instanceof BasicDataAttribute)) {
+                                    for (BasicDataAttribute bda : modelNode.getBasicDataAttributes()) {
+                                        logger.debug("sub BDA is:" + bda);
+                                    }
+                                }
+                            }
+                            accessResults.add(getReadResult(modelNode));
+                        }
                     }
                 }
             }

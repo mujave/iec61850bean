@@ -13,6 +13,8 @@
  */
 package com.beanit.iec61850bean;
 
+import cn.hutool.core.comparator.CompareUtil;
+import cn.hutool.core.convert.Convert;
 import com.beanit.iec61850bean.internal.scl.*;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -1064,7 +1066,7 @@ public class SclParser {
                 BdaInt16 bda = new BdaInt16(new ObjectReference(ref), fc, sAddr, dchg, dupd);
                 if (val != null) {
                     for (EnumVal enumVal : enumType.getValues()) {
-                        if (val.equals(enumVal.getId())) {
+                        if (val.equals(enumVal.getId()) || CompareUtil.compare(enumVal.getOrd(), Convert.toInt(val)) == 0) {
                             bda.setValue((short) enumVal.getOrd());
                             return bda;
                         }
@@ -1076,7 +1078,7 @@ public class SclParser {
                 BdaInt8 bda = new BdaInt8(new ObjectReference(ref), fc, sAddr, dchg, dupd);
                 if (val != null) {
                     for (EnumVal enumVal : enumType.getValues()) {
-                        if (val.equals(enumVal.getId())) {
+                        if (val.equals(enumVal.getId()) || CompareUtil.compare(enumVal.getOrd(), Convert.toInt(val)) == 0) {
                             bda.setValue((byte) enumVal.getOrd());
                             return bda;
                         }
