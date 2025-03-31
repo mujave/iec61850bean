@@ -13,13 +13,19 @@
  */
 package com.beanit.iec61850bean;
 
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.core.util.ZipUtil;
 import com.beanit.asn1bean.ber.ReverseByteArrayOutputStream;
+import com.beanit.asn1bean.ber.types.BerGeneralizedTime;
 import com.beanit.asn1bean.ber.types.BerInteger;
 import com.beanit.asn1bean.ber.types.BerNull;
+import com.beanit.asn1bean.ber.types.string.BerGraphicString;
 import com.beanit.asn1bean.ber.types.string.BerVisibleString;
 import com.beanit.iec61850bean.internal.BerBoolean;
 import com.beanit.iec61850bean.internal.NamedThreadFactory;
+import com.beanit.iec61850bean.internal.mms.asn1.DirectoryEntry;
 import com.beanit.iec61850bean.internal.mms.asn1.*;
 import com.beanit.iec61850bean.internal.mms.asn1.GetNameListResponse.ListOfIdentifier;
 import com.beanit.iec61850bean.internal.mms.asn1.ObjectName.DomainSpecific;
@@ -35,6 +41,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.EOFException;
+import java.io.File;
 import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
@@ -42,6 +49,7 @@ import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -315,6 +323,20 @@ final class ServerAssociation {
                             handleDeleteDataSetRequest(confirmedServiceRequest.getDeleteNamedVariableList());
 
                     confirmedServiceResponse.setDeleteNamedVariableList(response);
+                }
+                // for file service
+                else if (confirmedServiceRequest.getFileDirectory() != null) {
+                    logger.debug("Got a FileDirectory request");
+                    FileDirectoryResponse response = handleFileDirectoryRequest(confirmedServiceRequest.getFileDirectory());
+                    confirmedServiceResponse.setFileDirectory(response);
+                }
+                // for file read
+                else if (confirmedServiceRequest.getFileOpen() != null) {
+                    logger.debug("Got a FileOpen request");
+                } else if (confirmedServiceRequest.getFileRead() != null) {
+                    logger.debug("Got a FileRead request");
+                } else if (confirmedServiceRequest.getFileClose() != null) {
+
                 } else {
                     throw new ServiceError(
                             ServiceError.FAILED_DUE_TO_COMMUNICATIONS_CONSTRAINT,
@@ -338,6 +360,56 @@ final class ServerAssociation {
                 }
             }
         }
+    }
+
+    /**
+     * 读取文件目录
+     *
+     * @author mujave
+     */
+    private FileDirectoryResponse handleFileDirectoryRequest(FileDirectoryRequest request) {
+        FileDirectoryResponse response = new FileDirectoryResponse();
+
+        FileDirectoryResponse.ListOfDirectoryEntry directoryEntry = new FileDirectoryResponse.ListOfDirectoryEntry();
+        List<DirectoryEntry> directoryEntryList = directoryEntry.getDirectoryEntry();
+        FileName fileSpecification = request.getFileSpecification();
+        insertRef = true;
+        if (request.getContinueAfter() != null) {
+            continueAfter = request.getContinueAfter().toString();
+            insertRef = false;
+        }
+        boolean moreFollows = false;
+        int proposedMaxGetNameResponseLength = serverSap.getProposedMaxGetNameResponseLength();
+        String parentPath = fileSpecification.getBerGraphicString().get(0).toString();
+        List<String> files = FileUtil.listFileNames(parentPath);
+        files = files.stream().sorted(Comparator.comparing(String::length).thenComparing(String::compareTo)).collect(Collectors.toList());
+        for (String name : files) {
+            if (insertRef) {
+                if (directoryEntryList.size() == proposedMaxGetNameResponseLength) {
+                    moreFollows = true;
+                    logger.debug(" handleFileDirectoryRequest  ->maxMMSPduSize of " + proposedMaxGetNameResponseLength + " items reached");
+                    break;
+                }
+                DirectoryEntry fileEntry = new DirectoryEntry();
+                FileName fileName = new FileName();
+                List<BerGraphicString> berGraphicString = fileName.getBerGraphicString();
+                berGraphicString.add(new BerGraphicString(name.getBytes()));
+                fileEntry.setFileName(fileName);
+                FileAttributes fileAttributes = new FileAttributes();
+                File file = FileUtil.file(parentPath, name);
+                fileAttributes.setSizeOfFile(new Unsigned32(file.length()));
+                fileAttributes.setLastModified(new BerGeneralizedTime(DateUtil.format(new Date(file.lastModified()), "yyyyMMddHHmmssZ")));
+                fileEntry.setFileAttributes(fileAttributes);
+                directoryEntryList.add(fileEntry);
+            } else {
+                if (continueAfter.indexOf(name) == 3) {
+                    insertRef = true;
+                }
+            }
+        }
+        response.setListOfDirectoryEntry(directoryEntry);
+        response.setMoreFollows(new BerBoolean(moreFollows));
+        return response;
     }
 
     void cleanUpConnection() {
@@ -852,7 +924,7 @@ final class ServerAssociation {
                 for (VariableDefs.SEQUENCE variableDef : listOfVariable) {
                     String itemName = variableDef.getVariableSpecification().getName().getDomainSpecific().getItemID().toString();
                     int level = StrUtil.count(itemName, '$');
-                    if (level == 1){
+                    if (level == 1) {
                         List<FcModelNode> modelNodeList = serverModel.getNodeFromParentVariableDef(variableDef);
                         Data.Structure structure = new Data.Structure();
                         List<Data> dataList = structure.getData();
@@ -870,7 +942,7 @@ final class ServerAssociation {
                                     }
                                 }
                                 AccessResult readResult = getReadResult(modelNode);
-                                dataList.add(readResult.getSuccess()) ;
+                                dataList.add(readResult.getSuccess());
                             }
                         }
                         Data accessResultData = new Data();
