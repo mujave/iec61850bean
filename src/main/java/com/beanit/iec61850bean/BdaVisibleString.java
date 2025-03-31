@@ -42,6 +42,10 @@ public final class BdaVisibleString extends BasicDataAttribute {
         return value;
     }
 
+    public String getValStr(){
+        return new String(value, UTF_8);
+    }
+
     public void setValue(byte[] value) {
         if (value == null || value.length > maxLength) {
             throw new IllegalArgumentException(
