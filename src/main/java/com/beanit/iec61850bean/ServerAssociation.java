@@ -15,8 +15,9 @@ package com.beanit.iec61850bean;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.io.IORuntimeException;
+import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
-import cn.hutool.core.util.ZipUtil;
 import com.beanit.asn1bean.ber.ReverseByteArrayOutputStream;
 import com.beanit.asn1bean.ber.types.BerGeneralizedTime;
 import com.beanit.asn1bean.ber.types.BerInteger;
@@ -25,7 +26,6 @@ import com.beanit.asn1bean.ber.types.string.BerGraphicString;
 import com.beanit.asn1bean.ber.types.string.BerVisibleString;
 import com.beanit.iec61850bean.internal.BerBoolean;
 import com.beanit.iec61850bean.internal.NamedThreadFactory;
-import com.beanit.iec61850bean.internal.mms.asn1.DirectoryEntry;
 import com.beanit.iec61850bean.internal.mms.asn1.*;
 import com.beanit.iec61850bean.internal.mms.asn1.GetNameListResponse.ListOfIdentifier;
 import com.beanit.iec61850bean.internal.mms.asn1.ObjectName.DomainSpecific;
@@ -36,6 +36,8 @@ import com.beanit.iec61850bean.internal.mms.asn1.TypeDescription.Structure.Compo
 import com.beanit.josistack.AcseAssociation;
 import com.beanit.josistack.ByteBufferInputStream;
 import com.beanit.josistack.DecodingException;
+ 
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,14 +81,14 @@ final class ServerAssociation {
     private int negotiatedMaxPduSize;
     private ByteBuffer pduBuffer;
     private boolean insertRef;
-    private String continueAfter;
+    private String continueAfter; 
 
     public ServerAssociation(ServerSap serverSap) {
         this.serverSap = serverSap;
         serverModel = serverSap.serverModel;
         executor =
                 Executors.newScheduledThreadPool(
-                        2, new NamedThreadFactory("iec61850bean-server-connection"));
+                2, new NamedThreadFactory("iec61850bean-server-connection"));
     }
 
     private static void insertMmsRef(ModelNode node, List<String> mmsRefs, String parentRef) {
@@ -284,7 +286,7 @@ final class ServerAssociation {
                             "Got a GetDataDirectory/GetDataDefinition (MMS GetVariableAccessAttributes) request");
                     GetVariableAccessAttributesResponse response =
                             handleGetVariableAccessAttributesRequest(
-                                    confirmedServiceRequest.getGetVariableAccessAttributes());
+                            confirmedServiceRequest.getGetVariableAccessAttributes());
 
                     confirmedServiceResponse.setGetVariableAccessAttributes(response);
 
@@ -313,7 +315,7 @@ final class ServerAssociation {
                     logger.debug("Got a GetDataSetDirectory request");
                     GetNamedVariableListAttributesResponse response =
                             handleGetDataSetDirectoryRequest(
-                                    confirmedServiceRequest.getGetNamedVariableListAttributes());
+                            confirmedServiceRequest.getGetNamedVariableListAttributes());
 
                     confirmedServiceResponse.setGetNamedVariableListAttributes(response);
 
@@ -330,13 +332,18 @@ final class ServerAssociation {
                     FileDirectoryResponse response = handleFileDirectoryRequest(confirmedServiceRequest.getFileDirectory());
                     confirmedServiceResponse.setFileDirectory(response);
                 }
-                // for file read
                 else if (confirmedServiceRequest.getFileOpen() != null) {
                     logger.debug("Got a FileOpen request");
+                    FileOpenResponse response = handleFileOpenRequest(confirmedServiceRequest.getFileOpen());
+                    confirmedServiceResponse.setFileOpen(response);
                 } else if (confirmedServiceRequest.getFileRead() != null) {
                     logger.debug("Got a FileRead request");
+                    FileReadResponse response = handleFileReadRequest(confirmedServiceRequest.getFileRead());
+                    confirmedServiceResponse.setFileRead(response);
                 } else if (confirmedServiceRequest.getFileClose() != null) {
-
+                    logger.debug("Got a FileClose request");
+                    FileCloseResponse fileCloseRequest = handleFileCloseRequest(confirmedServiceRequest.getFileClose());
+                    confirmedServiceResponse.setFileClose(fileCloseRequest);
                 } else {
                     throw new ServiceError(
                             ServiceError.FAILED_DUE_TO_COMMUNICATIONS_CONSTRAINT,
@@ -361,6 +368,53 @@ final class ServerAssociation {
             }
         }
     }
+ 
+    private Map<Long, FileReader> fileReadCache = new HashMap<>();
+
+
+    private FileCloseResponse handleFileCloseRequest(FileCloseRequest request) {
+         FileCloseResponse response = new FileCloseResponse();
+         Long frmsId = request.value.longValue();
+         fileReadCache.remove(frmsId);
+         return response;
+    }
+
+    private FileReadResponse handleFileReadRequest(FileReadRequest request) {
+        Long frmsId = request.value.longValue();
+        if (!fileReadCache.containsKey(frmsId)){
+            logger.error(" read File has Error: readCache not fonut frmsid - {}", frmsId);
+            return null;
+        }
+        FileReader fileReader = fileReadCache.get(frmsId);
+        FileReadResponse response = new FileReadResponse();
+        response.setFileData(new BerGraphicString(fileReader.read(negotiatedMaxPduSize)));
+        response.setMoreFollows(new BerBoolean(!fileReader.isEndOfFile()));
+        return response;
+    }
+
+    private FileOpenResponse handleFileOpenRequest(FileOpenRequest request) {
+        FileName fileName = request.getFileName();
+        FileOpenResponse fileOpenResponse = new FileOpenResponse();
+
+        if (fileName.getBerGraphicString() != null) {
+            String filePath = serverSap.getFileServiceParentPath() + fileName.getBerGraphicString().get(0).toString();
+            File file = FileUtil.file(filePath);
+            if (file.exists()) {
+                long frmsId = RandomUtil.randomLong();
+                while (fileReadCache.containsKey(frmsId)) {
+                    frmsId = RandomUtil.randomLong();
+                }
+                fileOpenResponse.setFrsmID(new Integer32(frmsId));
+                fileReadCache.put(frmsId, new FileReader(file));
+                FileAttributes fileAttributes = new FileAttributes();
+                fileAttributes.setSizeOfFile(new Unsigned32(file.length()));
+                fileAttributes.setLastModified(
+                        new BerGeneralizedTime(DateUtil.format(new Date(file.lastModified()), "yyyyMMddHHmmssZ")));
+                fileOpenResponse.setFileAttributes(fileAttributes);
+            }
+        }
+        return fileOpenResponse;
+    }
 
     /**
      * 读取文件目录
@@ -380,9 +434,16 @@ final class ServerAssociation {
         }
         boolean moreFollows = false;
         int proposedMaxGetNameResponseLength = serverSap.getProposedMaxGetNameResponseLength();
-        String parentPath = fileSpecification.getBerGraphicString().get(0).toString();
-        List<String> files = FileUtil.listFileNames(parentPath);
-        files = files.stream().sorted(Comparator.comparing(String::length).thenComparing(String::compareTo)).collect(Collectors.toList());
+        String parentPath = serverSap.getFileServiceParentPath();
+        String path = fileSpecification.getBerGraphicString().get(0).toString();
+        List<String> files = new ArrayList<>();
+        try{
+            files = FileUtil.listFileNames(parentPath + path);
+        }catch(IORuntimeException e){
+            logger.error("get fileDirectory error", e);
+        }
+        files = files.stream().sorted(Comparator.comparing(String::length).thenComparing(String::compareTo))
+                .collect(Collectors.toList());
         for (String name : files) {
             if (insertRef) {
                 if (directoryEntryList.size() == proposedMaxGetNameResponseLength) {
@@ -396,7 +457,7 @@ final class ServerAssociation {
                 berGraphicString.add(new BerGraphicString(name.getBytes()));
                 fileEntry.setFileName(fileName);
                 FileAttributes fileAttributes = new FileAttributes();
-                File file = FileUtil.file(parentPath, name);
+                File file = FileUtil.file(parentPath, path, name);
                 fileAttributes.setSizeOfFile(new Unsigned32(file.length()));
                 fileAttributes.setLastModified(new BerGeneralizedTime(DateUtil.format(new Date(file.lastModified()), "yyyyMMddHHmmssZ")));
                 fileEntry.setFileAttributes(fileAttributes);
@@ -742,9 +803,9 @@ final class ServerAssociation {
                                     ServiceError.INSTANCE_NOT_AVAILABLE,
                                     "GetVariableAccessAttributes (GetDataDefinition): no object with domainId "
                                             + getVariableAccessAttributesRequest
-                                            .getName()
-                                            .getDomainSpecific()
-                                            .getDomainID()
+                                                    .getName()
+                                                    .getDomainSpecific()
+                                                    .getDomainID()
                                             + " and ItemID "
                                             + getVariableAccessAttributesRequest.getName().getDomainSpecific().getItemID()
                                             + " was found.");
@@ -1674,7 +1735,7 @@ final class ServerAssociation {
             DeleteNamedVariableListRequest mmsDelNamVarListReq) throws ServiceError {
         String dataSetReference =
                 convertToDataSetReference(
-                        mmsDelNamVarListReq.getListOfVariableListName().getObjectName().get(0));
+                mmsDelNamVarListReq.getListOfVariableListName().getObjectName().get(0));
 
         DeleteNamedVariableListResponse deleteNamedVariableListResponse =
                 new DeleteNamedVariableListResponse();

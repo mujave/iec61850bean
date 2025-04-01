@@ -55,6 +55,7 @@ public final class ServerSap {
     private int backlog = 0;
     private InetAddress bindAddr = null;
     private ServerSocketFactory serverSocketFactory = null;
+    private String fileServiceParentPath = System.getProperty("user.dir");
     /**
      * 客户端读取目录时的列表最大长度
      */
@@ -267,6 +268,16 @@ public final class ServerSap {
             throw new IllegalArgumentException("The services parameter needs to be of lenth 11");
         }
         servicesSupportedCalled = services;
+    }
+
+    
+
+    public String getFileServiceParentPath() {
+        return fileServiceParentPath;
+    }
+
+    public void setFileServiceParentPath(String fileServiceParentPath) {
+        this.fileServiceParentPath = fileServiceParentPath;
     }
 
     /**

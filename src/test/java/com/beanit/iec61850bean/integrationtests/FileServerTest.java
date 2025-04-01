@@ -1,18 +1,29 @@
 package com.beanit.iec61850bean.integrationtests;
 
-import cn.hutool.core.date.DateUtil;
-import cn.hutool.core.io.FileUtil;
-import com.beanit.iec61850bean.*;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.util.List;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.jws.WebResult;
-import java.io.IOException;
-import java.net.InetAddress;
-import java.util.List;
-
+import com.beanit.iec61850bean.BasicDataAttribute;
+import com.beanit.iec61850bean.ClientAssociation;
+import com.beanit.iec61850bean.ClientEventListener;
+import com.beanit.iec61850bean.ClientSap;
+import com.beanit.iec61850bean.FileInformation;
+import com.beanit.iec61850bean.GetFileListener;
+import com.beanit.iec61850bean.Report;
+import com.beanit.iec61850bean.SclParseException;
+import com.beanit.iec61850bean.SclParser;
+import com.beanit.iec61850bean.ServerEventListener;
+import com.beanit.iec61850bean.ServerModel;
+import com.beanit.iec61850bean.ServerSap;
+import com.beanit.iec61850bean.ServiceError;
+ 
+import cn.hutool.core.date.DateUtil;
 public class FileServerTest implements ClientEventListener {
 
     private static final int PORT = 102;
@@ -38,9 +49,8 @@ public class FileServerTest implements ClientEventListener {
     }
 
     private void startServer() throws SclParseException, IOException {
-
         serverSap = new ServerSap(PORT, 0, null, SclParser.parse(ICD_FILE).get(0), null);
-
+        //serverSap.setFileServiceParentPath("D:\\codeSpeace\\test"); 
         this.serverSap.startListening(new ServerEventListener() {
             @Override
             public List<ServiceError> write(List<BasicDataAttribute> arg0) {
@@ -56,11 +66,25 @@ public class FileServerTest implements ClientEventListener {
 
     @Test
     public void testGetFileDirectory() throws IOException, ServiceError, InterruptedException {
-        List<FileInformation> fileDirectory = this.clientAssociation.getFileDirectory("/Users/mujave/Documents/demo/");
-        int i =0 ;
+        List<FileInformation> fileDirectory = this.clientAssociation.getFileDirectory("/");
+        int i = 0;
         for (FileInformation fileInformation : fileDirectory) {
-            log.info("{} {} sizeof: {} {}", ++i,fileInformation.getFilename(), fileInformation.getFileSize(), DateUtil.formatDateTime(fileInformation.getLastModified().getTime()));
+            log.info("{} - {} sizeof: {} {}", ++i, fileInformation.getFilename(), fileInformation.getFileSize(),
+                    DateUtil.formatDateTime(fileInformation.getLastModified().getTime()));
         }
+    }
+
+    @Test
+    public void testGetFile() throws IOException, ServiceError, InterruptedException {
+         this.clientAssociation.getFile("/chart.txt", new GetFileListener() {
+
+            @Override
+            public boolean dataReceived(byte[] fileData, boolean moreFollows) {
+                log.info("Received {} bytes of file data. More data follows: {}", fileData.length, moreFollows);
+                log.info("\n{}", new String(fileData));
+                return moreFollows;
+            }
+        });
     }
 
     @Override
