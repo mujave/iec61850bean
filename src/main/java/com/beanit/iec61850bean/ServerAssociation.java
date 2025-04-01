@@ -400,10 +400,10 @@ final class ServerAssociation {
             String filePath = serverSap.getFileServiceParentPath() + fileName.getBerGraphicString().get(0).toString();
             File file = FileUtil.file(filePath);
             if (file.exists()) {
-                long frmsId = RandomUtil.randomLong();
-                while (fileReadCache.containsKey(frmsId)) {
-                    frmsId = RandomUtil.randomLong();
-                }
+                long frmsId = -1L;
+                do{
+                    frmsId = RandomUtil.randomLong(0, Long.MAX_VALUE);
+                } while (fileReadCache.containsKey(frmsId));
                 fileOpenResponse.setFrsmID(new Integer32(frmsId));
                 fileReadCache.put(frmsId, new FileReader(file));
                 FileAttributes fileAttributes = new FileAttributes();
