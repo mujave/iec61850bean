@@ -1396,10 +1396,10 @@ final class ServerAssociation {
           }
         } else if (nodeName.equals("OptFlds")) {
           if ((urcb.reserved == null || urcb.reserved == this) && !urcb.enabled) {
-            if (!((BdaOptFlds) modelNode).isBufferOverflow()
-                && !((BdaOptFlds) modelNode).isConfigRevision()
-                && !((BdaOptFlds) modelNode).isDataReference()
-                && !((BdaOptFlds) modelNode).isEntryId()) {
+            if (!((BdaOptFlds) fcModelNodeCopy).isBufferOverflow()
+                && !((BdaOptFlds) fcModelNodeCopy).isConfigRevision()
+                && !((BdaOptFlds) fcModelNodeCopy).isDataReference()
+                && !((BdaOptFlds) fcModelNodeCopy).isEntryId()) {
               ((BasicDataAttribute) modelNode).setValueFrom((BasicDataAttribute) fcModelNodeCopy);
               return writeSuccess;
             } else {

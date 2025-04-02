@@ -16,7 +16,7 @@ package com.beanit.iec61850bean;
 public final class BdaReasonForInclusion extends BdaBitString {
 
   public BdaReasonForInclusion(ObjectReference objectReference) {
-    super(objectReference, null, null, 7, false, false);
+    super(objectReference, null, null, 6, false, false);
     basicType = BdaType.REASON_FOR_INCLUSION;
     setDefault();
   }
