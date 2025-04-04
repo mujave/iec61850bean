@@ -9,7 +9,7 @@
     <version>1.9.1.10</version>
 
     <name>${project.groupId}:${project.artifactId}</name>
-    <description></description>
+    <description>IEC61850bean is a Java library implementing the IEC 61850 MMS communication standard for clients and servers.</description>
     <url>https://gitee.com/mujave/iec61850bean</url>
 
     <scm>
@@ -133,7 +133,7 @@
                 <version>1.6</version>
                 <configuration>
                     <!-- 改成你自己的路径 -->
-                    <executable>D:\GnuPG\bin\gpg.exe</executable>
+                    <executable>/opt/homebrew/bin/gpg</executable>
                 </configuration>
                 <executions>
                     <execution>
