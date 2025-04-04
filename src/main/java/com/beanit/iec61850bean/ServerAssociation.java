@@ -36,7 +36,6 @@ import com.beanit.iec61850bean.internal.mms.asn1.TypeDescription.Structure.Compo
 import com.beanit.josistack.AcseAssociation;
 import com.beanit.josistack.ByteBufferInputStream;
 import com.beanit.josistack.DecodingException;
- 
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,8 +70,7 @@ final class ServerAssociation {
 
     final ServerModel serverModel;
     private final ServerSap serverSap;
-    private final ReverseByteArrayOutputStream reverseOStream =
-            new ReverseByteArrayOutputStream(500, true);
+    private final ReverseByteArrayOutputStream reverseOStream = new ReverseByteArrayOutputStream(500, true);
     ScheduledExecutorService executor = null;
     HashMap<String, DataSet> nonPersistentDataSets = new HashMap<>();
     List<FcModelNode> selects = new ArrayList<>();
@@ -81,13 +79,12 @@ final class ServerAssociation {
     private int negotiatedMaxPduSize;
     private ByteBuffer pduBuffer;
     private boolean insertRef;
-    private String continueAfter; 
+    private String continueAfter;
 
     public ServerAssociation(ServerSap serverSap) {
         this.serverSap = serverSap;
         serverModel = serverSap.serverModel;
-        executor =
-                Executors.newScheduledThreadPool(
+        executor = Executors.newScheduledThreadPool(
                 2, new NamedThreadFactory("iec61850bean-server-connection"));
     }
 
@@ -154,8 +151,8 @@ final class ServerAssociation {
         }
 
         int negotiatedMaxServOutstandingCalling = serverSap.getProposedMaxServOutstandingCalling();
-        int proposedMaxServOutstandingCalling =
-                associationRequestMMSpdu.getProposedMaxServOutstandingCalling().intValue();
+        int proposedMaxServOutstandingCalling = associationRequestMMSpdu.getProposedMaxServOutstandingCalling()
+                .intValue();
 
         if (negotiatedMaxServOutstandingCalling > proposedMaxServOutstandingCalling
                 && proposedMaxServOutstandingCalling > 0) {
@@ -163,8 +160,8 @@ final class ServerAssociation {
         }
 
         int negotiatedMaxServOutstandingCalled = serverSap.getProposedMaxServOutstandingCalled();
-        int proposedMaxServOutstandingCalled =
-                associationRequestMMSpdu.getProposedMaxServOutstandingCalled().intValue();
+        int proposedMaxServOutstandingCalled = associationRequestMMSpdu.getProposedMaxServOutstandingCalled()
+                .intValue();
 
         if (negotiatedMaxServOutstandingCalled > proposedMaxServOutstandingCalled
                 && proposedMaxServOutstandingCalled > 0) {
@@ -174,8 +171,8 @@ final class ServerAssociation {
         int negotiatedDataStructureNestingLevel = serverSap.getProposedDataStructureNestingLevel();
 
         if (associationRequestMMSpdu.getProposedDataStructureNestingLevel() != null) {
-            int proposedDataStructureNestingLevel =
-                    associationRequestMMSpdu.getProposedDataStructureNestingLevel().intValue();
+            int proposedDataStructureNestingLevel = associationRequestMMSpdu.getProposedDataStructureNestingLevel()
+                    .intValue();
             if (negotiatedDataStructureNestingLevel > proposedDataStructureNestingLevel) {
                 negotiatedDataStructureNestingLevel = proposedDataStructureNestingLevel;
             }
@@ -187,8 +184,7 @@ final class ServerAssociation {
 
         byte[] servicesSupportedCalledBitString = serverSap.servicesSupportedCalled;
 
-        InitiateResponsePDU.InitResponseDetail initRespDetail =
-                new InitiateResponsePDU.InitResponseDetail();
+        InitiateResponsePDU.InitResponseDetail initRespDetail = new InitiateResponsePDU.InitResponseDetail();
         initRespDetail.setNegotiatedVersionNumber(new Integer16(1));
         initRespDetail.setNegotiatedParameterCBB(
                 new ParameterSupportOptions(
@@ -223,7 +219,8 @@ final class ServerAssociation {
             }
 
             ConfirmedRequestPDU confirmedRequestPdu = mmsRequestPdu.getConfirmedRequestPDU();
-            // Do not have to check whether confirmedRequestPdu is null because that was already done by
+            // Do not have to check whether confirmedRequestPdu is null because that was
+            // already done by
             // listenForMmsRequest()
 
             if (confirmedRequestPdu.getInvokeID() == null) {
@@ -255,8 +252,7 @@ final class ServerAssociation {
                                 "Got an invalid MMS packet: ObjectClass was not selected in GetNameList request");
                     }
 
-                    long basicObjectClass =
-                            getNameListRequest.getObjectClass().getBasicObjectClass().longValue();
+                    long basicObjectClass = getNameListRequest.getObjectClass().getBasicObjectClass().longValue();
                     if (basicObjectClass == 9) {
                         logger.debug("Got a GetServerDirectory (MMS GetNameList[DOMAIN]) request");
                         response = handleGetServerDirectoryRequest();
@@ -274,7 +270,8 @@ final class ServerAssociation {
                                         + basicObjectClass);
                     }
                     // else if (basicObjectClass == 8) {
-                    // logger.debug("Got a GetLogicalNodeDirectory[Log] (MMS GetNameList[JOURNAL]) request");
+                    // logger.debug("Got a GetLogicalNodeDirectory[Log] (MMS GetNameList[JOURNAL])
+                    // request");
                     // response =
                     // handleGetNameListJournalRequest(getNameListRequest);
                     // }
@@ -284,8 +281,7 @@ final class ServerAssociation {
                 } else if (confirmedServiceRequest.getGetVariableAccessAttributes() != null) {
                     logger.debug(
                             "Got a GetDataDirectory/GetDataDefinition (MMS GetVariableAccessAttributes) request");
-                    GetVariableAccessAttributesResponse response =
-                            handleGetVariableAccessAttributesRequest(
+                    GetVariableAccessAttributesResponse response = handleGetVariableAccessAttributesRequest(
                             confirmedServiceRequest.getGetVariableAccessAttributes());
 
                     confirmedServiceResponse.setGetVariableAccessAttributes(response);
@@ -306,33 +302,27 @@ final class ServerAssociation {
                 // for Data Sets
                 else if (confirmedServiceRequest.getDefineNamedVariableList() != null) {
                     logger.debug("Got a CreateDataSet request");
-
-                    DefineNamedVariableListResponse response =
-                            handleCreateDataSetRequest(confirmedServiceRequest.getDefineNamedVariableList());
-
+                    DefineNamedVariableListResponse response = handleCreateDataSetRequest(
+                            confirmedServiceRequest.getDefineNamedVariableList());
                     confirmedServiceResponse.setDefineNamedVariableList(response);
                 } else if (confirmedServiceRequest.getGetNamedVariableListAttributes() != null) {
                     logger.debug("Got a GetDataSetDirectory request");
-                    GetNamedVariableListAttributesResponse response =
-                            handleGetDataSetDirectoryRequest(
+                    GetNamedVariableListAttributesResponse response = handleGetDataSetDirectoryRequest(
                             confirmedServiceRequest.getGetNamedVariableListAttributes());
-
                     confirmedServiceResponse.setGetNamedVariableListAttributes(response);
-
                 } else if (confirmedServiceRequest.getDeleteNamedVariableList() != null) {
                     logger.debug("Got a DeleteDataSet request");
-                    DeleteNamedVariableListResponse response =
-                            handleDeleteDataSetRequest(confirmedServiceRequest.getDeleteNamedVariableList());
-
+                    DeleteNamedVariableListResponse response = handleDeleteDataSetRequest(
+                            confirmedServiceRequest.getDeleteNamedVariableList());
                     confirmedServiceResponse.setDeleteNamedVariableList(response);
                 }
                 // for file service
                 else if (confirmedServiceRequest.getFileDirectory() != null) {
                     logger.debug("Got a FileDirectory request");
-                    FileDirectoryResponse response = handleFileDirectoryRequest(confirmedServiceRequest.getFileDirectory());
+                    FileDirectoryResponse response = handleFileDirectoryRequest(
+                            confirmedServiceRequest.getFileDirectory());
                     confirmedServiceResponse.setFileDirectory(response);
-                }
-                else if (confirmedServiceRequest.getFileOpen() != null) {
+                } else if (confirmedServiceRequest.getFileOpen() != null) {
                     logger.debug("Got a FileOpen request");
                     FileOpenResponse response = handleFileOpenRequest(confirmedServiceRequest.getFileOpen());
                     confirmedServiceResponse.setFileOpen(response);
@@ -368,22 +358,22 @@ final class ServerAssociation {
             }
         }
     }
- 
+
     private Map<Long, FileReader> fileReadCache = new HashMap<>();
 
-
     private FileCloseResponse handleFileCloseRequest(FileCloseRequest request) {
-         FileCloseResponse response = new FileCloseResponse();
-         Long frmsId = request.value.longValue();
-         fileReadCache.remove(frmsId);
-         return response;
+        FileCloseResponse response = new FileCloseResponse();
+        Long frmsId = request.value.longValue();
+        fileReadCache.remove(frmsId);
+        return response;
     }
 
     private FileReadResponse handleFileReadRequest(FileReadRequest request) {
         Long frmsId = request.value.longValue();
-        if (!fileReadCache.containsKey(frmsId)){
+        if (!fileReadCache.containsKey(frmsId)) {
             logger.error(" read File has Error: readCache not fonut frmsid - {}", frmsId);
-            return null;
+            throw new ServiceError(ServiceError.INSTANCE_NOT_AVAILABLE,
+                    "frmsid is an illegal value..");
         }
         FileReader fileReader = fileReadCache.get(frmsId);
         FileReadResponse response = new FileReadResponse();
@@ -397,10 +387,11 @@ final class ServerAssociation {
         FileOpenResponse fileOpenResponse = new FileOpenResponse();
 
         if (fileName.getBerGraphicString() != null) {
-            File file = FileUtil.file(serverSap.getFileServiceParentPath(),fileName.getBerGraphicString().get(0).toString());
+            File file = FileUtil.file(serverSap.getFileServiceParentPath(),
+                    fileName.getBerGraphicString().get(0).toString());
             if (file.exists()) {
                 long frmsId = -1L;
-                do{
+                do {
                     frmsId = RandomUtil.randomLong(0, Long.MAX_VALUE);
                 } while (fileReadCache.containsKey(frmsId));
                 fileOpenResponse.setFrsmID(new Integer32(frmsId));
@@ -410,6 +401,10 @@ final class ServerAssociation {
                 fileAttributes.setLastModified(
                         new BerGeneralizedTime(DateUtil.format(new Date(file.lastModified()), "yyyyMMddHHmmssZ")));
                 fileOpenResponse.setFileAttributes(fileAttributes);
+            } else {
+                logger.error("open file error, file is not exists.");
+                throw new ServiceError(ServiceError.FILE_NONE_EXISTENT,
+                        "file is not exists.");
             }
         }
         return fileOpenResponse;
@@ -435,14 +430,16 @@ final class ServerAssociation {
         int proposedMaxGetNameResponseLength = serverSap.getProposedMaxGetNameResponseLength();
         String parentPath = serverSap.getFileServiceParentPath();
         String path = fileSpecification.getBerGraphicString().get(0).toString();
-        if (path.isEmpty()){
+        if (path.isEmpty()) {
             path = File.separator;
         }
         List<String> files = new ArrayList<>();
-        try{
+        try {
             files = FileUtil.listFileNames(parentPath + path);
-        }catch(IORuntimeException e){
+        } catch (IORuntimeException e) {
             logger.error("get fileDirectory error", e);
+            throw new ServiceError(ServiceError.FILE_NONE_EXISTENT,
+                    "file is not exists.");
         }
         files = files.stream().sorted(Comparator.comparing(String::length).thenComparing(String::compareTo))
                 .collect(Collectors.toList());
@@ -450,7 +447,8 @@ final class ServerAssociation {
             if (insertRef) {
                 if (directoryEntryList.size() == proposedMaxGetNameResponseLength) {
                     moreFollows = true;
-                    logger.debug(" handleFileDirectoryRequest  ->maxMMSPduSize of " + proposedMaxGetNameResponseLength + " items reached");
+                    logger.debug(" handleFileDirectoryRequest  ->maxMMSPduSize of " + proposedMaxGetNameResponseLength
+                            + " items reached");
                     break;
                 }
                 DirectoryEntry fileEntry = new DirectoryEntry();
@@ -461,7 +459,8 @@ final class ServerAssociation {
                 FileAttributes fileAttributes = new FileAttributes();
                 File file = FileUtil.file(parentPath, path, name);
                 fileAttributes.setSizeOfFile(new Unsigned32(file.length()));
-                fileAttributes.setLastModified(new BerGeneralizedTime(DateUtil.format(new Date(file.lastModified()), "yyyyMMddHHmmssZ")));
+                fileAttributes.setLastModified(
+                        new BerGeneralizedTime(DateUtil.format(new Date(file.lastModified()), "yyyyMMddHHmmssZ")));
                 fileEntry.setFileAttributes(fileAttributes);
                 directoryEntryList.add(fileEntry);
             } else {
@@ -627,9 +626,11 @@ final class ServerAssociation {
     private GetNameListResponse handleGetDirectoryRequest(GetNameListRequest getNameListRequest)
             throws ServiceError {
 
-        // the ObjectScope can be vmdSpecific,domainSpecific, or aaSpecific. vmdSpecific and aaSpecific
+        // the ObjectScope can be vmdSpecific,domainSpecific, or aaSpecific. vmdSpecific
+        // and aaSpecific
         // are not part of
-        // 61850-8-1 but are used by some IEC 61850 clients anyways. This stack will return an empty
+        // 61850-8-1 but are used by some IEC 61850 clients anyways. This stack will
+        // return an empty
         // list on vmdSpecific
         // and aaSpecific requests.
         if (getNameListRequest.getObjectScope().getAaSpecific() != null
@@ -712,7 +713,8 @@ final class ServerAssociation {
     }
 
     /**
-     * GetVariableAccessAttributes (GetDataDefinition/GetDataDirectory) can be called with different
+     * GetVariableAccessAttributes (GetDataDefinition/GetDataDirectory) can be
+     * called with different
      * kinds of references. Examples: 1. DGEN1 2. DGEN1$CF 3. DGEN1$CF$GnBlk
      */
     private GetVariableAccessAttributesResponse handleGetVariableAccessAttributesRequest(
@@ -723,8 +725,7 @@ final class ServerAssociation {
                     "Got an invalid MMS packet: name is not selected in GetVariableAccessAttributesRequest");
         }
 
-        DomainSpecific domainSpecific =
-                getVariableAccessAttributesRequest.getName().getDomainSpecific();
+        DomainSpecific domainSpecific = getVariableAccessAttributesRequest.getName().getDomainSpecific();
 
         if (domainSpecific == null) {
             throw new ServiceError(
@@ -809,7 +810,8 @@ final class ServerAssociation {
                                                     .getDomainSpecific()
                                                     .getDomainID()
                                             + " and ItemID "
-                                            + getVariableAccessAttributesRequest.getName().getDomainSpecific().getItemID()
+                                            + getVariableAccessAttributesRequest.getName().getDomainSpecific()
+                                                    .getItemID()
                                             + " was found.");
                         }
                         index1 = index2;
@@ -827,8 +829,7 @@ final class ServerAssociation {
                     }
                 }
 
-                GetVariableAccessAttributesResponse getVariableAccessAttributesResponse =
-                        new GetVariableAccessAttributesResponse();
+                GetVariableAccessAttributesResponse getVariableAccessAttributesResponse = new GetVariableAccessAttributesResponse();
                 getVariableAccessAttributesResponse.setMmsDeletable(new BerBoolean(false));
                 getVariableAccessAttributesResponse.setTypeDescription(subNode.getMmsTypeSpec());
 
@@ -864,8 +865,7 @@ final class ServerAssociation {
                     TypeSpecification typeSpecification = new TypeSpecification();
                     typeSpecification.setTypeDescription(child.getMmsTypeSpec());
 
-                    TypeDescription.Structure.Components.SEQUENCE structComponent =
-                            new TypeDescription.Structure.Components.SEQUENCE();
+                    TypeDescription.Structure.Components.SEQUENCE structComponent = new TypeDescription.Structure.Components.SEQUENCE();
                     structComponent.setComponentName(new Identifier(child.getName().getBytes(UTF_8)));
                     structComponent.setComponentType(typeSpecification);
                     doStructComponents.add(structComponent);
@@ -877,8 +877,7 @@ final class ServerAssociation {
                 TypeDescription typeDescription = new TypeDescription();
                 typeDescription.setStructure(struct);
 
-                GetVariableAccessAttributesResponse getVariableAccessAttributesResponse =
-                        new GetVariableAccessAttributesResponse();
+                GetVariableAccessAttributesResponse getVariableAccessAttributesResponse = new GetVariableAccessAttributesResponse();
                 getVariableAccessAttributesResponse.setMmsDeletable(new BerBoolean(false));
                 getVariableAccessAttributesResponse.setTypeDescription(typeDescription);
 
@@ -916,8 +915,7 @@ final class ServerAssociation {
                     TypeSpecification typeSpecification = new TypeSpecification();
                     typeSpecification.setTypeDescription(child.getMmsTypeSpec());
 
-                    TypeDescription.Structure.Components.SEQUENCE doStructComponent =
-                            new TypeDescription.Structure.Components.SEQUENCE();
+                    TypeDescription.Structure.Components.SEQUENCE doStructComponent = new TypeDescription.Structure.Components.SEQUENCE();
                     doStructComponent.setComponentName(new Identifier(child.getName().getBytes(UTF_8)));
                     doStructComponent.setComponentType(typeSpecification);
 
@@ -933,8 +931,7 @@ final class ServerAssociation {
                 TypeSpecification typeSpecification = new TypeSpecification();
                 typeSpecification.setTypeDescription(fcTypeSpec);
 
-                TypeDescription.Structure.Components.SEQUENCE structCom =
-                        new TypeDescription.Structure.Components.SEQUENCE();
+                TypeDescription.Structure.Components.SEQUENCE structCom = new TypeDescription.Structure.Components.SEQUENCE();
                 structCom.setComponentName(new Identifier(mmsFc.getBytes(UTF_8)));
                 structCom.setComponentType(typeSpecification);
 
@@ -948,8 +945,7 @@ final class ServerAssociation {
         TypeDescription typeSpec = new TypeDescription();
         typeSpec.setStructure(struct);
 
-        GetVariableAccessAttributesResponse getVariableAccessAttributesResponse =
-                new GetVariableAccessAttributesResponse();
+        GetVariableAccessAttributesResponse getVariableAccessAttributesResponse = new GetVariableAccessAttributesResponse();
         getVariableAccessAttributesResponse.setMmsDeletable(new BerBoolean(false));
         getVariableAccessAttributesResponse.setTypeDescription(typeSpec);
 
@@ -958,8 +954,7 @@ final class ServerAssociation {
 
     private ReadResponse handleGetDataValuesRequest(ReadRequest mmsReadRequest) throws ServiceError {
 
-        VariableAccessSpecification variableAccessSpecification =
-                mmsReadRequest.getVariableAccessSpecification();
+        VariableAccessSpecification variableAccessSpecification = mmsReadRequest.getVariableAccessSpecification();
 
         if (mmsReadRequest.getSpecificationWithResult() == null
                 || mmsReadRequest.getSpecificationWithResult().value == false) {
@@ -970,8 +965,7 @@ final class ServerAssociation {
                         "handleGetDataValuesRequest: Got an invalid MMS packet");
             }
 
-            List<VariableDefs.SEQUENCE> listOfVariable =
-                    variableAccessSpecification.getListOfVariable().getSEQUENCE();
+            List<VariableDefs.SEQUENCE> listOfVariable = variableAccessSpecification.getListOfVariable().getSEQUENCE();
 
             if (listOfVariable.size() < 1) {
                 throw new ServiceError(
@@ -982,10 +976,10 @@ final class ServerAssociation {
             ListOfAccessResult listOfAccessResult = new ListOfAccessResult();
             List<AccessResult> accessResults = listOfAccessResult.getAccessResult();
 
-
             synchronized (serverModel) {
                 for (VariableDefs.SEQUENCE variableDef : listOfVariable) {
-                    String itemName = variableDef.getVariableSpecification().getName().getDomainSpecific().getItemID().toString();
+                    String itemName = variableDef.getVariableSpecification().getName().getDomainSpecific().getItemID()
+                            .toString();
                     int level = StrUtil.count(itemName, '$');
                     if (level == 1) {
                         List<FcModelNode> modelNodeList = serverModel.getNodeFromParentVariableDef(variableDef);
@@ -1043,8 +1037,7 @@ final class ServerAssociation {
         } else {
             logger.debug("Got a GetDataSetValues request.");
 
-            String dataSetReference =
-                    convertToDataSetReference(variableAccessSpecification.getVariableListName());
+            String dataSetReference = convertToDataSetReference(variableAccessSpecification.getVariableListName());
 
             if (dataSetReference == null) {
                 throw new ServiceError(
@@ -1094,8 +1087,7 @@ final class ServerAssociation {
         if (modelNode.getFc() == Fc.CO && modelNode.getName().equals("SBO")) {
             // if (modelNode.getName().equals("SBO")) {
             FcModelNode cdcParent = (FcModelNode) modelNode.getParent();
-            ModelNode ctlModelNode =
-                    serverModel.findModelNode(cdcParent.getReference(), Fc.CF).getChild("ctlModel");
+            ModelNode ctlModelNode = serverModel.findModelNode(cdcParent.getReference(), Fc.CF).getChild("ctlModel");
             if (ctlModelNode == null
                     || !(ctlModelNode instanceof BdaInt8)
                     || ((BdaInt8) ctlModelNode).getValue() != 2) {
@@ -1118,7 +1110,8 @@ final class ServerAssociation {
 
             // }
             // else {
-            // logger.warn("A client tried to read a control variable other than SBO. This is not
+            // logger.warn("A client tried to read a control variable other than SBO. This
+            // is not
             // allowed.");
             // // 3 indicates error "object_access_denied"
             // return new AccessResult(new BerInteger(3L), null);
@@ -1141,8 +1134,7 @@ final class ServerAssociation {
     private WriteResponse handleSetDataValuesRequest(WriteRequest mmsWriteRequest)
             throws ServiceError {
 
-        VariableAccessSpecification variableAccessSpecification =
-                mmsWriteRequest.getVariableAccessSpecification();
+        VariableAccessSpecification variableAccessSpecification = mmsWriteRequest.getVariableAccessSpecification();
 
         List<Data> listOfData = mmsWriteRequest.getListOfData().getData();
 
@@ -1152,8 +1144,7 @@ final class ServerAssociation {
         if (variableAccessSpecification.getListOfVariable() != null) {
             logger.debug("Got a SetDataValues request.");
 
-            List<VariableDefs.SEQUENCE> listOfVariable =
-                    variableAccessSpecification.getListOfVariable().getSEQUENCE();
+            List<VariableDefs.SEQUENCE> listOfVariable = variableAccessSpecification.getListOfVariable().getSEQUENCE();
 
             if (listOfVariable.size() < 1
                     || listOfData.size() < 1
@@ -1194,8 +1185,7 @@ final class ServerAssociation {
         } else if (variableAccessSpecification.getVariableListName() != null) {
             logger.debug("Got a SetDataSetValues request.");
 
-            String dataSetRef =
-                    convertToDataSetReference(variableAccessSpecification.getVariableListName());
+            String dataSetRef = convertToDataSetReference(variableAccessSpecification.getVariableListName());
 
             // TODO handle non-persisten DataSets too
 
@@ -1318,27 +1308,32 @@ final class ServerAssociation {
         }
     }
 
-    // private WriteResponse.SubChoice operate(FcModelNode modelNode, Data mmsData) {
+    // private WriteResponse.SubChoice operate(FcModelNode modelNode, Data mmsData)
+    // {
     // FcModelNode fcModelNodeCopy = (FcModelNode) modelNode.copy();
     // try {
     // fcModelNodeCopy.setValueFromMmsDataObj(mmsData);
     // } catch (ServiceError e) {
     // logger.warn("SetDataValues failed because of data missmatch.", e);
-    // return new WriteResponse.SubChoice(new BerInteger(serviceErrorToMmsError(e)), null);
+    // return new WriteResponse.SubChoice(new BerInteger(serviceErrorToMmsError(e)),
+    // null);
     // }
     //
     // // TODO timeactivate operate
     //
-    // BasicDataAttribute ctlValBda = (BasicDataAttribute) fcModelNodeCopy.getChild("ctlVal");
+    // BasicDataAttribute ctlValBda = (BasicDataAttribute)
+    // fcModelNodeCopy.getChild("ctlVal");
     // List<BasicDataAttribute> bdas = new ArrayList<BasicDataAttribute>(1);
     // bdas.add(ctlValBda);
     // List<ServiceError> serviceErrors;
     // try {
     // serviceErrors = serverSap.serverEventListener.write(bdas);
     // } catch (ServiceError e) {
-    // return new WriteResponse.SubChoice(new BerInteger(serviceErrorToMmsError(e)), null);
+    // return new WriteResponse.SubChoice(new BerInteger(serviceErrorToMmsError(e)),
+    // null);
     // }
-    // if (serviceErrors != null && serviceErrors.size() == bdas.size() && serviceErrors.get(1) !=
+    // if (serviceErrors != null && serviceErrors.size() == bdas.size() &&
+    // serviceErrors.get(1) !=
     // null) {
     // return new WriteResponse.SubChoice(new
     // BerInteger(serviceErrorToMmsError(serviceErrors.get(1))), null);
@@ -1367,8 +1362,8 @@ final class ServerAssociation {
                 while (!cdcParent.getName().equals("Oper")) {
                     cdcParent = (FcModelNode) cdcParent.getParent();
                 }
-                ModelNode ctlModelNode =
-                        serverModel.findModelNode(cdcParent.getParent().getReference(), Fc.CF).getChild("ctlModel");
+                ModelNode ctlModelNode = serverModel.findModelNode(cdcParent.getParent().getReference(), Fc.CF)
+                        .getChild("ctlModel");
                 if (ctlModelNode == null || !(ctlModelNode instanceof BdaInt8)) {
                     logger.warn("Operatring controle DO failed because ctlModel is not set.");
                     // 3 indicates error "object_access_denied"
@@ -1497,8 +1492,7 @@ final class ServerAssociation {
 
                 } else if (nodeName.equals("DatSet")) {
                     if ((urcb.reserved == null || urcb.reserved == this) && !urcb.enabled) {
-                        String dataSetRef =
-                                ((BdaVisibleString) fcModelNodeCopy).getStringValue().replace('$', '.');
+                        String dataSetRef = ((BdaVisibleString) fcModelNodeCopy).getStringValue().replace('$', '.');
                         if (dataSetRef.isEmpty()) {
                             urcb.dataSet = null;
                             ((BasicDataAttribute) modelNode).setValueFrom((BasicDataAttribute) fcModelNodeCopy);
@@ -1691,8 +1685,7 @@ final class ServerAssociation {
             listOfVariable.add(member.getMmsVariableDef());
         }
 
-        GetNamedVariableListAttributesResponse getNamedVariableListAttributesResponse =
-                new GetNamedVariableListAttributesResponse();
+        GetNamedVariableListAttributesResponse getNamedVariableListAttributesResponse = new GetNamedVariableListAttributesResponse();
         getNamedVariableListAttributesResponse.setListOfVariable(variableDefs);
         getNamedVariableListAttributesResponse.setMmsDeletable(new BerBoolean(dataSet.isDeletable()));
 
@@ -1701,16 +1694,14 @@ final class ServerAssociation {
 
     private DefineNamedVariableListResponse handleCreateDataSetRequest(
             DefineNamedVariableListRequest mmsDefineNamedVariableListRequest) throws ServiceError {
-        String dataSetReference =
-                convertToDataSetReference(mmsDefineNamedVariableListRequest.getVariableListName());
+        String dataSetReference = convertToDataSetReference(mmsDefineNamedVariableListRequest.getVariableListName());
         if (dataSetReference == null) {
             throw new ServiceError(
                     ServiceError.PARAMETER_VALUE_INCONSISTENT,
                     "handleCreateDataSetRequest: invalid MMS request (No DataSet Name Specified)");
         }
 
-        List<VariableDefs.SEQUENCE> nameList =
-                mmsDefineNamedVariableListRequest.getListOfVariable().getSEQUENCE();
+        List<VariableDefs.SEQUENCE> nameList = mmsDefineNamedVariableListRequest.getListOfVariable().getSEQUENCE();
 
         List<FcModelNode> dataSetMembers = new ArrayList<>(nameList.size());
 
@@ -1735,12 +1726,10 @@ final class ServerAssociation {
 
     private DeleteNamedVariableListResponse handleDeleteDataSetRequest(
             DeleteNamedVariableListRequest mmsDelNamVarListReq) throws ServiceError {
-        String dataSetReference =
-                convertToDataSetReference(
+        String dataSetReference = convertToDataSetReference(
                 mmsDelNamVarListReq.getListOfVariableListName().getObjectName().get(0));
 
-        DeleteNamedVariableListResponse deleteNamedVariableListResponse =
-                new DeleteNamedVariableListResponse();
+        DeleteNamedVariableListResponse deleteNamedVariableListResponse = new DeleteNamedVariableListResponse();
 
         if (dataSetReference.startsWith("@")) {
             if (nonPersistentDataSets.remove(dataSetReference) == null) {
