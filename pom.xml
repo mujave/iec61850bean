@@ -6,7 +6,7 @@
 
     <groupId>com.github.mujave</groupId>
     <artifactId>iec61850bean</artifactId>
-    <version>1.9.1.10</version>
+    <version>1.9.1.11</version>
 
     <name>${project.groupId}:${project.artifactId}</name>
     <description>IEC61850bean is a Java library implementing the IEC 61850 MMS communication standard for clients and servers.</description>
@@ -75,7 +75,6 @@
         </dependency>
     </dependencies>
     <build>
-        <sourceDirectory>src/main</sourceDirectory>
         <plugins>
             <!--   central发布插件    -->
             <plugin>
@@ -120,12 +119,15 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.6.3</version>
-                <configuration>
-                    <excludes>
-                        <exclude>src/main/java-gen/**/*</exclude>
-                    </excludes>
-                </configuration>
+                <version>3.3.1</version>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

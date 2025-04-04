@@ -37,7 +37,6 @@ import com.beanit.iec61850bean.internal.mms.asn1.TypeDescription.Structure.Compo
 import com.beanit.josistack.AcseAssociation;
 import com.beanit.josistack.ByteBufferInputStream;
 import com.beanit.josistack.DecodingException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -446,13 +445,13 @@ final class ServerAssociation {
                         for (File tmp : subFiles) {
                             if (tmp.isDirectory()) {
                                 subDirectoryNames.add(tmp.getName() + "/");
+                            }else{
+                                subFileNames.add(tmp.getName());
                             }
                         }
                     }
                 }
             }
-            //读取目录下的文件
-            subFileNames = FileUtil.listFileNames(parentPath + path);
         } catch (IORuntimeException e) {
             logger.error("get fileDirectory error", e);
             throw new ServiceError(ServiceError.FILE_NONE_EXISTENT,
