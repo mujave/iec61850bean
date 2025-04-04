@@ -16,6 +16,7 @@ package com.beanit.iec61850bean;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.io.IORuntimeException;
+import cn.hutool.core.util.ArrayUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import com.beanit.asn1bean.ber.ReverseByteArrayOutputStream;
@@ -368,7 +369,7 @@ final class ServerAssociation {
         return response;
     }
 
-    private FileReadResponse handleFileReadRequest(FileReadRequest request) {
+    private FileReadResponse handleFileReadRequest(FileReadRequest request) throws ServiceError {
         Long frmsId = request.value.longValue();
         if (!fileReadCache.containsKey(frmsId)) {
             logger.error(" read File has Error: readCache not fonut frmsid - {}", frmsId);
@@ -382,7 +383,7 @@ final class ServerAssociation {
         return response;
     }
 
-    private FileOpenResponse handleFileOpenRequest(FileOpenRequest request) {
+    private FileOpenResponse handleFileOpenRequest(FileOpenRequest request) throws ServiceError {
         FileName fileName = request.getFileName();
         FileOpenResponse fileOpenResponse = new FileOpenResponse();
 
@@ -415,7 +416,7 @@ final class ServerAssociation {
      *
      * @author mujave
      */
-    private FileDirectoryResponse handleFileDirectoryRequest(FileDirectoryRequest request) {
+    private FileDirectoryResponse handleFileDirectoryRequest(FileDirectoryRequest request) throws ServiceError {
         FileDirectoryResponse response = new FileDirectoryResponse();
 
         FileDirectoryResponse.ListOfDirectoryEntry directoryEntry = new FileDirectoryResponse.ListOfDirectoryEntry();
@@ -433,17 +434,36 @@ final class ServerAssociation {
         if (path.isEmpty()) {
             path = File.separator;
         }
-        List<String> files = new ArrayList<>();
+        List<String> subFileNames = new ArrayList<>();
+        List<String> subDirectoryNames = new ArrayList<>();
         try {
-            files = FileUtil.listFileNames(parentPath + path);
+            //读取文件下的子目录
+            if (serverSap.isReportFileDirectory()) {
+                File file = FileUtil.file(parentPath, path);
+                if (file.isDirectory()) {
+                    File[] subFiles = file.listFiles();
+                    if (ArrayUtil.isNotEmpty(subFiles)) {
+                        for (File tmp : subFiles) {
+                            if (tmp.isDirectory()) {
+                                subDirectoryNames.add(tmp.getName() + "/");
+                            }
+                        }
+                    }
+                }
+            }
+            //读取目录下的文件
+            subFileNames = FileUtil.listFileNames(parentPath + path);
         } catch (IORuntimeException e) {
             logger.error("get fileDirectory error", e);
             throw new ServiceError(ServiceError.FILE_NONE_EXISTENT,
                     "file is not exists.");
         }
-        files = files.stream().sorted(Comparator.comparing(String::length).thenComparing(String::compareTo))
+        subFileNames = subFileNames.stream().sorted(Comparator.comparing(String::length).thenComparing(String::compareTo))
                 .collect(Collectors.toList());
-        for (String name : files) {
+        subDirectoryNames = subDirectoryNames.stream().sorted(Comparator.comparing(String::length).thenComparing(String::compareTo))
+                .collect(Collectors.toList());
+        subFileNames.addAll(subDirectoryNames);
+        for (String name : subFileNames) {
             if (insertRef) {
                 if (directoryEntryList.size() == proposedMaxGetNameResponseLength) {
                     moreFollows = true;
@@ -806,12 +826,12 @@ final class ServerAssociation {
                                     ServiceError.INSTANCE_NOT_AVAILABLE,
                                     "GetVariableAccessAttributes (GetDataDefinition): no object with domainId "
                                             + getVariableAccessAttributesRequest
-                                                    .getName()
-                                                    .getDomainSpecific()
-                                                    .getDomainID()
+                                            .getName()
+                                            .getDomainSpecific()
+                                            .getDomainID()
                                             + " and ItemID "
                                             + getVariableAccessAttributesRequest.getName().getDomainSpecific()
-                                                    .getItemID()
+                                            .getItemID()
                                             + " was found.");
                         }
                         index1 = index2;

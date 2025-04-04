@@ -50,7 +50,8 @@ public class FileServerTest implements ClientEventListener {
 
     private void startServer() throws SclParseException, IOException {
         serverSap = new ServerSap(PORT, 0, null, SclParser.parse(ICD_FILE).get(0), null);
-        //serverSap.setFileServiceParentPath("D:\\codeSpeace\\test"); 
+        //serverSap.setFileServiceParentPath("D:\\codeSpeace\\test");
+        //serverSap.setReportFileDirectory(false);
         this.serverSap.startListening(new ServerEventListener() {
             @Override
             public List<ServiceError> write(List<BasicDataAttribute> arg0) {

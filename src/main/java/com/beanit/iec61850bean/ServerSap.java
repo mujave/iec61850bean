@@ -39,8 +39,7 @@ public final class ServerSap {
     private static final int MAXIMUM_MMS_PDU_SIZE = 65000;
     final ServerModel serverModel;
     final List<ServerAssociation> associations = new ArrayList<>();
-    byte[] servicesSupportedCalled =
-            new byte[]{(byte) 0xee, 0x1c, 0, 0, 0x04, 0x08, 0, 0, 0x79, (byte) 0xef, 0x18};
+    byte[] servicesSupportedCalled = new byte[]{(byte) 0xee, 0x1c, 0, 0, 0x04, 0x08, 0, 0, 0x79, (byte) 0xef, 0x18};
     byte[] cbbBitString = {(byte) 0xfb, 0x00};
     ServerEventListener serverEventListener;
     Timer timer;
@@ -56,6 +55,7 @@ public final class ServerSap {
     private InetAddress bindAddr = null;
     private ServerSocketFactory serverSocketFactory = null;
     private String fileServiceParentPath = System.getProperty("user.dir");
+    private boolean reportFileDirectory = true;
     /**
      * 客户端读取目录时的列表最大长度
      */
@@ -73,12 +73,7 @@ public final class ServerSap {
      * @param serverSocketFactory the factory class to generate the ServerSocket. Could be used to
      *                            create SSLServerSockets. null = default
      */
-    public ServerSap(
-            int port,
-            int backlog,
-            InetAddress bindAddr,
-            ServerModel serverModel,
-            ServerSocketFactory serverSocketFactory) {
+    public ServerSap(int port, int backlog, InetAddress bindAddr, ServerModel serverModel, ServerSocketFactory serverSocketFactory) {
         this.port = port;
         this.backlog = backlog;
         this.bindAddr = bindAddr;
@@ -270,14 +265,30 @@ public final class ServerSap {
         servicesSupportedCalled = services;
     }
 
-    
-
     public String getFileServiceParentPath() {
         return fileServiceParentPath;
     }
 
+    /**
+     * 设置文件服务的根目录
+     *
+     * @param fileServiceParentPath
+     */
     public void setFileServiceParentPath(String fileServiceParentPath) {
         this.fileServiceParentPath = fileServiceParentPath;
+    }
+
+    public boolean isReportFileDirectory() {
+        return reportFileDirectory;
+    }
+
+    /**
+     * 文件服务在读取目录属性时，是否上报子目录
+     *
+     * @param reportFileDirectory
+     */
+    public void setReportFileDirectory(boolean reportFileDirectory) {
+        this.reportFileDirectory = reportFileDirectory;
     }
 
     /**
@@ -292,8 +303,7 @@ public final class ServerSap {
         if (serverSocketFactory == null) {
             serverSocketFactory = ServerSocketFactory.getDefault();
         }
-        acseSap =
-                new ServerAcseSap(port, backlog, bindAddr, new AcseListener(this), serverSocketFactory);
+        acseSap = new ServerAcseSap(port, backlog, bindAddr, new AcseListener(this), serverSocketFactory);
         acseSap.serverTSap.setMaxConnections(maxAssociations);
         this.serverEventListener = serverEventListener;
         listening = true;
