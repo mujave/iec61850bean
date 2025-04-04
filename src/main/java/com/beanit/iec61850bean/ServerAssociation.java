@@ -397,8 +397,7 @@ final class ServerAssociation {
         FileOpenResponse fileOpenResponse = new FileOpenResponse();
 
         if (fileName.getBerGraphicString() != null) {
-            String filePath = serverSap.getFileServiceParentPath() + fileName.getBerGraphicString().get(0).toString();
-            File file = FileUtil.file(filePath);
+            File file = FileUtil.file(serverSap.getFileServiceParentPath(),fileName.getBerGraphicString().get(0).toString());
             if (file.exists()) {
                 long frmsId = -1L;
                 do{
@@ -436,6 +435,9 @@ final class ServerAssociation {
         int proposedMaxGetNameResponseLength = serverSap.getProposedMaxGetNameResponseLength();
         String parentPath = serverSap.getFileServiceParentPath();
         String path = fileSpecification.getBerGraphicString().get(0).toString();
+        if (path.isEmpty()){
+            path = File.separator;
+        }
         List<String> files = new ArrayList<>();
         try{
             files = FileUtil.listFileNames(parentPath + path);
