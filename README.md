@@ -9,6 +9,16 @@
 - [ ] 服务端支持文件删除、文件写入
 - [ ] GUI部分界面、主要方法Javadoc的汉化
 
+
+```xml
+<!-- 最新食用方法 -->
+<dependency>
+    <groupId>com.github.mujave</groupId>
+    <artifactId>iec61850bean</artifactId>
+    <version>1.9.1.11</version>
+</dependency>
+```
+
 如果大家如有参与建设的想法或者对于61850协议需要支持的功能，欢迎提交PR和Issues.
 
 联系方式：mr.zhangyu.me@qq.com
