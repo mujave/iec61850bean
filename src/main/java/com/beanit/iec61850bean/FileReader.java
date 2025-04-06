@@ -13,10 +13,13 @@ public class FileReader {
 
     private File file;
 
+    private String readName;
+
     private long offset = 0;
 
-    public FileReader(File file) {
+    public FileReader(File file,String readName) {
         this.file = file;
+        this.readName = readName;
     }
 
     public byte[] read(int length) {
@@ -39,4 +42,7 @@ public class FileReader {
         return offset >= file.length();
     }
 
+    public String getReadName() {
+        return readName;
+    }
 }

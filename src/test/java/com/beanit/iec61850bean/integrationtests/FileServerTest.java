@@ -1,29 +1,15 @@
 package com.beanit.iec61850bean.integrationtests;
 
-import java.io.IOException;
-import java.net.InetAddress;
-import java.util.List;
-
+import cn.hutool.core.date.DateUtil;
+import com.beanit.iec61850bean.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.beanit.iec61850bean.BasicDataAttribute;
-import com.beanit.iec61850bean.ClientAssociation;
-import com.beanit.iec61850bean.ClientEventListener;
-import com.beanit.iec61850bean.ClientSap;
-import com.beanit.iec61850bean.FileInformation;
-import com.beanit.iec61850bean.GetFileListener;
-import com.beanit.iec61850bean.Report;
-import com.beanit.iec61850bean.SclParseException;
-import com.beanit.iec61850bean.SclParser;
-import com.beanit.iec61850bean.ServerEventListener;
-import com.beanit.iec61850bean.ServerModel;
-import com.beanit.iec61850bean.ServerSap;
-import com.beanit.iec61850bean.ServiceError;
- 
-import cn.hutool.core.date.DateUtil;
+import java.io.IOException;
+import java.net.InetAddress;
+import java.util.List;
 public class FileServerTest implements ClientEventListener {
 
     private static final int PORT = 102;
@@ -67,7 +53,7 @@ public class FileServerTest implements ClientEventListener {
 
     @Test
     public void testGetFileDirectory() throws IOException, ServiceError, InterruptedException {
-        List<FileInformation> fileDirectory = this.clientAssociation.getFileDirectory("/");
+        List<FileInformation> fileDirectory = this.clientAssociation.getFileDirectory("COMTRADE");
         int i = 0;
         for (FileInformation fileInformation : fileDirectory) {
             log.info("{} - {} sizeof: {} {}", ++i, fileInformation.getFilename(), fileInformation.getFileSize(),
@@ -86,6 +72,11 @@ public class FileServerTest implements ClientEventListener {
                 return moreFollows;
             }
         });
+    }
+
+    @Test
+    public void testDeleteFile() throws ServiceError, IOException {
+        this.clientAssociation.deleteFile("0312B12000042A3840001_001_01_20250404220705.dat");
     }
 
     @Override

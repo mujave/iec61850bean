@@ -4,9 +4,7 @@
 
 package com.beanit.iec61850bean.internal.mms.asn1;
 
-import com.beanit.asn1bean.ber.types.BerNull;
-
-public class FileDeleteResponse extends BerNull {
+public class FileDeleteResponse extends FileName {
 
     private static final long serialVersionUID = 1L;
 

@@ -32,4 +32,13 @@ public interface ServerEventListener {
     List<ServiceError> write(List<BasicDataAttribute> bdas);
 
     void serverStoppedListening(ServerSap serverSAP);
+
+    /**
+     * 删除文件事件，默认支持删除所有文件
+     * @param fileName 客户端想要删除的文件名字(相对于文件服务根路径的文件名称)
+     * @return 0:可以删除 other:不允许删除
+     */
+    default int fileDelete(String fileName){
+        return 0;
+    }
 }

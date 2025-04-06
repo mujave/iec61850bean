@@ -293,11 +293,8 @@ final class ServerAssociation {
                     confirmedServiceResponse.setRead(response);
                 } else if (confirmedServiceRequest.getWrite() != null) {
                     logger.debug("Got a Write request");
-
                     WriteResponse response = handleSetDataValuesRequest(confirmedServiceRequest.getWrite());
-
                     confirmedServiceResponse.setWrite(response);
-
                 }
                 // for Data Sets
                 else if (confirmedServiceRequest.getDefineNamedVariableList() != null) {
@@ -334,6 +331,10 @@ final class ServerAssociation {
                     logger.debug("Got a FileClose request");
                     FileCloseResponse fileCloseRequest = handleFileCloseRequest(confirmedServiceRequest.getFileClose());
                     confirmedServiceResponse.setFileClose(fileCloseRequest);
+                } else if (confirmedServiceRequest.getFileDelete() != null) {
+                    logger.info("Got a FileDelete request");
+                    FileDeleteResponse fileDeleteResponse = handleFileDeleteRequest(confirmedServiceRequest.getFileDelete());
+                    confirmedServiceResponse.setFileDelete(fileDeleteResponse);
                 } else {
                     throw new ServiceError(
                             ServiceError.FAILED_DUE_TO_COMMUNICATIONS_CONSTRAINT,
@@ -359,8 +360,46 @@ final class ServerAssociation {
         }
     }
 
+    /**
+     * 文件删除请求
+     * @param request 一个携带要删除的文件名称的请求
+     * @return 删除成功的响应
+     * @throws ServiceError 文件不存在|文件正在被读取(正忙)|服务端不允许删除
+     */
+    private FileDeleteResponse handleFileDeleteRequest(FileDeleteRequest request) throws ServiceError {
+        String fileName = request.getBerGraphicString().get(0).toString();
+        FileDeleteResponse fileDeleteResponse = new FileDeleteResponse();
+        fileDeleteResponse.getBerGraphicString().add(new BerGraphicString(fileName.getBytes(UTF_8)));
+        //判定能不能删除文件
+        File file = FileUtil.file(this.serverSap.getFileServiceParentPath(), fileName);
+        if (!file.exists()) {
+            throw new ServiceError(ServiceError.INSTANCE_NOT_AVAILABLE, "file not existsent");
+        }
+        Collection<FileReader> readingFile = fileReadCache.values();
+        for (FileReader fileReader : readingFile) {
+            if (fileReader.getReadName().equals(fileName)) {
+                //正在被读取的文件里面有该被删除的文件
+                throw new ServiceError(ServiceError.INSTANCE_LOCKED_BY_OTHER_CLIENT, "file busy");
+            }
+        }
+        // 通知服务端的回调，获取是否能被删除
+        if (serverSap.serverEventListener != null) {
+            if (serverSap.serverEventListener.fileDelete(fileName) != 0) {
+                // 删除文件被拒绝
+                throw new ServiceError(ServiceError.ACCESS_VIOLATION, "file access denied");
+            }
+        }
+        FileUtil.del(file);
+        return fileDeleteResponse;
+    }
+
     private Map<Long, FileReader> fileReadCache = new HashMap<>();
 
+    /**
+     * 文件关闭请求
+     * @param request 一个携带文件读取会话ID(frmsid)的请求
+     * @return
+     */
     private FileCloseResponse handleFileCloseRequest(FileCloseRequest request) {
         FileCloseResponse response = new FileCloseResponse();
         Long frmsId = request.value.longValue();
@@ -368,34 +407,47 @@ final class ServerAssociation {
         return response;
     }
 
+    /**
+     * 文件内容读取请求
+     * @param request 一个携带文件读取会话ID(frmsid)的请求
+     * @return
+     * @throws ServiceError 会话id不存在
+     */
     private FileReadResponse handleFileReadRequest(FileReadRequest request) throws ServiceError {
         Long frmsId = request.value.longValue();
         if (!fileReadCache.containsKey(frmsId)) {
             logger.error(" read File has Error: readCache not fonut frmsid - {}", frmsId);
-            throw new ServiceError(ServiceError.INSTANCE_NOT_AVAILABLE,
+            throw new ServiceError(ServiceError.PARAMETER_VALUE_INCONSISTENT,
                     "frmsid is an illegal value..");
         }
         FileReader fileReader = fileReadCache.get(frmsId);
         FileReadResponse response = new FileReadResponse();
         response.setFileData(new BerGraphicString(fileReader.read(negotiatedMaxPduSize)));
+        //获取是否文件已经读取到了末尾
         response.setMoreFollows(new BerBoolean(!fileReader.isEndOfFile()));
         return response;
     }
 
+    /**
+     * 文件打开请求
+     * @param request 一个包含文件名称的请求
+     * @return 一个携带文件读取会话ID(frmsid)的响应
+     * @throws ServiceError 文件不存在
+     */
     private FileOpenResponse handleFileOpenRequest(FileOpenRequest request) throws ServiceError {
         FileName fileName = request.getFileName();
         FileOpenResponse fileOpenResponse = new FileOpenResponse();
 
         if (fileName.getBerGraphicString() != null) {
-            File file = FileUtil.file(serverSap.getFileServiceParentPath(),
-                    fileName.getBerGraphicString().get(0).toString());
+            String readFileName = fileName.getBerGraphicString().get(0).toString();
+            File file = FileUtil.file(serverSap.getFileServiceParentPath(), readFileName);
             if (file.exists()) {
                 long frmsId = -1L;
                 do {
                     frmsId = RandomUtil.randomLong(0, Long.MAX_VALUE);
                 } while (fileReadCache.containsKey(frmsId));
                 fileOpenResponse.setFrsmID(new Integer32(frmsId));
-                fileReadCache.put(frmsId, new FileReader(file));
+                fileReadCache.put(frmsId, new FileReader(file, readFileName));
                 FileAttributes fileAttributes = new FileAttributes();
                 fileAttributes.setSizeOfFile(new Unsigned32(file.length()));
                 fileAttributes.setLastModified(
@@ -445,7 +497,7 @@ final class ServerAssociation {
                         for (File tmp : subFiles) {
                             if (tmp.isDirectory()) {
                                 subDirectoryNames.add(tmp.getName() + "/");
-                            }else{
+                            } else {
                                 subFileNames.add(tmp.getName());
                             }
                         }
