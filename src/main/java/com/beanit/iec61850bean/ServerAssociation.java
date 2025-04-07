@@ -313,7 +313,7 @@ final class ServerAssociation {
                             confirmedServiceRequest.getDeleteNamedVariableList());
                     confirmedServiceResponse.setDeleteNamedVariableList(response);
                 }
-                // for file service
+                // for file service 
                 else if (confirmedServiceRequest.getFileDirectory() != null) {
                     logger.debug("Got a FileDirectory request");
                     FileDirectoryResponse response = handleFileDirectoryRequest(
