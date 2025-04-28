@@ -14,13 +14,18 @@
 package com.beanit.iec61850bean.integrationtests;
 
 import com.beanit.iec61850bean.*;
+
+import cn.hutool.poi.excel.cell.CellLocation;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.omg.PortableInterceptor.SYSTEM_EXCEPTION;
 
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -51,6 +56,17 @@ public class ReportingTest implements ClientEventListener {
         this.clientAssociation =
                 clientSap.associate(InetAddress.getByName("localhost"), PORT, "", this);
         this.clientModel = this.clientAssociation.retrieveModel();
+        Collection<Urcb> urcb = clientModel.getUrcbs();
+        for (Urcb u : urcb) {
+            //从模型里面读取最新状态
+            clientAssociation.getRcbValues(u);
+            System.out.println("Urcb enable?: " + u.getRptEna()); 
+            if (!u.getRptEna().getValue()) {
+                System.out.println(u.getRptId().getName());
+                clientAssociation.enableReporting(u);
+            }
+            
+        }
     }
 
     private void startServer() throws SclParseException, IOException {

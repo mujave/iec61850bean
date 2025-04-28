@@ -1,0 +1,369 @@
+<?xml version="1.0" encoding="utf-8"?>
+<SCL>
+    <Header id="GX_ICD" nameStructure="IEDName" version="1.1">
+        <History>
+            <Hitem revision="0" version="1.0" what="XXXXXX系统ICD文件" when="2015-04-23"/>
+        </History>
+    </Header>
+    <Communication>
+        <SubNetwork name="MMS" type="8-MMS">
+            <ConnectedAP apName="S1" iedName="FK">
+                <Address>
+                    <P type="OSI-AP-Title">1,3,9999,33</P>
+                    <P type="OSI-AE-Qualifier">33</P>
+                    <P type="OSI-PSEL">00 00 00 01</P>
+                    <P type="OSI-SSEL">00 01</P>
+                    <P type="OSI-TSEL">00 01</P>
+                    <P type="IP-SUBNET">255.255.255.0</P>
+                    <P type="IP">192.168.1.21</P>
+                </Address>
+            </ConnectedAP>
+        </SubNetwork>
+    </Communication>
+    <IED configVersion="v1.00" desc="测控装置" manufacturer="XXXX" name="FK" type="DHJC">
+        <Services>
+            <DynAssociation/>
+            <GetDirectory/>
+            <GetDataObjectDefinition/>
+            <DataObjectDirectory/>
+            <GetDataSetValue/>
+            <SetDataSetValue/>
+            <DataSetDirectory/>
+            <ConfDataSet max="16" maxAttributes="512"/>
+            <ReadWrite/>
+            <ConfReportControl max="16"/>
+            <GetCBValues/>
+            <ReportSettings bufTime="Fix" cbName="Conf" datSet="Dyn" intgPd="Dyn" optFields="Dyn" rptID="Dyn" trgOps="Dyn"/>
+            <FileHandling/>
+            <ConfLNs fixLnInst="true" fixPrefix="true"/>
+        </Services>
+        <AccessPoint clock="false" name="S1" desc="MMS访问点">
+            <Server desc="61850" timeout="30">
+                <Authentication/>
+                <LDevice desc="自定义装置" inst="MONT">
+                    <LN0 inst="" lnClass="LLN0" lnType="GEXIN_LLN0">
+                        <DataSet name="ds01Din" desc="遥信单点信息数据集(含可控点)">
+                            <FCDA doName="Ind1" fc="ST" ldInst="MONT" lnClass="GGIO" lnInst="1"/>
+                            <FCDA doName="Ind1" fc="ST" ldInst="MONT" lnClass="GGIO" lnInst="3"/>
+                        </DataSet>
+                        <DataSet name="ds01Ain" desc="遥测状态检测数据集">
+                            <FCDA doName="AnInd1" fc="MX" ldInst="MONT" lnClass="GGIO" lnInst="2"/>
+                            <FCDA doName="AnInd1" fc="MX" ldInst="MONT" lnClass="GGIO" lnInst="4"/>
+                        </DataSet>
+
+                        <ReportControl bufTime="0" buffered="false" confRev="1" datSet="ds01Din" intgPd="30000"
+                                       name="brcb01Din" rptID="MONT/LLN0$BR$brcb01Din">
+                            <TrgOps dchg="true" dupd="false" period="false" qchg="true"/>
+                            <OptFields dataSet="true" entryID="true" reasonCode="true" seqNum="true" timeStamp="true"/>
+                            <RptEnabled max="16"/>
+                        </ReportControl>
+                        <ReportControl bufTime="0" buffered="false" confRev="1" datSet="ds01Ain" intgPd="3000"
+                                       name="brcb01Ain" rptID="MONT/LLN0$BR$brcb01Ain">
+                            <TrgOps dchg="true" dupd="false" period="false" qchg="false"/>
+                            <OptFields dataSet="true" entryID="true" reasonCode="true" seqNum="true" timeStamp="true"/>
+                            <RptEnabled max="16"/>
+                        </ReportControl>
+
+                        <DOI desc="Mode" name="Mod">
+                            <DAI name="stVal">
+                                <Val>on</Val>
+                            </DAI>
+                            <DAI name="ctlModel">
+                                <Val>status-only</Val>
+                            </DAI>
+                        </DOI>
+                        <DOI desc="Behaviour" name="Beh">
+                            <DAI name="stVal">
+                                <Val>on</Val>
+                            </DAI>
+                        </DOI>
+                        <DOI desc="Health" name="Health">
+                            <DAI name="stVal">
+                                <Val>Ok</Val>
+                            </DAI>
+                        </DOI>
+                        <DOI desc="Name Plate" name="NamPlt">
+                            <DAI name="dU">
+                                <Val>Name Plate</Val>
+                            </DAI>
+                            <DAI name="ldNs">
+                                <Val>IEC 61850-7-4:2003</Val>
+                            </DAI>
+                        </DOI>
+                    </LN0>
+                    <LN inst="1" lnClass="LPHD" lnType="GEXIN_LPHD">
+                        <DOI name="Proxy">
+                            <DAI name="stVal">
+                                <Val>0</Val>
+                            </DAI>
+                        </DOI>
+                        <DOI name="PhyHealth">
+                            <DAI name="stVal">
+                                <Val>Ok</Val>
+                            </DAI>
+                        </DOI>
+                        <DOI name="PhyNam">
+                            <DAI name="vendor">
+                                <Val>61850</Val>
+                            </DAI>
+                            <DAI name="hwRev">
+                                <Val>1.00</Val>
+                            </DAI>
+                        </DOI>
+                    </LN>
+                    <LN desc="遥信单点信息点位" inst="1" lnClass="GGIO" lnType="GGIO_SPS">
+                        <DOI desc="110kV配电装置室1#SF6气体探测器告警" name="Ind1">
+                            <DAI name="dU">
+                                <Val>110kV配电装置室1#SF6气体探测器告警</Val>
+                            </DAI>
+                        </DOI>
+                    </LN>
+                    <LN desc="遥测状态检测点位" inst="2" lnClass="GGIO" lnType="GGIO_MV">
+                        <DOI desc="1#温湿度-1#主变室室北面温度值" name="AnInd1">
+                            <DAI name="dU">
+                                <Val>1#温湿度-1#主变室室北面温度值</Val>
+                            </DAI>
+                        </DOI>
+                    </LN>
+                    <LN desc="可控单点信息点位" inst="3" lnClass="GGIO" lnType="GGIO_SPC">
+                        <DOI desc="技防系统主机通讯状态" name="Ind1">
+                            <DAI name="dU">
+                                <Val>技防系统主机通讯状态</Val>
+                            </DAI>
+                            <DAI name="ctlModel">
+                                <Val>direct-with-normal-security</Val>
+                            </DAI>
+                        </DOI>
+                    </LN>
+                    <LN desc="可控模拟量点位" inst="4" lnClass="GGIO" lnType="GGIO_APC">
+                        <DOI desc="3#机房空调温度值" name="AnInd1">
+                            <DAI name="dU">
+                                <Val>3#机房空调温度值</Val>
+                            </DAI>
+                            <DAI name="ctlModel">
+                                <Val>direct-with-normal-security</Val>
+                            </DAI>
+                        </DOI>
+                    </LN>
+                </LDevice>
+            </Server>
+        </AccessPoint>
+    </IED>
+
+    <DataTypeTemplates>
+        <LNodeType id="GEXIN_LLN0" lnClass="LLN0">
+            <DO desc="Mode" name="Mod" type="CSG_INC_Mod"/>
+            <DO desc="Behaviour" name="Beh" type="CSG_INS_Beh"/>
+            <DO desc="Health" name="Health" type="CSG_INS_Health"/>
+            <DO desc="Name Plate" name="NamPlt" type="CSG_LPL_LN0"/>
+        </LNodeType>
+        <LNodeType id="GEXIN_LPHD" lnClass="LPHD">
+            <DO desc="物理装置铭牌" name="PhyNam" type="CSG_DPL"/>
+            <DO desc="物理装置健康状况" name="PhyHealth" type="CSG_INS_Health"/>
+            <DO desc="说明该逻辑节点是否为代理" name="Proxy" type="CSG_SPS"/>
+        </LNodeType>
+        <LNodeType desc="" id="GGIO_SPS" lnClass="GGIO">
+            <DO desc="模式" name="Mod" type="CSG_INC_Mod"/>
+            <DO desc="性能" name="Beh" type="CSG_INS_Beh"/>
+            <DO desc="健康状况" name="Health" type="CSG_INS_Health"/>
+            <DO desc="铭牌" name="NamPlt" type="CSG_LPL"/>
+            <DO desc="110kV配电装置室1#SF6气体探测器告警" name="Ind1" type="CSG_SPS"/>
+        </LNodeType>
+        <LNodeType desc="" id="GGIO_MV" lnClass="GGIO">
+            <DO desc="模式" name="Mod" type="CSG_INC_Mod"/>
+            <DO desc="性能" name="Beh" type="CSG_INS_Beh"/>
+            <DO desc="健康状况" name="Health" type="CSG_INS_Health"/>
+            <DO desc="铭牌" name="NamPlt" type="CSG_LPL"/>
+            <DO desc="1#温湿度-1#主变室室北面温度值" name="AnInd1" type="CSG_MV"/>
+        </LNodeType>
+        <LNodeType desc="" id="GGIO_SPC" lnClass="GGIO">
+            <DO desc="模式" name="Mod" type="CSG_INC_Mod"/>
+            <DO desc="性能" name="Beh" type="CSG_INS_Beh"/>
+            <DO desc="健康状况" name="Health" type="CSG_INS_Health"/>
+            <DO desc="铭牌" name="NamPlt" type="CSG_LPL"/>
+            <DO desc="技防系统主机通讯状态" name="Ind1" type="CSG_SPC"/>
+        </LNodeType>
+        <LNodeType desc="" id="GGIO_APC" lnClass="GGIO">
+            <DO desc="模式" name="Mod" type="CSG_INC_Mod"/>
+            <DO desc="性能" name="Beh" type="CSG_INS_Beh"/>
+            <DO desc="健康状况" name="Health" type="CSG_INS_Health"/>
+            <DO desc="铭牌" name="NamPlt" type="CSG_LPL"/>
+            <DO desc="3#机房空调温度值" name="AnInd1" type="CSG_APC"/>
+        </LNodeType>
+
+        <DOType cdc="SPS" desc="单点状态信息类" id="CSG_SPS">
+            <DA bType="BOOLEAN" dchg="true" fc="ST" name="stVal"/>
+            <DA bType="Quality" fc="ST" name="q" qchg="true"/>
+            <DA bType="Timestamp" fc="ST" name="t"/>
+            <DA bType="Unicode255" fc="DC" name="dU"/>
+        </DOType>
+        <DOType cdc="MV" desc="测量值" id="CSG_MV">
+            <DA bType="Struct" dchg="true" fc="MX" name="mag" type="CSG_AnalogueValue"/>
+            <DA bType="Quality" fc="MX" name="q" qchg="true"/>
+            <DA bType="Timestamp" fc="MX" name="t"/>
+            <DA bType="Struct" fc="CF" name="units" type="CSG_Units"/>
+            <DA bType="Unicode255" fc="DC" name="dU"/>
+        </DOType>
+        <DOType cdc="SPC" desc="可控单点" id="CSG_SPC">
+            <DA bType="Struct" fc="CO" name="SBOw" type="CSG_SBOw_Oper_SDPC"/>
+            <DA bType="Struct" fc="CO" name="Oper" type="CSG_SBOw_Oper_SDPC"/>
+            <DA bType="Struct" fc="CO" name="Cancel" type="CSG_Cancel_SDPC"/>
+            <DA bType="BOOLEAN" dchg="true" fc="ST" name="stVal"/>
+            <DA bType="Quality" fc="ST" name="q" qchg="true"/>
+            <DA bType="Timestamp" fc="ST" name="t"/>
+            <DA bType="Enum" fc="CF" name="ctlModel" type="ctlModel"/>
+            <DA bType="Unicode255" fc="DC" name="dU"/>
+        </DOType>
+        <DOType cdc="APC" desc="可控模拟量类" id="CSG_APC">
+            <DA bType="Struct" fc="CO" name="SBOw" type="CSG_SBOw_Oper_APC"/>
+            <DA bType="Struct" fc="CO" name="Oper" type="CSG_SBOw_Oper_APC"/>
+            <DA bType="Struct" fc="CO" name="Cancel" type="CSG_Cancel_APC"/>
+            <DA bType="Struct" dchg="true" fc="MX" name="stVal" type="CSG_AnalogueValue"/>
+            <DA bType="Quality" fc="ST" name="q" qchg="true"/>
+            <DA bType="Timestamp" fc="ST" name="t"/>
+            <DA bType="Enum" fc="CF" name="ctlModel" type="ctlModel"/>
+            <DA bType="Unicode255" fc="DC" name="dU"/>
+        </DOType>
+        <DOType cdc="INS" desc="整数状态" id="CSG_INS">
+            <DA bType="INT32" dchg="true" fc="ST" name="stVal"/>
+            <DA bType="Quality" fc="ST" name="q" qchg="true"/>
+            <DA bType="Timestamp" fc="ST" name="t"/>
+            <DA bType="Unicode255" fc="DC" name="dU"/>
+        </DOType>
+        <DOType cdc="INS" desc="整数状态类(用于数据对象Beh)" id="CSG_INS_Beh">
+            <DA bType="Enum" dchg="true" fc="ST" name="stVal" type="Beh"/>
+            <DA bType="Quality" fc="ST" name="q" qchg="true"/>
+            <DA bType="Timestamp" fc="ST" name="t"/>
+        </DOType>
+        <DOType cdc="INS" desc="整数状态类(用于数据对象Health)" id="CSG_INS_Health">
+            <DA bType="Enum" dchg="true" fc="ST" name="stVal" type="Health"/>
+            <DA bType="Quality" fc="ST" name="q" qchg="true"/>
+            <DA bType="Timestamp" fc="ST" name="t"/>
+        </DOType>
+        <DOType cdc="INC" desc="可控整数状态(模式)" id="CSG_INC_Mod">
+            <DA bType="Enum" dchg="true" fc="ST" name="stVal" type="Mod"/>
+            <DA bType="Quality" fc="ST" name="q" qchg="true"/>
+            <DA bType="Timestamp" fc="ST" name="t"/>
+            <DA bType="Enum" fc="CF" name="ctlModel" type="ctlModel"/>
+        </DOType>
+        <DOType cdc="LPL" desc="逻辑节点铭牌(LN0)" id="CSG_LPL_LN0">
+            <DA bType="VisString255" fc="DC" name="vendor"/>
+            <DA bType="VisString255" fc="DC" name="swRev"/>
+            <DA bType="VisString255" fc="DC" name="d"/>
+            <DA bType="Unicode255" fc="DC" name="dU"/>
+            <DA bType="VisString255" fc="DC" name="configRev"/>
+            <DA bType="VisString255" fc="EX" name="ldNs"/>
+        </DOType>
+        <DOType cdc="LPL" desc="逻辑节点铭牌" id="CSG_LPL">
+            <DA bType="VisString255" fc="DC" name="vendor"/>
+            <DA bType="VisString255" fc="DC" name="swRev"/>
+            <DA bType="VisString255" fc="DC" name="d"/>
+            <DA bType="Unicode255" fc="DC" name="dU"/>
+        </DOType>
+        <DOType cdc="DPL" desc="设备铭牌" id="CSG_DPL">
+            <DA bType="VisString255" fc="DC" name="vendor"/>
+            <DA bType="VisString255" fc="DC" name="hwRev"/>
+            <DA bType="VisString255" fc="DC" name="swRev"/>
+            <DA bType="VisString255" fc="DC" name="serNum"/>
+            <DA bType="VisString255" fc="DC" name="model"/>
+            <DA bType="VisString255" fc="DC" name="location"/>
+        </DOType>
+
+        <DAType id="CSG_AnalogueValue">
+            <BDA bType="FLOAT32" name="f"/>
+        </DAType>
+
+        <DAType id="CSG_SBOw_Oper_SDPC">
+            <BDA bType="BOOLEAN" name="ctlVal"/>
+            <BDA bType="Struct" name="origin" type="CSG_Originator"/>
+            <BDA bType="INT8U" name="ctlNum"/>
+            <BDA bType="Timestamp" name="T"/>
+            <BDA bType="BOOLEAN" name="Test"/>
+            <BDA bType="Check" name="Check"/>
+        </DAType>
+        <DAType id="CSG_Cancel_SDPC">
+            <BDA bType="BOOLEAN" name="ctlVal"/>
+            <BDA bType="Struct" name="origin" type="CSG_Originator"/>
+            <BDA bType="INT8U" name="ctlNum"/>
+            <BDA bType="Timestamp" name="T"/>
+            <BDA bType="BOOLEAN" name="Test"/>
+            <BDA bType="Check" name="Check"/>
+        </DAType>
+        <DAType id="CSG_SBOw_Oper_APC">
+            <BDA bType="Struct" name="ctlVal" type="CSG_AnalogueValue"/>
+            <BDA bType="Struct" name="origin" type="CSG_Originator"/>
+            <BDA bType="INT8U" name="ctlNum"/>
+            <BDA bType="Timestamp" name="T"/>
+            <BDA bType="BOOLEAN" name="Test"/>
+            <BDA bType="Check" name="Check"/>
+        </DAType>
+        <DAType id="CSG_Cancel_APC">
+            <BDA name="setMag" bType="Struct" type="CSG_AnalogueValue"/>
+            <BDA name="origin" bType="Struct" type="CSG_Originator"/>
+            <BDA name="ctlNum" bType="INT8U"/>
+            <BDA name="T" bType="Timestamp"/>
+            <BDA name="Test" bType="BOOLEAN"/>
+        </DAType>
+
+        <DAType id="CSG_Originator">
+            <BDA bType="Enum" name="orCat" type="orCategory"/>
+            <BDA bType="Octet64" name="orIdent"/>
+        </DAType>
+        <DAType id="CSG_Units">
+            <BDA bType="Enum" name="SIUnit" type="SIUnit"/>
+            <BDA bType="Enum" name="multiplier" type="multiplier"/>
+        </DAType>
+        <EnumType id="ctlModel">
+            <EnumVal ord="0">status-only</EnumVal>
+            <EnumVal ord="1">direct-with-normal-security</EnumVal>
+            <EnumVal ord="2">sbo-with-normal-security</EnumVal>
+            <EnumVal ord="3">direct-with-enhanced-security</EnumVal>
+            <EnumVal ord="4">sbo-with-enhanced-security</EnumVal>
+        </EnumType>
+        <EnumType id="orCategory">
+            <EnumVal ord="0">not-supported</EnumVal>
+            <EnumVal ord="1">bay-control</EnumVal>
+            <EnumVal ord="2">station-control</EnumVal>
+            <EnumVal ord="3">remote-control</EnumVal>
+            <EnumVal ord="4">automatic-bay</EnumVal>
+            <EnumVal ord="5">automatic-station</EnumVal>
+            <EnumVal ord="6">automatic-remote</EnumVal>
+            <EnumVal ord="7">maintenance</EnumVal>
+            <EnumVal ord="8">process</EnumVal>
+        </EnumType>
+
+        <EnumType id="multiplier">
+            <EnumVal ord="1">y</EnumVal>
+            <EnumVal ord="2">z</EnumVal>
+        </EnumType>
+        <EnumType id="SIUnit">
+            <EnumVal ord="1">m</EnumVal>
+            <EnumVal ord="2">kg</EnumVal>
+        </EnumType>
+        <EnumType id="Dbpos">
+            <EnumVal ord="0">intermediate</EnumVal>
+            <EnumVal ord="1">off</EnumVal>
+            <EnumVal ord="2">on</EnumVal>
+            <EnumVal ord="3">bad</EnumVal>
+        </EnumType>
+        <EnumType id="Beh">
+            <EnumVal ord="1">on</EnumVal>
+            <EnumVal ord="2">blocked</EnumVal>
+            <EnumVal ord="3">test</EnumVal>
+            <EnumVal ord="4">test/blocked</EnumVal>
+            <EnumVal ord="5">off</EnumVal>
+        </EnumType>
+        <EnumType id="Mod">
+            <EnumVal ord="1">on</EnumVal>
+            <EnumVal ord="2">blocked</EnumVal>
+            <EnumVal ord="3">test</EnumVal>
+            <EnumVal ord="4">test/blocked</EnumVal>
+            <EnumVal ord="5">off</EnumVal>
+        </EnumType>
+        <EnumType id="Health">
+            <EnumVal ord="1">Ok</EnumVal>
+            <EnumVal ord="2">Warning</EnumVal>
+            <EnumVal ord="3">Alarm</EnumVal>
+        </EnumType>
+    </DataTypeTemplates>
+</SCL>

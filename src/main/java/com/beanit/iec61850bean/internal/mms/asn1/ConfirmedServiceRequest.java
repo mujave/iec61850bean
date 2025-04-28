@@ -31,6 +31,7 @@ public class ConfirmedServiceRequest implements BerType, Serializable {
     private FileCloseRequest fileClose = null;
     private FileDeleteRequest fileDelete = null;
     private FileDirectoryRequest fileDirectory = null;
+    private FileObtainRequest fileObtain = null;
 
     public ConfirmedServiceRequest() {
     }
@@ -137,6 +138,14 @@ public class ConfirmedServiceRequest implements BerType, Serializable {
         this.fileDirectory = fileDirectory;
     }
 
+    public FileObtainRequest getFileObtain() {
+        return fileObtain;
+    }
+
+    public void setFileObtain(FileObtainRequest fileObtain) {
+        this.fileObtain = fileObtain;
+    }
+
     @Override
     public int encode(OutputStream reverseOS) throws IOException {
 
@@ -188,6 +197,15 @@ public class ConfirmedServiceRequest implements BerType, Serializable {
             codeLength += fileOpen.encode(reverseOS, false);
             // write tag: CONTEXT_CLASS, CONSTRUCTED, 72
             reverseOS.write(0x48);
+            reverseOS.write(0xBF);
+            codeLength += 2;
+            return codeLength;
+        }
+
+        if (fileObtain != null) {
+            codeLength += fileObtain.encode(reverseOS, false);
+            // write tag: CONTEXT_CLASS, CONSTRUCTED, 46
+            reverseOS.write(0x2E);
             reverseOS.write(0xBF);
             codeLength += 2;
             return codeLength;
@@ -319,6 +337,12 @@ public class ConfirmedServiceRequest implements BerType, Serializable {
             return tlvByteCount;
         }
 
+        if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.CONSTRUCTED, 46)) {
+            fileObtain = new FileObtainRequest();
+            tlvByteCount += fileObtain.decode(is, false);
+            return tlvByteCount;
+        }
+
         if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.CONSTRUCTED, 72)) {
             fileOpen = new FileOpenRequest();
             tlvByteCount += fileOpen.decode(is, false);
@@ -410,6 +434,12 @@ public class ConfirmedServiceRequest implements BerType, Serializable {
         if (deleteNamedVariableList != null) {
             sb.append("deleteNamedVariableList: ");
             deleteNamedVariableList.appendAsString(sb, indentLevel + 1);
+            return;
+        }
+
+        if (fileObtain != null) {
+            sb.append("fileObtain: ");
+            fileObtain.appendAsString(sb, indentLevel + 1);
             return;
         }
 
