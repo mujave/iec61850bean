@@ -33,7 +33,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Locale;
 import java.util.Properties;
+import java.util.ResourceBundle;
 
 public class ClientGui extends JFrame implements ActionListener, TreeSelectionListener {
 
@@ -47,7 +49,7 @@ public class ClientGui extends JFrame implements ActionListener, TreeSelectionLi
 
     private final JTextField ipTextField = new JTextField("127.0.0.1");
     private final JTextField portTextField = new JTextField("10002");
-    private final JTree tree = new JTree(new DefaultMutableTreeNode("No server connected"));
+    private final JTree tree = new JTree();
     private final JPanel detailsPanel = new JPanel();
     private final GridBagLayout detailsLayout = new GridBagLayout();
 
@@ -57,9 +59,12 @@ public class ClientGui extends JFrame implements ActionListener, TreeSelectionLi
 
     private DataTreeNode selectedNode;
 
+    private ResourceBundle messages;
+
     public ClientGui() {
         super("IEC61850bean Client GUI");
-
+        messages = ResourceBundle.getBundle("Messages", Locale.CHINESE, new UTF8Control());
+        tree.setModel(new DefaultTreeModel(new DefaultMutableTreeNode(messages.getString("LABEL.NO_SERVER_CONNECTED")), false));
         Properties lastConnection = new Properties();
 
         InputStream in = null;
@@ -71,17 +76,15 @@ public class ClientGui extends JFrame implements ActionListener, TreeSelectionLi
             portTextField.setText(lastConnection.getProperty(PORT_KEY));
 
             String[] tselString = lastConnection.getProperty(TSEL_LOCAL_KEY).split(",");
-            byte[] tsel =
-                    new byte[]{
-                            (byte) Integer.parseInt(tselString[0]), (byte) Integer.parseInt(tselString[1])
-                    };
+            byte[] tsel = new byte[] {
+                    (byte) Integer.parseInt(tselString[0]), (byte) Integer.parseInt(tselString[1])
+            };
             settingsFrame.setTselLocal(tsel);
 
             tselString = lastConnection.getProperty(TSEL_REMOTE_KEY).split(",");
-            tsel =
-                    new byte[]{
-                            (byte) Integer.parseInt(tselString[0]), (byte) Integer.parseInt(tselString[1])
-                    };
+            tsel = new byte[] {
+                    (byte) Integer.parseInt(tselString[0]), (byte) Integer.parseInt(tselString[1])
+            };
             settingsFrame.setTselRemote(tsel);
         } catch (Exception ex) {
             // no lastconnection.properties file found, use default.
@@ -133,13 +136,13 @@ public class ClientGui extends JFrame implements ActionListener, TreeSelectionLi
         topPanel.add(portTextField);
         topPanel.add(Box.createRigidArea(new Dimension(5, 0)));
 
-        JButton newServerButton = new JButton("Connect to Server");
+        JButton newServerButton = new JButton(messages.getString("BUTTON.CONNECT_TO_SERVER"));
         newServerButton.addActionListener(this);
         newServerButton.setActionCommand("Connect");
         topPanel.add(newServerButton);
         topPanel.add(Box.createRigidArea(new Dimension(5, 0)));
 
-        JButton settingsButton = new JButton("Settings");
+        JButton settingsButton = new JButton(messages.getString("BUTON.SETTING"));
         settingsButton.addActionListener(this);
         settingsButton.setActionCommand("Settings");
         topPanel.add(settingsButton);
@@ -226,7 +229,7 @@ public class ClientGui extends JFrame implements ActionListener, TreeSelectionLi
                 detailsLayout.setConstraints(filler, gbc);
                 detailsPanel.add(filler);
 
-                JButton button = new JButton("Reload values");
+                JButton button = new JButton(messages.getString("BUTTON.RELOAD_VALUES"));
                 button.addActionListener(this);
                 button.setActionCommand("reload");
                 gbc = new GridBagConstraints();
@@ -243,7 +246,7 @@ public class ClientGui extends JFrame implements ActionListener, TreeSelectionLi
                 detailsPanel.add(button);
 
                 if (selectedNode.writable()) {
-                    button = new JButton("Write values");
+                    button = new JButton(messages.getString("BUTTON.WRITE_VALUES"));
                     button.addActionListener(this);
                     button.setActionCommand("write");
                     gbc = new GridBagConstraints();
