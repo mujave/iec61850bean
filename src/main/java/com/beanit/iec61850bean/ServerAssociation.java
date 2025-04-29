@@ -13,6 +13,10 @@
  */
 package com.beanit.iec61850bean;
 
+import cn.hutool.cache.Cache;
+import cn.hutool.cache.CacheUtil;
+import cn.hutool.core.convert.Convert;
+import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.io.IORuntimeException;
@@ -335,6 +339,11 @@ final class ServerAssociation {
                     logger.info("Got a FileDelete request");
                     FileDeleteResponse fileDeleteResponse = handleFileDeleteRequest(confirmedServiceRequest.getFileDelete());
                     confirmedServiceResponse.setFileDelete(fileDeleteResponse);
+                } else if (confirmedServiceRequest.getFileObtain() != null) {
+                    logger.info("Got a FileObtain request");
+                    FileObtainResponse fileObtainResponse = handleFileObtainRequest(
+                            confirmedServiceRequest.getFileObtain());
+                    confirmedServiceResponse.setFileObtain(fileObtainResponse);
                 } else {
                     throw new ServiceError(
                             ServiceError.FAILED_DUE_TO_COMMUNICATIONS_CONSTRAINT,
@@ -360,25 +369,34 @@ final class ServerAssociation {
         }
     }
 
+    private FileObtainResponse handleFileObtainRequest(FileObtainRequest fileObtainRequest) throws ServiceError {
+        FileObtainResponse fileObtainResponse = new FileObtainResponse();
+
+        return fileObtainResponse;
+    }
+
     /**
      * 文件删除请求
+     * 
      * @param request 一个携带要删除的文件名称的请求
      * @return 删除成功的响应
      * @throws ServiceError 文件不存在|文件正在被读取(正忙)|服务端不允许删除
+     * @author Mujave
      */
     private FileDeleteResponse handleFileDeleteRequest(FileDeleteRequest request) throws ServiceError {
         String fileName = request.getBerGraphicString().get(0).toString();
         FileDeleteResponse fileDeleteResponse = new FileDeleteResponse();
         fileDeleteResponse.getBerGraphicString().add(new BerGraphicString(fileName.getBytes(UTF_8)));
-        //判定能不能删除文件
+        // 判定能不能删除文件
         File file = FileUtil.file(this.serverSap.getFileServiceParentPath(), fileName);
         if (!file.exists()) {
             throw new ServiceError(ServiceError.INSTANCE_NOT_AVAILABLE, "file not existsent");
         }
-        Collection<FileReader> readingFile = fileReadCache.values();
-        for (FileReader fileReader : readingFile) {
+        Iterator<FileReader> readingFile = fileReadCache.iterator();
+        while (readingFile.hasNext()){
+            FileReader fileReader = readingFile.next();
             if (fileReader.getReadName().equals(fileName)) {
-                //正在被读取的文件里面有该被删除的文件
+                // 正在被读取的文件里面有该被删除的文件
                 throw new ServiceError(ServiceError.INSTANCE_LOCKED_BY_OTHER_CLIENT, "file busy");
             }
         }
@@ -393,28 +411,38 @@ final class ServerAssociation {
         return fileDeleteResponse;
     }
 
-    private Map<Long, FileReader> fileReadCache = new HashMap<>();
+    /**
+     * 正在被对方读取的文件缓存
+     * <p>
+     * 这个队列默认大小是1024个,当缓存满时，清理过期缓存对象，清理后依旧满则删除先入的缓存（链表首部对象）
+     * </p>
+     */
+    private Cache<String, FileReader> fileReadCache = CacheUtil.newFIFOCache(1024);
 
     /**
      * 文件关闭请求
+     * 
      * @param request 一个携带文件读取会话ID(frmsid)的请求
      * @return
+     * @author Mujave
      */
     private FileCloseResponse handleFileCloseRequest(FileCloseRequest request) {
         FileCloseResponse response = new FileCloseResponse();
         Long frmsId = request.value.longValue();
-        fileReadCache.remove(frmsId);
+        fileReadCache.remove(frmsId.toString());
         return response;
     }
 
     /**
      * 文件内容读取请求
+     * 
      * @param request 一个携带文件读取会话ID(frmsid)的请求
      * @return
      * @throws ServiceError 会话id不存在
+     * @author Mujave
      */
     private FileReadResponse handleFileReadRequest(FileReadRequest request) throws ServiceError {
-        Long frmsId = request.value.longValue();
+        String frmsId = Convert.toStr(request.value.longValue());
         if (!fileReadCache.containsKey(frmsId)) {
             logger.error(" read File has Error: readCache not fonut frmsid - {}", frmsId);
             throw new ServiceError(ServiceError.PARAMETER_VALUE_INCONSISTENT,
@@ -423,16 +451,18 @@ final class ServerAssociation {
         FileReader fileReader = fileReadCache.get(frmsId);
         FileReadResponse response = new FileReadResponse();
         response.setFileData(new BerGraphicString(fileReader.read(negotiatedMaxPduSize)));
-        //获取是否文件已经读取到了末尾
+        // 获取是否文件已经读取到了末尾
         response.setMoreFollows(new BerBoolean(!fileReader.isEndOfFile()));
         return response;
     }
 
     /**
      * 文件打开请求
+     * 
      * @param request 一个包含文件名称的请求
      * @return 一个携带文件读取会话ID(frmsid)的响应
      * @throws ServiceError 文件不存在
+     * @author Mujave
      */
     private FileOpenResponse handleFileOpenRequest(FileOpenRequest request) throws ServiceError {
         FileName fileName = request.getFileName();
@@ -442,12 +472,14 @@ final class ServerAssociation {
             String readFileName = fileName.getBerGraphicString().get(0).toString();
             File file = FileUtil.file(serverSap.getFileServiceParentPath(), readFileName);
             if (file.exists()) {
-                long frmsId = -1L;
+                int frmsId = -1;
                 do {
-                    frmsId = RandomUtil.randomLong(0, Long.MAX_VALUE);
-                } while (fileReadCache.containsKey(frmsId));
+                    frmsId = RandomUtil.randomInt(0, Integer.MAX_VALUE);
+                } while (fileReadCache.containsKey(Convert.toStr(frmsId)));
                 fileOpenResponse.setFrsmID(new Integer32(frmsId));
-                fileReadCache.put(frmsId, new FileReader(file, readFileName));
+                // 1个小时内读取完毕
+                fileReadCache.put(Convert.toStr(frmsId), new FileReader(file, readFileName),
+                        DateUnit.HOUR.getMillis() * 1);
                 FileAttributes fileAttributes = new FileAttributes();
                 fileAttributes.setSizeOfFile(new Unsigned32(file.length()));
                 fileAttributes.setLastModified(
@@ -465,7 +497,7 @@ final class ServerAssociation {
     /**
      * 读取文件目录
      *
-     * @author mujave
+     * @author Mujave
      */
     private FileDirectoryResponse handleFileDirectoryRequest(FileDirectoryRequest request) throws ServiceError {
         FileDirectoryResponse response = new FileDirectoryResponse();
@@ -488,7 +520,7 @@ final class ServerAssociation {
         List<String> subFileNames = new ArrayList<>();
         List<String> subDirectoryNames = new ArrayList<>();
         try {
-            //读取文件下的子目录
+            // 读取文件下的子目录
             if (serverSap.isReportFileDirectory()) {
                 File file = FileUtil.file(parentPath, path);
                 if (file.isDirectory()) {
@@ -509,16 +541,18 @@ final class ServerAssociation {
             throw new ServiceError(ServiceError.FILE_NONE_EXISTENT,
                     "file is not exists.");
         }
-        subFileNames = subFileNames.stream().sorted(Comparator.comparing(String::length).thenComparing(String::compareTo))
+        subFileNames = subFileNames.stream()
+                .sorted(Comparator.comparing(String::length).thenComparing(String::compareTo))
                 .collect(Collectors.toList());
-        subDirectoryNames = subDirectoryNames.stream().sorted(Comparator.comparing(String::length).thenComparing(String::compareTo))
+        subDirectoryNames = subDirectoryNames.stream()
+                .sorted(Comparator.comparing(String::length).thenComparing(String::compareTo))
                 .collect(Collectors.toList());
         subFileNames.addAll(subDirectoryNames);
         for (String name : subFileNames) {
             if (insertRef) {
                 if (directoryEntryList.size() == proposedMaxGetNameResponseLength) {
                     moreFollows = true;
-                    logger.debug(" handleFileDirectoryRequest  ->maxMMSPduSize of " + proposedMaxGetNameResponseLength
+                    logger.debug(" handleFileDirectoryRequest -> maxMMSPduSize of " + proposedMaxGetNameResponseLength
                             + " items reached");
                     break;
                 }
@@ -535,7 +569,7 @@ final class ServerAssociation {
                 fileEntry.setFileAttributes(fileAttributes);
                 directoryEntryList.add(fileEntry);
             } else {
-                if (continueAfter.indexOf(name) == 3) {
+                if (continueAfter.equals(name)) {
                     insertRef = true;
                 }
             }

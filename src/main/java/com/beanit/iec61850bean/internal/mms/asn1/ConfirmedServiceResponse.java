@@ -30,6 +30,7 @@ public class ConfirmedServiceResponse implements BerType, Serializable {
     private FileCloseResponse fileClose = null;
     private FileDeleteResponse fileDelete = null;
     private FileDirectoryResponse fileDirectory = null;
+    private FileObtainResponse fileObtain = null;
 
     public ConfirmedServiceResponse() {
     }
@@ -136,6 +137,14 @@ public class ConfirmedServiceResponse implements BerType, Serializable {
         this.fileDirectory = fileDirectory;
     }
 
+    public FileObtainResponse getFileObtain() {
+        return fileObtain;
+    }
+
+    public void setFileObtain(FileObtainResponse fileObtain) {
+        this.fileObtain = fileObtain;
+    }
+
     @Override
     public int encode(OutputStream reverseOS) throws IOException {
 
@@ -186,6 +195,15 @@ public class ConfirmedServiceResponse implements BerType, Serializable {
             // write tag: CONTEXT_CLASS, CONSTRUCTED, 72
             reverseOS.write(0x48);
             reverseOS.write(0xBF);
+            codeLength += 2;
+            return codeLength;
+        }
+
+        if (fileObtain != null) {
+            codeLength += fileObtain.encode(reverseOS, false);
+            // write tag: CONTEXT_CLASS, PRIMITIVE, 46
+            reverseOS.write(0x2E);
+            reverseOS.write(0x9F);
             codeLength += 2;
             return codeLength;
         }
@@ -303,6 +321,12 @@ public class ConfirmedServiceResponse implements BerType, Serializable {
         if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.CONSTRUCTED, 13)) {
             deleteNamedVariableList = new DeleteNamedVariableListResponse();
             tlvByteCount += deleteNamedVariableList.decode(is, false);
+            return tlvByteCount;
+        }
+
+        if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.PRIMITIVE, 46)) {
+            fileObtain = new FileObtainResponse();
+            tlvByteCount += fileObtain.decode(is, false);
             return tlvByteCount;
         }
 

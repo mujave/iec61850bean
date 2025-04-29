@@ -31,6 +31,7 @@ import com.beanit.josistack.ClientAcseSap;
 import com.beanit.josistack.DecodingException;
 
 import java.io.ByteArrayInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
@@ -891,6 +892,43 @@ public final class ClientAssociation {
             throw new ServiceError(
                     ServiceError.FAILED_DUE_TO_COMMUNICATIONS_CONSTRAINT,
                     "Error decoding DeleteFileResponsePdu");
+        }
+    }
+
+    /**
+     * Write a file to the server
+     * @param filename 文件已这个名字保存到服务器
+     * @param writeFile 要保存的文件，文件不存在则抛出异常
+     * @throws ServiceError if a ServiceError is returned by the server
+     * @throws IOException  if a fatal association error occurs. The association
+     *                      object will be closed
+     *                      and can no longer be used after this exception is 
+     * @author Mujave
+     */
+    public void writeFile(String filename, File writeFile) throws ServiceError, IOException {
+        if (!writeFile.exists()) {
+            throw new ServiceError(
+                    ServiceError.INSTANCE_NOT_AVAILABLE,
+                    "File " + writeFile.getAbsolutePath() + " does not exist");
+        }
+        FileName source = new FileName();
+        source.getBerGraphicString().add(new BerGraphicString(writeFile.getName().getBytes(UTF_8)));
+        FileName destination = new FileName();
+        destination.getBerGraphicString().add(new BerGraphicString(filename.getBytes(UTF_8)));
+
+        FileObtainRequest fileObtainRequest = new FileObtainRequest();
+        fileObtainRequest.setSourceFile(source);
+        fileObtainRequest.setDestinationFile(destination);
+
+        ConfirmedServiceRequest confirmedServiceRequest = new ConfirmedServiceRequest();
+        confirmedServiceRequest.setFileObtain(fileObtainRequest);
+
+        ConfirmedServiceResponse confirmedServiceResponse = encodeWriteReadDecode(confirmedServiceRequest);
+        
+        if (confirmedServiceResponse.getFileObtain() == null) {
+            throw new ServiceError(
+                    ServiceError.FAILED_DUE_TO_COMMUNICATIONS_CONSTRAINT,
+                    "Error decoding ObtainFileResponsePdu");
         }
     }
 

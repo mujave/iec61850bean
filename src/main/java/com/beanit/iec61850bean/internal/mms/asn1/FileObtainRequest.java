@@ -16,22 +16,25 @@ package com.beanit.iec61850bean.internal.mms.asn1;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Serializable;
 
 import com.beanit.asn1bean.ber.BerLength;
 import com.beanit.asn1bean.ber.BerTag;
 import com.beanit.asn1bean.ber.ReverseByteArrayOutputStream;
+import com.beanit.asn1bean.ber.types.BerType;
 
-public class ObtainFileRequest {
+public class FileObtainRequest implements BerType, Serializable {
+
     public static final BerTag tag = new BerTag(BerTag.UNIVERSAL_CLASS, BerTag.CONSTRUCTED, 16);
     private static final long serialVersionUID = 1L;
     private byte[] code = null;
     private FileName sourceFile = null;
     private FileName destinationFile = null;
 
-    public ObtainFileRequest() {
+    public FileObtainRequest() {
     }
 
-    public ObtainFileRequest(byte[] code) {
+    public FileObtainRequest(byte[] code) {
         this.code = code;
     }
 
@@ -67,17 +70,17 @@ public class ObtainFileRequest {
         }
 
         int codeLength = 0;
-        if (sourceFile != null) {
-            codeLength += sourceFile.encode(reverseOS, false);
+        if (destinationFile != null) {
+            codeLength += destinationFile.encode(reverseOS, false);
             // write tag: CONTEXT_CLASS, CONSTRUCTED, 1
-            reverseOS.write(0xA1);
+            reverseOS.write(0xA2);
             codeLength += 1;
         }
 
-        if (destinationFile != null) {
-            codeLength += destinationFile.encode(reverseOS, false);
+        if (sourceFile != null) {
+            codeLength += sourceFile.encode(reverseOS, false);
             // write tag: CONTEXT_CLASS, CONSTRUCTED, 0
-            reverseOS.write(0xA0);
+            reverseOS.write(0xA1);
             codeLength += 1;
         }
 
@@ -112,7 +115,7 @@ public class ObtainFileRequest {
         }
         vByteCount += berTag.decode(is);
 
-        if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.CONSTRUCTED, 0)) {
+        if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.CONSTRUCTED, 1)) {
             sourceFile = new FileName();
             vByteCount += sourceFile.decode(is, false);
             if (lengthVal >= 0 && vByteCount == lengthVal) {
@@ -121,7 +124,7 @@ public class ObtainFileRequest {
             vByteCount += berTag.decode(is);
         }
 
-        if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.CONSTRUCTED, 1)) {
+        if (berTag.equals(BerTag.CONTEXT_CLASS, BerTag.CONSTRUCTED, 2)) {
             destinationFile = new FileName();
             vByteCount += destinationFile.decode(is, false);
             if (lengthVal >= 0 && vByteCount == lengthVal) {
