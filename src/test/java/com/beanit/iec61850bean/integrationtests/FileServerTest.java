@@ -1,9 +1,10 @@
 package com.beanit.iec61850bean.integrationtests;
 
+import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.thread.ThreadUtil;
 import cn.hutool.core.util.RandomUtil;
-
 import com.beanit.iec61850bean.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -13,8 +14,8 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 public class FileServerTest implements ClientEventListener {
@@ -36,14 +37,14 @@ public class FileServerTest implements ClientEventListener {
 
     private void startClient() throws IOException, ServiceError {
         ClientSap clientSap = new ClientSap();
-        this.clientAssociation = clientSap.associate(InetAddress.getByName("192.168.13.27"), PORT, "", this);
+        this.clientAssociation = clientSap.associate(InetAddress.getByName("127.0.0.1"), PORT, "", this);
         this.clientModel = this.clientAssociation.retrieveModel();
         this.clientAssociation.enableReporting(clientModel.getUrcb("FKMONT/LLN0.brcb01Ain01"));
     }
 
     private void startServer() throws SclParseException, IOException {
         serverSap = new ServerSap(PORT, 0, null, SclParser.parse(ICD_FILE).get(0), null);
-        serverSap.setFileServiceParentPath("D:\\codeSpeace\\test");
+        serverSap.setFileServiceParentPath("/Users/mujave/Documents/IEC61850系列");
 
         this.serverSap.startListening(new ServerEventListener() {
             @Override
@@ -66,7 +67,7 @@ public class FileServerTest implements ClientEventListener {
 
     @Test
     public void testGetFileDirectory() throws IOException, ServiceError, InterruptedException {
-        List<FileInformation> fileDirectory = this.clientAssociation.getFileDirectory("COMTRADE");
+        List<FileInformation> fileDirectory = this.clientAssociation.getFileDirectory("/");
         int i = 0;
         for (FileInformation fileInformation : fileDirectory) {
             log.info("{} - {} sizeof: {} {}", ++i, fileInformation.getFilename(), fileInformation.getFileSize(),
@@ -105,7 +106,11 @@ public class FileServerTest implements ClientEventListener {
 
     @Test
     public void testPutFile() throws ServiceError, IOException {
-        this.clientAssociation.writeFile("test.txt", null);
+
+        System.out.println(DateUtil.format(new Date(16*60*60*1000 + 10*1000), DatePattern.NORM_TIME_FORMAT));
+        this.clientAssociation.setFile("1.txt",FileUtil.file("/Users/mujave/workspace.localized/test/test.txt") );
+
+        ThreadUtil.sleep(60*60*1000);
     }
 
     @Override

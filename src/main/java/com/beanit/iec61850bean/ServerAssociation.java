@@ -21,7 +21,6 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.io.IORuntimeException;
 import cn.hutool.core.util.ArrayUtil;
-import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import com.beanit.asn1bean.ber.ReverseByteArrayOutputStream;
 import com.beanit.asn1bean.ber.types.BerGeneralizedTime;
@@ -155,8 +154,7 @@ final class ServerAssociation {
         }
 
         int negotiatedMaxServOutstandingCalling = serverSap.getProposedMaxServOutstandingCalling();
-        int proposedMaxServOutstandingCalling = associationRequestMMSpdu.getProposedMaxServOutstandingCalling()
-                .intValue();
+        int proposedMaxServOutstandingCalling = associationRequestMMSpdu.getProposedMaxServOutstandingCalling().intValue();
 
         if (negotiatedMaxServOutstandingCalling > proposedMaxServOutstandingCalling
                 && proposedMaxServOutstandingCalling > 0) {
@@ -164,8 +162,7 @@ final class ServerAssociation {
         }
 
         int negotiatedMaxServOutstandingCalled = serverSap.getProposedMaxServOutstandingCalled();
-        int proposedMaxServOutstandingCalled = associationRequestMMSpdu.getProposedMaxServOutstandingCalled()
-                .intValue();
+        int proposedMaxServOutstandingCalled = associationRequestMMSpdu.getProposedMaxServOutstandingCalled().intValue();
 
         if (negotiatedMaxServOutstandingCalled > proposedMaxServOutstandingCalled
                 && proposedMaxServOutstandingCalled > 0) {
@@ -175,8 +172,7 @@ final class ServerAssociation {
         int negotiatedDataStructureNestingLevel = serverSap.getProposedDataStructureNestingLevel();
 
         if (associationRequestMMSpdu.getProposedDataStructureNestingLevel() != null) {
-            int proposedDataStructureNestingLevel = associationRequestMMSpdu.getProposedDataStructureNestingLevel()
-                    .intValue();
+            int proposedDataStructureNestingLevel = associationRequestMMSpdu.getProposedDataStructureNestingLevel().intValue();
             if (negotiatedDataStructureNestingLevel > proposedDataStructureNestingLevel) {
                 negotiatedDataStructureNestingLevel = proposedDataStructureNestingLevel;
             }
@@ -223,9 +219,7 @@ final class ServerAssociation {
             }
 
             ConfirmedRequestPDU confirmedRequestPdu = mmsRequestPdu.getConfirmedRequestPDU();
-            // Do not have to check whether confirmedRequestPdu is null because that was
-            // already done by
-            // listenForMmsRequest()
+            // Do not have to check whether confirmedRequestPdu is null because that was already done by listenForMmsRequest()
 
             if (confirmedRequestPdu.getInvokeID() == null) {
                 // cannot respond with ServiceError because no InvokeID was received
@@ -341,9 +335,8 @@ final class ServerAssociation {
                     confirmedServiceResponse.setFileDelete(fileDeleteResponse);
                 } else if (confirmedServiceRequest.getFileObtain() != null) {
                     logger.info("Got a FileObtain request");
-                    FileObtainResponse fileObtainResponse = handleFileObtainRequest(
-                            confirmedServiceRequest.getFileObtain());
-                    confirmedServiceResponse.setFileObtain(fileObtainResponse);
+                    handleFileObtainRequest(confirmedServiceRequest.getFileObtain(), confirmedRequestPdu.getInvokeID());
+                    continue;
                 } else {
                     throw new ServiceError(
                             ServiceError.FAILED_DUE_TO_COMMUNICATIONS_CONSTRAINT,
@@ -369,15 +362,80 @@ final class ServerAssociation {
         }
     }
 
-    private FileObtainResponse handleFileObtainRequest(FileObtainRequest fileObtainRequest) throws ServiceError {
-        FileObtainResponse fileObtainResponse = new FileObtainResponse();
+    Unsigned32 writeFileInvokeID = null;
+    File writeingFile = null;
 
-        return fileObtainResponse;
+    /**
+     * 文件写入请求处理
+     *
+     * @param fileObtainRequest 文件写入请求
+     * @param invokeID
+     * @return
+     * @throws ServiceError
+     * @author Mujave
+     */
+    private void handleFileObtainRequest(FileObtainRequest fileObtainRequest, Unsigned32 invokeID) throws ServiceError {
+        String destinationFileName = fileObtainRequest.getDestinationFile().getBerGraphicString().get(0).toString();
+        if (writeFileInvokeID != null) {
+            //当前客户端存在没有写完的文件句柄,此时不接收新的文件写入请求
+            throw new ServiceError(ServiceError.ACCESS_VIOLATION);
+        }
+        String sourceFileName = null;
+        try {
+            sourceFileName = fileObtainRequest.getSourceFile().getBerGraphicString().get(0).toString();
+        } catch (Exception e) {
+        }
+
+        if (StrUtil.isBlankIfStr(sourceFileName)) {
+            throw new ServiceError(ServiceError.INSTANCE_NOT_AVAILABLE, "invalid MMS packet: source file name is null.");
+        }
+
+        writeFileInvokeID = invokeID;
+
+        if (serverSap.serverEventListener != null) {
+            //服务端监听器存在，调用监听器进行文件写入请求处理
+            int flag = serverSap.serverEventListener.fileWrite(destinationFileName);
+            if (flag == 0) {
+                //允许文件写入
+            } else if (flag == 1) {
+                //文件已经存在,不允许覆盖
+                throw new ServiceError(ServiceError.ACCESS_NOT_ALLOWED_IN_CURRENT_STATE);
+            } else {
+                throw new ServiceError(ServiceError.ACCESS_VIOLATION);
+            }
+        }
+        writeingFile = FileUtil.file(serverSap.getFileServiceParentPath(), destinationFileName);
+        writeFileInvokeID = invokeID;
+
+        //允许写入文件，发起打开文件请求，准备
+        sendAnMmsPdu(createFileOpenRequest(sourceFileName, invokeID));
     }
+
+    private MMSpdu createFileOpenRequest(String sourceFileName, Unsigned32 invokeID) {
+        FileName sourceFile = new FileName();
+        sourceFile.getBerGraphicString().add(new BerGraphicString(sourceFileName.getBytes(UTF_8)));
+
+        FileOpenRequest fileOpenRequest = new FileOpenRequest();
+        fileOpenRequest.setFileName(sourceFile);
+        fileOpenRequest.setInitialPosition(new Unsigned32(0));
+
+        ConfirmedServiceRequest confirmedServiceRequest = new ConfirmedServiceRequest();
+        confirmedServiceRequest.setFileOpen(fileOpenRequest);
+
+        ConfirmedRequestPDU confirmedRequestPDU = new ConfirmedRequestPDU();
+        confirmedRequestPDU.setInvokeID(invokeID);
+        confirmedRequestPDU.setService(confirmedServiceRequest);
+
+        MMSpdu mmSpdu = new MMSpdu();
+        mmSpdu.setConfirmedRequestPDU(confirmedRequestPDU);
+
+        return mmSpdu;
+    }
+
 
     /**
      * 文件删除请求
-     * 
+     *
      * @param request 一个携带要删除的文件名称的请求
      * @return 删除成功的响应
      * @throws ServiceError 文件不存在|文件正在被读取(正忙)|服务端不允许删除
@@ -393,7 +451,7 @@ final class ServerAssociation {
             throw new ServiceError(ServiceError.INSTANCE_NOT_AVAILABLE, "file not existsent");
         }
         Iterator<FileReader> readingFile = fileReadCache.iterator();
-        while (readingFile.hasNext()){
+        while (readingFile.hasNext()) {
             FileReader fileReader = readingFile.next();
             if (fileReader.getReadName().equals(fileName)) {
                 // 正在被读取的文件里面有该被删除的文件
@@ -418,10 +476,10 @@ final class ServerAssociation {
      * </p>
      */
     private Cache<String, FileReader> fileReadCache = CacheUtil.newFIFOCache(1024);
-
+    private int frmsId = 1;
     /**
      * 文件关闭请求
-     * 
+     *
      * @param request 一个携带文件读取会话ID(frmsid)的请求
      * @return
      * @author Mujave
@@ -435,7 +493,7 @@ final class ServerAssociation {
 
     /**
      * 文件内容读取请求
-     * 
+     *
      * @param request 一个携带文件读取会话ID(frmsid)的请求
      * @return
      * @throws ServiceError 会话id不存在
@@ -458,7 +516,7 @@ final class ServerAssociation {
 
     /**
      * 文件打开请求
-     * 
+     *
      * @param request 一个包含文件名称的请求
      * @return 一个携带文件读取会话ID(frmsid)的响应
      * @throws ServiceError 文件不存在
@@ -472,12 +530,8 @@ final class ServerAssociation {
             String readFileName = fileName.getBerGraphicString().get(0).toString();
             File file = FileUtil.file(serverSap.getFileServiceParentPath(), readFileName);
             if (file.exists()) {
-                int frmsId = -1;
-                do {
-                    frmsId = RandomUtil.randomInt(0, Integer.MAX_VALUE);
-                } while (fileReadCache.containsKey(Convert.toStr(frmsId)));
-                fileOpenResponse.setFrsmID(new Integer32(frmsId));
-                // 1个小时内读取完毕
+                fileOpenResponse.setFrsmID(new Integer32(frmsId++));
+                // 1个小时内强制读取完毕
                 fileReadCache.put(Convert.toStr(frmsId), new FileReader(file, readFileName),
                         DateUnit.HOUR.getMillis() * 1);
                 FileAttributes fileAttributes = new FileAttributes();
@@ -655,7 +709,10 @@ final class ServerAssociation {
             }
 
             if (mmsRequestPdu.getConfirmedRequestPDU() == null) {
-                if (mmsRequestPdu.getConcludeRequestPDU() != null) {
+                //看看能不能接收到响应在文件读取监听开启之后
+                if (writeFileInvokeID != null && mmsRequestPdu.getConfirmedResponsePDU() != null){
+                    //ToDo debug 处理文件写入的响应
+                }else if (mmsRequestPdu.getConcludeRequestPDU() != null) {
                     logger.debug("Got Conclude request, will close connection");
                     return null;
                 } else {

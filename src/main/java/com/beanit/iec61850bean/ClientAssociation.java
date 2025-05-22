@@ -13,7 +13,13 @@
  */
 package com.beanit.iec61850bean;
 
+import cn.hutool.cache.Cache;
+import cn.hutool.cache.CacheUtil;
+import cn.hutool.core.convert.Convert;
+import cn.hutool.core.date.DateUnit;
+import cn.hutool.core.date.DateUtil;
 import com.beanit.asn1bean.ber.ReverseByteArrayOutputStream;
+import com.beanit.asn1bean.ber.types.BerGeneralizedTime;
 import com.beanit.asn1bean.ber.types.BerInteger;
 import com.beanit.asn1bean.ber.types.BerNull;
 import com.beanit.asn1bean.ber.types.string.BerGraphicString;
@@ -344,7 +350,7 @@ public final class ClientAssociation {
     }
 
     private int getInvokeId() {
-        invokeId = (invokeId + 1) % 2147483647;
+        invokeId = (invokeId + 1) % Integer.MAX_VALUE;
         return invokeId;
     }
 
@@ -361,6 +367,26 @@ public final class ClientAssociation {
     private ConfirmedServiceResponse encodeWriteReadDecode(ConfirmedServiceRequest serviceRequest)
             throws ServiceError, IOException {
 
+        MMSpdu decodedResponsePdu = encodeWriteReadDecodeMmspdu(serviceRequest);
+
+        if (decodedResponsePdu.getConfirmedRequestPDU() != null) {
+            incomingResponses.add(decodedResponsePdu);
+            throw new IOException("connection was closed", clientReceiver.getLastIOException());
+        }
+
+        testForInitiateErrorResponse(decodedResponsePdu);
+        testForErrorResponse(decodedResponsePdu);
+        testForRejectResponse(decodedResponsePdu);
+
+        ConfirmedResponsePDU confirmedResponsePdu = decodedResponsePdu.getConfirmedResponsePDU();
+        if (confirmedResponsePdu == null) {
+            throw new IllegalStateException("Response PDU is not a confirmed response pdu");
+        }
+
+        return confirmedResponsePdu.getService();
+    }
+
+    private MMSpdu encodeWriteReadDecodeMmspdu(ConfirmedServiceRequest serviceRequest) throws IOException, ServiceError {
         int currentInvokeId = getInvokeId();
 
         ConfirmedRequestPDU confirmedRequestPdu = new ConfirmedRequestPDU();
@@ -381,6 +407,10 @@ public final class ClientAssociation {
         }
 
         clientReceiver.setResponseExpected(currentInvokeId);
+        if (serviceRequest.getFileObtain() != null) {
+            clientReceiver.setExpectedRequest(true);
+        }
+
         try {
             acseAssociation.send(reverseOStream.getByteBuffer());
         } catch (IOException e) {
@@ -407,22 +437,7 @@ public final class ClientAssociation {
                 throw new ServiceError(ServiceError.TIMEOUT);
             }
         }
-
-        if (decodedResponsePdu.getConfirmedRequestPDU() != null) {
-            incomingResponses.add(decodedResponsePdu);
-            throw new IOException("connection was closed", clientReceiver.getLastIOException());
-        }
-
-        testForInitiateErrorResponse(decodedResponsePdu);
-        testForErrorResponse(decodedResponsePdu);
-        testForRejectResponse(decodedResponsePdu);
-
-        ConfirmedResponsePDU confirmedResponsePdu = decodedResponsePdu.getConfirmedResponsePDU();
-        if (confirmedResponsePdu == null) {
-            throw new IllegalStateException("Response PDU is not a confirmed response pdu");
-        }
-
-        return confirmedResponsePdu.getService();
+        return decodedResponsePdu;
     }
 
     private void associate(
@@ -897,15 +912,16 @@ public final class ClientAssociation {
 
     /**
      * Write a file to the server
-     * @param filename 文件已这个名字保存到服务器
+     *
+     * @param filename  文件以这个名字保存到服务器
      * @param writeFile 要保存的文件，文件不存在则抛出异常
      * @throws ServiceError if a ServiceError is returned by the server
      * @throws IOException  if a fatal association error occurs. The association
      *                      object will be closed
-     *                      and can no longer be used after this exception is 
+     *                      and can no longer be used after this exception is
      * @author Mujave
      */
-    public void writeFile(String filename, File writeFile) throws ServiceError, IOException {
+    public void setFile(String filename, File writeFile) throws ServiceError, IOException {
         if (!writeFile.exists()) {
             throw new ServiceError(
                     ServiceError.INSTANCE_NOT_AVAILABLE,
@@ -923,13 +939,45 @@ public final class ClientAssociation {
         ConfirmedServiceRequest confirmedServiceRequest = new ConfirmedServiceRequest();
         confirmedServiceRequest.setFileObtain(fileObtainRequest);
 
-        ConfirmedServiceResponse confirmedServiceResponse = encodeWriteReadDecode(confirmedServiceRequest);
-        
-        if (confirmedServiceResponse.getFileObtain() == null) {
-            throw new ServiceError(
-                    ServiceError.FAILED_DUE_TO_COMMUNICATIONS_CONSTRAINT,
-                    "Error decoding ObtainFileResponsePdu");
+        MMSpdu mmSpdu = encodeWriteReadDecodeMmspdu(confirmedServiceRequest);
+
+        if (mmSpdu.getConfirmedRequestPDU() != null) {
+            ConfirmedServiceRequest request = mmSpdu.getConfirmedRequestPDU().getService();
+            if (request != null && request.getFileOpen() != null) {
+                FileOpenRequest fileOpenRequest = request.getFileOpen();
+                if (fileOpenRequest != null) {
+                    System.out.println("read file :" + fileOpenRequest.getFileName().getBerGraphicString().get(0).toString());
+                    handleFileOpenResponse(mmSpdu, writeFile);
+                }
+            }
         }
+    }
+    private Cache<String, FileReader> fileReadCache = CacheUtil.newFIFOCache(1024);
+    private int frmsId = 1;
+
+    private void handleFileOpenResponse(MMSpdu mmSpdu, File writeFile) throws ServiceError, IOException {
+
+        FileOpenResponse fileOpenResponse = new FileOpenResponse();
+
+        fileOpenResponse.setFrsmID(new Integer32(frmsId++));
+        // 1个小时内强制读取完毕
+        fileReadCache.put(Convert.toStr(frmsId), new FileReader(writeFile, ""), DateUnit.HOUR.getMillis() * 1);
+        FileAttributes fileAttributes = new FileAttributes();
+        fileAttributes.setSizeOfFile(new Unsigned32(writeFile.length()));
+        fileAttributes.setLastModified(
+                new BerGeneralizedTime(DateUtil.format(new Date(writeFile.lastModified()), "yyyyMMddHHmmssZ")));
+        fileOpenResponse.setFileAttributes(fileAttributes);
+
+        ConfirmedServiceResponse confirmedServiceResponse = new ConfirmedServiceResponse();
+        confirmedServiceResponse.setFileOpen(fileOpenResponse);
+
+        ConfirmedResponsePDU confirmedResponsePDU = new ConfirmedResponsePDU();
+
+        confirmedResponsePDU.setInvokeID(mmSpdu.getConfirmedRequestPDU().getInvokeID());
+        confirmedResponsePDU.setService(confirmedServiceResponse);
+
+
+
     }
 
     private Integer32 openFile(String filename) throws ServiceError, IOException {
@@ -1931,27 +1979,27 @@ public final class ClientAssociation {
         return !closed;
     }
 
-    public boolean getSocketIsOpen(){
+    public boolean getSocketIsOpen() {
         return !this.acseAssociation.getSocketIsOpen();
     }
 
-    public boolean getSocketIsConnected(){
+    public boolean getSocketIsConnected() {
         return this.acseAssociation.getSocketIsConnected();
     }
 
-    public boolean getSocketIsInputShutdown(){
+    public boolean getSocketIsInputShutdown() {
         return this.acseAssociation.getSocketIsInputShutdown();
     }
 
-    public boolean getSocketIsOutputShutdown(){
+    public boolean getSocketIsOutputShutdown() {
         return this.acseAssociation.getSocketIsOutputShutdown();
     }
 
-    public boolean getSocketIsbind(){
+    public boolean getSocketIsbind() {
         return this.acseAssociation.getSocketIsbind();
     }
 
-    public boolean testConnected(){
+    public boolean testConnected() {
         return this.acseAssociation.testConnected();
     }
 
@@ -1974,6 +2022,7 @@ public final class ClientAssociation {
         private final ByteBuffer pduBuffer;
         private Integer expectedResponseId;
         private IOException lastIOException = null;
+        private boolean expectedRequest = false;
 
         public ClientReceiver(int maxMmsPduSize) {
             pduBuffer = ByteBuffer.allocate(maxMmsPduSize + 400);
@@ -2070,11 +2119,15 @@ public final class ClientAssociation {
                             if (expectedResponseId == null) {
                                 // Discarding ConfirmedResponse MMS PDU because no listener for request was found.
                                 continue;
-                            } else if (decodedResponsePdu.getConfirmedResponsePDU().getInvokeID().value.intValue()
+                            } else if (!expectedRequest && decodedResponsePdu.getConfirmedResponsePDU().getInvokeID().value.intValue()
                                     != expectedResponseId) {
                                 // Discarding ConfirmedResponse MMS PDU because no listener with fitting invokeID
                                 // was
                                 // found.
+                                continue;
+                            } else if (expectedRequest && decodedResponsePdu.getConfirmedRequestPDU().getInvokeID().value.intValue()
+                                    != expectedResponseId) {
+                                //ToDo 如果开启了文件读取监听，那么这里需要处理文件读取的响应
                                 continue;
                             } else {
                                 try {
@@ -2095,6 +2148,10 @@ public final class ClientAssociation {
 
         public void setResponseExpected(int invokeId) {
             expectedResponseId = invokeId;
+        }
+
+        public void setExpectedRequest(boolean expectedRequest) {
+            this.expectedRequest = expectedRequest;
         }
 
         private void disconnect() {

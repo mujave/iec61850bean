@@ -41,4 +41,13 @@ public interface ServerEventListener {
     default int fileDelete(String fileName){
         return 0;
     }
+
+    /**
+     * 写入文件事件，默认允许文件写入,并允许对已存在的文件进行覆盖
+     * @param fileName 客户端想要写入的文件名字
+      * @return 0:可以写入 1:目的文件已存在,不允许覆盖 other:不允许写入
+     */
+    default int fileWrite(String fileName){
+        return 0;
+    }
 }
