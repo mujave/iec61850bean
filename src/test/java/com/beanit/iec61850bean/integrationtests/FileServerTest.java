@@ -77,13 +77,10 @@ public class FileServerTest implements ClientEventListener {
 
     @Test
     public void testGetFile() throws IOException, ServiceError, InterruptedException {
-        this.clientAssociation.getFile("/chart.txt", new GetFileListener() {
-            @Override
-            public boolean dataReceived(byte[] fileData, boolean moreFollows) {
-                log.info("Received {} bytes of file data. More data follows: {}", fileData.length, moreFollows);
-                log.info("\n{}", new String(fileData));
-                return moreFollows;
-            }
+        this.clientAssociation.getFile("/chart.txt", (byte[] fileData, boolean moreFollows) -> {
+            log.info("Received {} bytes of file data. More data follows: {}", fileData.length, moreFollows);
+            log.info("\n{}", new String(fileData));
+            return moreFollows;
         });
     }
 

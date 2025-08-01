@@ -345,8 +345,7 @@ final class ServerAssociation {
                     logger.info("Got a FileObtain request");
                     FileObtainResponse fileObtainResponse = handleFileObtainRequest(
                             confirmedServiceRequest.getFileObtain());
-
-                    confirmedServiceResponse.setFileObtain(new FileObtainResponse());
+                    confirmedServiceResponse.setFileObtain(fileObtainResponse);
                 } else {
                     throw new ServiceError(
                             ServiceError.FAILED_DUE_TO_COMMUNICATIONS_CONSTRAINT,
@@ -395,8 +394,9 @@ final class ServerAssociation {
         if (!file.exists()) {
             throw new ServiceError(ServiceError.INSTANCE_NOT_AVAILABLE, "file not existsent");
         }
-        Collection<FileReader> readingFile = fileReadCache.values();
-        for (FileReader fileReader : readingFile) {
+        Iterator<FileReader> readingFile = fileReadCache.iterator();
+        while (readingFile.hasNext()){
+            FileReader fileReader = readingFile.next();
             if (fileReader.getReadName().equals(fileName)) {
                 // 正在被读取的文件里面有该被删除的文件
                 throw new ServiceError(ServiceError.INSTANCE_LOCKED_BY_OTHER_CLIENT, "file busy");

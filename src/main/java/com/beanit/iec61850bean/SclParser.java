@@ -38,6 +38,7 @@ public class SclParser {
     private String iedName;
     private List<ServerModel> serverModels = new ArrayList<>();
     private boolean useResvTmsAttributes = false;
+    private boolean userOwnerAttributes = true;
 
     private SclParser() {
     }
@@ -112,6 +113,11 @@ public class SclParser {
                                     servicesElements.item(j).getAttributes().getNamedItem("resvTms");
                             if (resvTmsAttribute != null) {
                                 useResvTmsAttributes = resvTmsAttribute.getNodeValue().equalsIgnoreCase("true");
+                            }
+                            Node ownerAttribute =
+                                    servicesElements.item(j).getAttributes().getNamedItem("owner");
+                            if (ownerAttribute != null) {
+                                userOwnerAttributes = ownerAttribute.getNodeValue().equalsIgnoreCase("true");
                             }
                         }
                     }
@@ -680,18 +686,21 @@ public class SclParser {
                             new BdaInt16(
                                     new ObjectReference(reportObjRef.toString() + ".ResvTms"), fc, "", false, false));
                 }
-
-                children.add(
-                        new BdaOctetString(
-                                new ObjectReference(reportObjRef.toString() + ".Owner"), fc, "", 64, false, false));
-
+                //Mujave 2025.04.29 允许服务端不上报Owner
+                if (userOwnerAttributes) {
+                    children.add(
+                            new BdaOctetString(
+                                    new ObjectReference(reportObjRef.toString() + ".Owner"), fc, "", 64, false, false));
+                }
                 rcb = new Brcb(reportObjRef, children);
 
             } else {
-                children.add(
-                        new BdaOctetString(
-                                new ObjectReference(reportObjRef.toString() + ".Owner"), fc, "", 64, false, false));
-
+                //Mujave 2025.04.29 允许服务端不上报Owner
+                if (userOwnerAttributes) {
+                    children.add(
+                            new BdaOctetString(
+                                    new ObjectReference(reportObjRef.toString() + ".Owner"), fc, "", 64, false, false));
+                }
                 rcb = new Urcb(reportObjRef, children);
             }
 
