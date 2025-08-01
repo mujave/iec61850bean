@@ -913,7 +913,7 @@ public final class ClientAssociation {
 
     /**
      * Write a file to the server
-     * @param filename 文件已这个名字保存到服务器
+     * @param filename 文件以这个名字保存到服务端
      * @param writeFile 要保存的文件，文件不存在则抛出异常
      * @throws ServiceError if a ServiceError is returned by the server
      * @throws IOException  if a fatal association error occurs. The association

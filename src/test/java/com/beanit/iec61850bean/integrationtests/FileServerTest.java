@@ -14,8 +14,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
-import java.util.concurrent.TimeUnit;
 
 public class FileServerTest implements ClientEventListener {
 
@@ -66,13 +64,12 @@ public class FileServerTest implements ClientEventListener {
 
     @Test
     public void testGetFileDirectory() throws IOException, ServiceError, InterruptedException {
-        List<FileInformation> fileDirectory = this.clientAssociation.getFileDirectory("COMTRADE");
+        List<FileInformation> fileDirectory = this.clientAssociation.getFileDirectory("");
         int i = 0;
         for (FileInformation fileInformation : fileDirectory) {
             log.info("{} - {} sizeof: {} {}", ++i, fileInformation.getFilename(), fileInformation.getFileSize(),
                     DateUtil.formatDateTime(fileInformation.getLastModified().getTime()));
         }
-        ThreadUtil.sleep(30, TimeUnit.MINUTES);
     }
 
     @Test
@@ -105,7 +102,7 @@ public class FileServerTest implements ClientEventListener {
 
     @Test
     public void testPutFile() throws ServiceError, IOException {
-        this.clientAssociation.writeFile("test.txt", null);
+        this.clientAssociation.writeFile("test.txt", "2.txt");
     }
 
     @Override
