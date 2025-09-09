@@ -6,7 +6,7 @@
 
     <groupId>com.github.mujave</groupId>
     <artifactId>iec61850bean</artifactId>
-    <version>1.9.1.12</version>
+    <version>1.9.1.15</version>
 
     <name>${project.groupId}:${project.artifactId}</name>
     <description>IEC61850bean is a Java library implementing the IEC 61850 MMS communication standard for clients and servers.</description>

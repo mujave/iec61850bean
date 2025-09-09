@@ -131,6 +131,12 @@ public class Urcb extends Rcb {
             integrityTimer.cancel();
         }
 
+        if (reserved != null) {
+            // 释放掉拥有者
+            reserved = null;
+            ((BdaBoolean) children.get("Resv")).setValue(false);
+        }
+        ((BdaBoolean) children.get("RptEna")).setValue(false);
         enabled = false;
     }
 
