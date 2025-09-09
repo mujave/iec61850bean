@@ -135,7 +135,7 @@
                 <version>1.6</version>
                 <configuration>
                     <!-- 改成你自己的路径 -->
-                    <executable>/opt/homebrew/bin/gpg</executable>
+                    <executable>D:\GnuPG\bin\gpg.exe</executable>
                 </configuration>
                 <executions>
                     <execution>
