@@ -21,6 +21,9 @@ import java.net.Socket;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * This class extends Thread. It is started by ServerTSAP and listens on a socket for connections
  * and hands them to the ConnectionHandler class. It notifies ConnectionListener if the socket is
@@ -29,6 +32,8 @@ import java.util.concurrent.Executors;
  * @author Stefan Feuerhahn
  */
 final class ServerThread extends Thread {
+
+    private static final Logger logger = LoggerFactory.getLogger(ServerThread.class);
 
     private final ServerSocket serverSocket;
     private final int maxTPduSizeParam;
@@ -126,7 +131,7 @@ final class ServerThread extends Thread {
 
         @Override
         public void run() {
-
+            logger.info("clientSocket startConnection => {}:{}",socket.getInetAddress().getHostAddress(),socket.getPort());
             TConnection tConnection;
             try {
                 tConnection =
