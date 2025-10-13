@@ -16,7 +16,7 @@
 <dependency>
     <groupId>com.github.mujave</groupId>
     <artifactId>iec61850bean</artifactId>
-    <version>1.9.1.15</version>
+    <version>1.9.1.16</version>
 </dependency>
 ```
 
