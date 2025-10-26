@@ -3,10 +3,7 @@ package com.beanit.iec61850bean.integrationtests;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.thread.ThreadUtil;
-import cn.hutool.core.util.RandomUtil;
-
 import com.beanit.iec61850bean.*;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -14,7 +11,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.ArrayList;
 import java.util.List;
 
 public class FileServerTest implements ClientEventListener {
@@ -36,13 +32,13 @@ public class FileServerTest implements ClientEventListener {
 
     private void startClient() throws IOException, ServiceError {
         ClientSap clientSap = new ClientSap();
-        this.clientAssociation = clientSap.associate(InetAddress.getByName("192.168.13.27"), PORT, "", this);
+        this.clientAssociation = clientSap.associate(InetAddress.getByName("127.0.0.1"), PORT, "", this);
         this.clientModel = this.clientAssociation.retrieveModel();
     }
 
     private void startServer() throws SclParseException, IOException {
         serverSap = new ServerSap(PORT, 0, null, SclParser.parse(ICD_FILE).get(0), null);
-        serverSap.setFileServiceParentPath("D:\\codeSpeace\\myTest");
+        serverSap.setFileServiceParentPath("/Users/mujave/workspace.localized/test/");
 
         this.serverSap.startListening(new ServerEventListener() {
             @Override
@@ -89,8 +85,9 @@ public class FileServerTest implements ClientEventListener {
 
     @Test
     public void testPutFile() throws Exception {
-        this.clientAssociation.writeFile("test.txt", FileUtil.file("D:\\codeSpeace\\myTest\\2.txt"));
-        ThreadUtil.sleep(10 * 60 * 1000);
+        this.clientAssociation.writeFile("test.txt", FileUtil.file("/Users/mujave/workspace.localized/test/test.txt"));
+
+        ThreadUtil.sleep(60*60*1000);
     }
 
     @Override
