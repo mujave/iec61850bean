@@ -25,12 +25,18 @@ import java.util.List;
 import java.util.Timer;
 
 /**
- * The <code>ServerSap</code> class represents the IEC 61850 service access point for server
- * applications. It corresponds to the AccessPoint defined in the ICD/SCL file. A server application
- * that is to listen for client connections should first get an instance of <code>ServerSap</code>
- * using the static function ServerSap.getSapsFromSclFile(). Next all the necessary configuration
- * parameters can be set. Finally the <code>startListening</code> function is called to listen for
- * client associations. Changing properties of a ServerSap after starting to listen is not
+ * The <code>ServerSap</code> class represents the IEC 61850 service access
+ * point for server
+ * applications. It corresponds to the AccessPoint defined in the ICD/SCL file.
+ * A server application
+ * that is to listen for client connections should first get an instance of
+ * <code>ServerSap</code>
+ * using the static function ServerSap.getSapsFromSclFile(). Next all the
+ * necessary configuration
+ * parameters can be set. Finally the <code>startListening</code> function is
+ * called to listen for
+ * client associations. Changing properties of a ServerSap after starting to
+ * listen is not
  * recommended and has unknown effects.
  */
 public final class ServerSap {
@@ -39,8 +45,8 @@ public final class ServerSap {
     private static final int MAXIMUM_MMS_PDU_SIZE = 65000;
     final ServerModel serverModel;
     final List<ServerAssociation> associations = new ArrayList<>();
-    byte[] servicesSupportedCalled = new byte[]{(byte) 0xee, 0x1c, 0, 0, 0x04, 0x08, 0, 0, 0x79, (byte) 0xef, 0x18};
-    byte[] cbbBitString = {(byte) 0xfb, 0x00};
+    byte[] servicesSupportedCalled = new byte[] { (byte) 0xee, 0x1c, 0, 0, 0x04, 0x08, 0, 0, 0x79, (byte) 0xef, 0x18 };
+    byte[] cbbBitString = { (byte) 0xfb, 0x00 };
     ServerEventListener serverEventListener;
     Timer timer;
     boolean listening = false;
@@ -65,15 +71,21 @@ public final class ServerSap {
      * Creates a ServerSap.
      *
      * @param port                local port to listen on for new connections
-     * @param backlog             The maximum queue length for incoming connection indications (a request to
-     *                            connect) is set to the backlog parameter. If a connection indication arrives when the queue
-     *                            is full, the connection is refused. Set to 0 or less for the default value.
-     * @param bindAddr            local IP address to bind to, pass null to bind to all
+     * @param backlog             The maximum queue length for incoming connection
+     *                            indications (a request to
+     *                            connect) is set to the backlog parameter. If a
+     *                            connection indication arrives when the queue
+     *                            is full, the connection is refused. Set to 0 or
+     *                            less for the default value.
+     * @param bindAddr            local IP address to bind to, pass null to bind to
+     *                            all
      * @param serverModel         the server model
-     * @param serverSocketFactory the factory class to generate the ServerSocket. Could be used to
+     * @param serverSocketFactory the factory class to generate the ServerSocket.
+     *                            Could be used to
      *                            create SSLServerSockets. null = default
      */
-    public ServerSap(int port, int backlog, InetAddress bindAddr, ServerModel serverModel, ServerSocketFactory serverSocketFactory) {
+    public ServerSap(int port, int backlog, InetAddress bindAddr, ServerModel serverModel,
+            ServerSocketFactory serverSocketFactory) {
         this.port = port;
         this.backlog = backlog;
         this.bindAddr = bindAddr;
@@ -99,8 +111,10 @@ public final class ServerSap {
     }
 
     /**
-     * Sets the maximum queue length for incoming connection indications (a request to connect) is set
-     * to the backlog parameter. If a connection indication arrives when the queue is full, the
+     * Sets the maximum queue length for incoming connection indications (a request
+     * to connect) is set
+     * to the backlog parameter. If a connection indication arrives when the queue
+     * is full, the
      * connection is refused. Set to 0 or less for the default value.
      *
      * @param backlog the maximum queue length for incoming connections.
@@ -123,8 +137,10 @@ public final class ServerSap {
     }
 
     /**
-     * Sets the factory class to generate the ServerSocket. The ServerSocketFactory could be used to
-     * create SSLServerSockets. Set to <code>null</code> to use <code>ServerSocketFactory.getDefault()
+     * Sets the factory class to generate the ServerSocket. The ServerSocketFactory
+     * could be used to
+     * create SSLServerSockets. Set to <code>null</code> to use
+     * <code>ServerSocketFactory.getDefault()
      * </code>.
      *
      * @param serverSocketFactory the factory class to generate the ServerSocket.
@@ -143,12 +159,16 @@ public final class ServerSap {
     }
 
     /**
-     * Sets the maximum MMS PDU size in bytes that the server will support. If the client requires the
-     * use of a smaller maximum MMS PDU size, then the smaller size will be accepted by the server.
+     * Sets the maximum MMS PDU size in bytes that the server will support. If the
+     * client requires the
+     * use of a smaller maximum MMS PDU size, then the smaller size will be accepted
+     * by the server.
      * The default size is 65000.
      *
-     * @param size cannot be less than 64. The upper limit is 65000 so that segmentation at the lower
-     *             transport layer is avoided. The Transport Layer's maximum PDU size is 65531.
+     * @param size cannot be less than 64. The upper limit is 65000 so that
+     *             segmentation at the lower
+     *             transport layer is avoided. The Transport Layer's maximum PDU
+     *             size is 65531.
      */
     public void setMaxMmsPduSize(int size) {
         if (size >= MINIMUM_MMS_PDU_SIZE && size <= MAXIMUM_MMS_PDU_SIZE) {
@@ -159,7 +179,8 @@ public final class ServerSap {
     }
 
     /**
-     * Set the maximum number of associations that are allowed in parallel by the server.
+     * Set the maximum number of associations that are allowed in parallel by the
+     * server.
      *
      * @param maxAssociations the number of associations allowed (default is 100)
      */
@@ -168,11 +189,14 @@ public final class ServerSap {
     }
 
     /**
-     * Sets the message fragment timeout. This is the timeout that the socket timeout is set to after
-     * the first byte of a message has been received. If such a timeout is thrown, the
+     * Sets the message fragment timeout. This is the timeout that the socket
+     * timeout is set to after
+     * the first byte of a message has been received. If such a timeout is thrown,
+     * the
      * association/socket is closed.
      *
-     * @param timeout the message fragment timeout in milliseconds. The default is 60000.
+     * @param timeout the message fragment timeout in milliseconds. The default is
+     *                60000.
      */
     public void setMessageFragmentTimeout(int timeout) {
         acseSap.serverTSap.setMessageFragmentTimeout(timeout);
@@ -188,10 +212,12 @@ public final class ServerSap {
     }
 
     /**
-     * Sets the ProposedMaxServOutstandingCalling parameter. The given parameter has no affect on the
+     * Sets the ProposedMaxServOutstandingCalling parameter. The given parameter has
+     * no affect on the
      * functionality of this server.
      *
-     * @param maxCalling the ProposedMaxServOutstandingCalling parameter. The default is 5.
+     * @param maxCalling the ProposedMaxServOutstandingCalling parameter. The
+     *                   default is 5.
      */
     public void setProposedMaxServOutstandingCalling(int maxCalling) {
         proposedMaxServOutstandingCalling = maxCalling;
@@ -207,10 +233,12 @@ public final class ServerSap {
     }
 
     /**
-     * Sets the ProposedMaxServOutstandingCalled parameter.The given parameter has no affect on the
+     * Sets the ProposedMaxServOutstandingCalled parameter.The given parameter has
+     * no affect on the
      * functionality of this server.
      *
-     * @param maxCalled the ProposedMaxServOutstandingCalled parameter. The default is 5.
+     * @param maxCalled the ProposedMaxServOutstandingCalled parameter. The default
+     *                  is 5.
      */
     public void setProposedMaxServOutstandingCalled(int maxCalled) {
         proposedMaxServOutstandingCalled = maxCalled;
@@ -226,10 +254,12 @@ public final class ServerSap {
     }
 
     /**
-     * Sets the ProposedDataStructureNestingLevel parameter. The given parameter has no affect on the
+     * Sets the ProposedDataStructureNestingLevel parameter. The given parameter has
+     * no affect on the
      * functionality of this server.runServer
      *
-     * @param nestingLevel the ProposedDataStructureNestingLevel parameter. The default is 10.
+     * @param nestingLevel the ProposedDataStructureNestingLevel parameter. The
+     *                     default is 10.
      */
     public void setProposedDataStructureNestingLevel(int nestingLevel) {
         proposedDataStructureNestingLevel = nestingLevel;
@@ -253,7 +283,8 @@ public final class ServerSap {
     }
 
     /**
-     * Sets the SevicesSupportedCalled parameter. The given parameter has no affect on the
+     * Sets the SevicesSupportedCalled parameter. The given parameter has no affect
+     * on the
      * functionality of this server.
      *
      * @param services the ServicesSupportedCalled parameter
@@ -272,7 +303,6 @@ public final class ServerSap {
     /**
      * 设置文件服务的根目录
      *
-     * @param fileServiceParentPath
      */
     public void setFileServiceParentPath(String fileServiceParentPath) {
         this.fileServiceParentPath = fileServiceParentPath;
@@ -285,16 +315,17 @@ public final class ServerSap {
     /**
      * 文件服务在读取目录属性时，是否上报子目录
      *
-     * @param reportFileDirectory
      */
     public void setReportFileDirectory(boolean reportFileDirectory) {
         this.reportFileDirectory = reportFileDirectory;
     }
 
     /**
-     * Creates a server socket waiting on the configured port for incoming association requests.
+     * Creates a server socket waiting on the configured port for incoming
+     * association requests.
      *
-     * @param serverEventListener the listener that is notified of incoming writes and when the server
+     * @param serverEventListener the listener that is notified of incoming writes
+     *                            and when the server
      *                            stopped listening for new connections.
      * @throws IOException if an error occurs binding to the port.
      */
@@ -311,7 +342,8 @@ public final class ServerSap {
     }
 
     /**
-     * Stops listening for new connections and closes all existing connections/associations.
+     * Stops listening for new connections and closes all existing
+     * connections/associations.
      */
     public void stop() {
         acseSap.stopListening();

@@ -31,7 +31,7 @@
             <DataSetDirectory/>
             <ConfDataSet max="16" maxAttributes="512"/>
             <ReadWrite/>
-            <ConfReportControl max="16"/>
+            <ConfReportControl max="3"/>
             <GetCBValues/>
             <ReportSettings bufTime="Fix" cbName="Conf" datSet="Dyn" intgPd="Dyn" optFields="Dyn" rptID="Dyn" trgOps="Dyn"/>
             <FileHandling/>
@@ -51,17 +51,11 @@
                             <FCDA doName="AnInd1" fc="MX" ldInst="MONT" lnClass="GGIO" lnInst="4"/>
                         </DataSet>
 
-                        <ReportControl bufTime="0" buffered="false" confRev="1" datSet="ds01Din" intgPd="30000"
-                                       name="brcb01Din" rptID="MONT/LLN0$BR$brcb01Din">
-                            <TrgOps dchg="true" dupd="false" period="false" qchg="true"/>
-                            <OptFields dataSet="true" entryID="true" reasonCode="true" seqNum="true" timeStamp="true"/>
-                            <RptEnabled max="16"/>
-                        </ReportControl>
                         <ReportControl bufTime="0" buffered="false" confRev="1" datSet="ds01Ain" intgPd="3000"
                                        name="brcb01Ain" rptID="MONT/LLN0$BR$brcb01Ain">
-                            <TrgOps dchg="true" dupd="false" period="false" qchg="false"/>
+                            <TrgOps dchg="true" dupd="false" period="false" qchg="false" gi="true"/>
                             <OptFields dataSet="true" entryID="true" reasonCode="true" seqNum="true" timeStamp="true"/>
-                            <RptEnabled max="16"/>
+                            <RptEnabled max="3"/>
                         </ReportControl>
 
                         <DOI desc="Mode" name="Mod">

@@ -2,6 +2,7 @@ package com.beanit.iec61850bean.mms;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -26,6 +27,7 @@ import com.beanit.iec61850bean.ServerEventListener;
 import com.beanit.iec61850bean.ServerModel;
 import com.beanit.iec61850bean.ServerSap;
 import com.beanit.iec61850bean.ServiceError;
+import com.beanit.iec61850bean.Urcb;
 
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
@@ -105,14 +107,15 @@ public class SimpleServerClientTest implements ClientEventListener {
     @Test
     public void testSetValueForClient() throws IOException, ServiceError, InterruptedException {
         BdaBoolean v1 = (BdaBoolean) clientModel.findModelNode("FKMONT/GGIO1.Ind1.stVal", Fc.ST);
-        System.out.println("1."+v1.getValue()); 
+        System.out.println("1." + v1.getValue());
         BdaFloat32 v2 = (BdaFloat32) clientModel.findModelNode("FKMONT/GGIO2.AnInd1.mag.f", Fc.MX);
-        System.out.println("2."+v2.getFloat());
+        System.out.println("2." + v2.getFloat());
         testSetValueForServer();
-       
-        clientAssociation.getDataValues(v1); System.out.println("3."+v1.getValue());  
+
+        clientAssociation.getDataValues(v1);
+        System.out.println("3." + v1.getValue());
         clientAssociation.getDataValues(v2);
-        System.out.println("4."+v2.getFloat().floatValue()); 
+        System.out.println("4." + v2.getFloat().floatValue());
     }
 
     @Test
@@ -136,4 +139,16 @@ public class SimpleServerClientTest implements ClientEventListener {
         log.error("Iec61850 mms server has closed");
     }
 
+    @Test
+    public void testRcbEnable() {
+        while (true) {
+            log.info("==================================================");
+            Collection<Urcb> urcbs = this.serverModel.getUrcbs();
+            for (Urcb urcb : urcbs) {
+                log.info("{}:{}", urcb.getName(), urcb.getRptEna().getValue());
+            }
+            ThreadUtil.sleep(5*1000L);
+        }
+
+    }
 }

@@ -1,10 +1,12 @@
 package com.beanit.iec61850bean.integrationtests;
 
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.thread.ThreadUtil;
 import cn.hutool.core.util.RandomUtil;
 
 import com.beanit.iec61850bean.*;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
@@ -36,12 +38,11 @@ public class FileServerTest implements ClientEventListener {
         ClientSap clientSap = new ClientSap();
         this.clientAssociation = clientSap.associate(InetAddress.getByName("192.168.13.27"), PORT, "", this);
         this.clientModel = this.clientAssociation.retrieveModel();
-        this.clientAssociation.enableReporting(clientModel.getUrcb("FKMONT/LLN0.brcb01Ain01"));
     }
 
     private void startServer() throws SclParseException, IOException {
         serverSap = new ServerSap(PORT, 0, null, SclParser.parse(ICD_FILE).get(0), null);
-        serverSap.setFileServiceParentPath("D:\\codeSpeace\\test");
+        serverSap.setFileServiceParentPath("D:\\codeSpeace\\myTest");
 
         this.serverSap.startListening(new ServerEventListener() {
             @Override
@@ -64,7 +65,7 @@ public class FileServerTest implements ClientEventListener {
 
     @Test
     public void testGetFileDirectory() throws IOException, ServiceError, InterruptedException {
-        List<FileInformation> fileDirectory = this.clientAssociation.getFileDirectory("");
+        List<FileInformation> fileDirectory = this.clientAssociation.getFileDirectory("重要文档");
         int i = 0;
         for (FileInformation fileInformation : fileDirectory) {
             log.info("{} - {} sizeof: {} {}", ++i, fileInformation.getFilename(), fileInformation.getFileSize(),
@@ -74,7 +75,7 @@ public class FileServerTest implements ClientEventListener {
 
     @Test
     public void testGetFile() throws IOException, ServiceError, InterruptedException {
-        this.clientAssociation.getFile("/chart.txt", (byte[] fileData, boolean moreFollows) -> {
+        this.clientAssociation.getFile("/push.bat", (byte[] fileData, boolean moreFollows) -> {
             log.info("Received {} bytes of file data. More data follows: {}", fileData.length, moreFollows);
             log.info("\n{}", new String(fileData));
             return moreFollows;
@@ -87,31 +88,18 @@ public class FileServerTest implements ClientEventListener {
     }
 
     @Test
-    public void testReport() throws ServiceError, IOException {
-        BdaFloat32 node = (BdaFloat32) serverModel.findModelNode("FKMONT/GGIO2.AnInd1.mag.f", Fc.MX);
-        node.getFloat().floatValue();
-        System.out.println();
-        while (true) {
-            node.setFloat(RandomUtil.randomFloat());
-            List<BasicDataAttribute> bdas = new ArrayList<>();
-            bdas.add(node);
-            this.serverSap.setValues(bdas);
-            ThreadUtil.sleep(1000);
-        }
-    }
-
-    @Test
-    public void testPutFile() throws ServiceError, IOException {
-        this.clientAssociation.writeFile("test.txt", "2.txt");
-    }
-
-    @Override
-    public void newReport(Report report) {
-        System.out.println("newReport: " + report);
+    public void testPutFile() throws Exception {
+        this.clientAssociation.writeFile("test.txt", FileUtil.file("D:\\codeSpeace\\myTest\\2.txt"));
+        ThreadUtil.sleep(10 * 60 * 1000);
     }
 
     @Override
     public void associationClosed(IOException e) {
 
+    }
+
+    @Override
+    public void newReport(Report report) {
+        System.out.println("Unimplemented method 'newReport'");
     }
 }

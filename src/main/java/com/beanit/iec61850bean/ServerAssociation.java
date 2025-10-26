@@ -343,9 +343,9 @@ final class ServerAssociation {
                     confirmedServiceResponse.setFileDelete(fileDeleteResponse);
                 } else if (confirmedServiceRequest.getFileObtain() != null) {
                     logger.info("Got a FileObtain request");
-                    FileObtainResponse fileObtainResponse = handleFileObtainRequest(
-                            confirmedServiceRequest.getFileObtain());
-                    confirmedServiceResponse.setFileObtain(fileObtainResponse);
+                    // 应该拿到一个读取客户端文件的请求发出去
+                    handleFileObtainRequest(confirmedRequestPdu.getInvokeID(), confirmedServiceRequest.getFileObtain());
+                    continue;
                 } else {
                     throw new ServiceError(
                             ServiceError.FAILED_DUE_TO_COMMUNICATIONS_CONSTRAINT,
@@ -371,14 +371,84 @@ final class ServerAssociation {
         }
     }
 
-    private FileObtainResponse handleFileObtainRequest(FileObtainRequest fileObtainRequest) throws ServiceError {
-        FileObtainResponse fileObtainResponse = new FileObtainResponse();
+    /**
+     * 处理文件写入请求
+     * 
+     * @param invokeId
+     * @param fileObtainRequest
+     * @throws ServiceError
+     * @throws IOException
+     */
+    private void handleFileObtainRequest(Unsigned32 invokeId, FileObtainRequest fileObtainRequest) {
+        String dest = fileObtainRequest.getDestinationFile().getBerGraphicString().get(0).toString();
+        String source = fileObtainRequest.getSourceFile().getBerGraphicString().get(0).toString();
 
-        return fileObtainResponse;
+        FileOpenRequest fileOpenRequest = new FileOpenRequest();
+        FileName fileSpecification = new FileName();
+
+        fileSpecification.getBerGraphicString().add(new BerGraphicString(source.getBytes(UTF_8)));
+        fileOpenRequest.setFileName(fileSpecification);
+        fileOpenRequest.setInitialPosition(new Unsigned32(0));
+
+        ConfirmedServiceRequest confirmedServiceRequest = new ConfirmedServiceRequest();
+        confirmedServiceRequest.setFileOpen(fileOpenRequest);
+
+        ConfirmedRequestPDU confirmedRequestPdu = new ConfirmedRequestPDU();
+        confirmedRequestPdu.setInvokeID(invokeId);
+        confirmedRequestPdu.setService(confirmedServiceRequest);
+
+        MMSpdu mmsResponsePdu = new MMSpdu();
+        mmsResponsePdu.setConfirmedRequestPDU(confirmedRequestPdu);
+
+        if (sendAnMmsPdu(mmsResponsePdu)) {
+            // return;
+            try {
+                expectedFileOpenResponse(invokeId, dest, (byte[] fileData, boolean moreFollows) -> {
+                    logger.info("Received {} bytes of file data. More data follows: {}", fileData.length, moreFollows);
+                    logger.info("\n{}", new String(fileData));
+                    return moreFollows;
+                });
+            } catch (ServiceError e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+
+            // file obtain end
+        }
+    }
+
+    private void expectedFileOpenResponse(Unsigned32 invokeId, String destFileName, GetFileListener listener)
+            throws ServiceError, IOException {
+        FileOpenResponse fileOpen;
+
+        while (true) {
+            MMSpdu listenForMmsPdu = listenForMmsRequest(acseAssociation);
+            if (listenForMmsPdu.getConfirmedResponsePDU() != null
+                    && listenForMmsPdu.getConfirmedResponsePDU().getService().getFileOpen() != null) {
+                fileOpen = listenForMmsPdu.getConfirmedResponsePDU().getService().getFileOpen();
+
+                break;
+            }
+        }
+
+        if (fileOpen != null) {
+            Integer32 frsmID = fileOpen.getFrsmID();
+
+            boolean moreFollows = true;
+            while (moreFollows) {
+                moreFollows = readNextFileDataBlock(invokeId, frsmID, listener);
+            }
+        }
+
+        // closeFile
+
     }
 
     /**
-     * 文件删除请求
+     * 处理文件删除请求
      * 
      * @param request 一个携带要删除的文件名称的请求
      * @return 删除成功的响应
@@ -395,7 +465,7 @@ final class ServerAssociation {
             throw new ServiceError(ServiceError.INSTANCE_NOT_AVAILABLE, "file not existsent");
         }
         Iterator<FileReader> readingFile = fileReadCache.iterator();
-        while (readingFile.hasNext()){
+        while (readingFile.hasNext()) {
             FileReader fileReader = readingFile.next();
             if (fileReader.getReadName().equals(fileName)) {
                 // 正在被读取的文件里面有该被删除的文件
@@ -422,7 +492,7 @@ final class ServerAssociation {
     private Cache<String, FileReader> fileReadCache = CacheUtil.newFIFOCache(1024);
 
     /**
-     * 文件关闭请求
+     * 处理文件关闭请求
      * 
      * @param request 一个携带文件读取会话ID(frmsid)的请求
      * @return
@@ -436,7 +506,7 @@ final class ServerAssociation {
     }
 
     /**
-     * 文件内容读取请求
+     * 处理文件内容读取请求
      * 
      * @param request 一个携带文件读取会话ID(frmsid)的请求
      * @return
@@ -459,7 +529,7 @@ final class ServerAssociation {
     }
 
     /**
-     * 文件打开请求
+     * 处理文件打开请求
      * 
      * @param request 一个包含文件名称的请求
      * @return 一个携带文件读取会话ID(frmsid)的响应
@@ -621,7 +691,7 @@ final class ServerAssociation {
     private MMSpdu listenForMmsRequest(AcseAssociation acseAssociation) {
 
         while (true) {
-            MMSpdu mmsRequestPdu;
+            MMSpdu mmsPdu;
             byte[] buffer;
             pduBuffer.clear();
             try {
@@ -647,17 +717,20 @@ final class ServerAssociation {
                         e);
                 return null;
             }
-            mmsRequestPdu = new MMSpdu();
+            mmsPdu = new MMSpdu();
 
             try {
-                mmsRequestPdu.decode(new ByteArrayInputStream(buffer), null);
+                mmsPdu.decode(new ByteArrayInputStream(buffer), null);
             } catch (IOException e) {
                 logger.warn("IOException decoding received MMS request PDU.", e);
                 continue;
             }
 
-            if (mmsRequestPdu.getConfirmedRequestPDU() == null) {
-                if (mmsRequestPdu.getConcludeRequestPDU() != null) {
+            if (mmsPdu.getConfirmedRequestPDU() == null) {
+                if (mmsPdu.getConfirmedResponsePDU() != null) {
+                    logger.debug("Got confirm-response PDU");
+                    return mmsPdu;
+                } else if (mmsPdu.getConcludeRequestPDU() != null) {
                     logger.debug("Got Conclude request, will close connection");
                     return null;
                 } else {
@@ -666,8 +739,51 @@ final class ServerAssociation {
                 }
             }
 
-            return mmsRequestPdu;
+            return mmsPdu;
         }
+    }
+
+    private boolean readNextFileDataBlock(Unsigned32 invokeId, Integer32 frsmId, GetFileListener listener)
+            throws ServiceError, IOException {
+        FileReadRequest fileReadRequest = new FileReadRequest(frsmId.longValue());
+
+        ConfirmedServiceRequest confirmedServiceRequest = new ConfirmedServiceRequest();
+        confirmedServiceRequest.setFileRead(fileReadRequest);
+
+        ConfirmedRequestPDU confirmedRequestPDU = new ConfirmedRequestPDU();
+        confirmedRequestPDU.setInvokeID(invokeId);
+        confirmedRequestPDU.setService(confirmedServiceRequest);
+
+        MMSpdu mmSpdu = new MMSpdu();
+        mmSpdu.setConfirmedRequestPDU(confirmedRequestPDU);
+
+        sendAnMmsPdu(mmSpdu);
+
+        ConfirmedServiceResponse confirmedServiceResponse = null;
+
+        if (confirmedServiceResponse.getFileRead() == null) {
+            throw new ServiceError(
+                    ServiceError.FAILED_DUE_TO_COMMUNICATIONS_CONSTRAINT,
+                    "Error decoding FileReadResponsePdu");
+        }
+
+        byte[] fileData = confirmedServiceResponse.getFileRead().getFileData().value;
+
+        boolean moreFollows = true;
+
+        if (confirmedServiceResponse.getFileRead().getMoreFollows() != null) {
+            moreFollows = confirmedServiceResponse.getFileRead().getMoreFollows().value;
+        }
+
+        if (listener != null) {
+            boolean continueRead = listener.dataReceived(fileData, moreFollows);
+
+            if (moreFollows == true) {
+                moreFollows = continueRead;
+            }
+        }
+
+        return moreFollows;
     }
 
     private MMSpdu createServiceErrorResponse(ServiceError e, int invokeId) {
@@ -1666,8 +1782,9 @@ final class ServerAssociation {
                         return writeResponse;
                     }
 
-                } else if (nodeName.equals("RptID")
-                        || nodeName.equals("BufTm")
+                } else if (nodeName.equals("RptID")) {
+                    return writeSuccess;
+                } else if (nodeName.equals("BufTm")
                         || nodeName.equals("TrgOps")
                         || nodeName.equals("IntgPd")) {
                     if ((urcb.reserved == null || urcb.reserved == this) && !urcb.enabled) {

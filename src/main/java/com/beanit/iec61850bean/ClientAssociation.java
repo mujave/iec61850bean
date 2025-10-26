@@ -14,6 +14,7 @@
 package com.beanit.iec61850bean;
 
 import com.beanit.asn1bean.ber.ReverseByteArrayOutputStream;
+import com.beanit.asn1bean.ber.types.BerGeneralizedTime;
 import com.beanit.asn1bean.ber.types.BerInteger;
 import com.beanit.asn1bean.ber.types.BerNull;
 import com.beanit.asn1bean.ber.types.string.BerGraphicString;
@@ -29,6 +30,14 @@ import com.beanit.josistack.AcseAssociation;
 import com.beanit.josistack.ByteBufferInputStream;
 import com.beanit.josistack.ClientAcseSap;
 import com.beanit.josistack.DecodingException;
+
+import cn.hutool.cache.Cache;
+import cn.hutool.cache.CacheUtil;
+import cn.hutool.core.convert.Convert;
+import cn.hutool.core.date.DateUnit;
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.io.FileUtil;
+import cn.hutool.core.util.RandomUtil;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -65,6 +74,8 @@ public final class ClientAssociation {
             new byte[] { 0x03, 0x05, (byte) 0xf1, 0x00 });
     private final ClientReceiver clientReceiver;
     private final BlockingQueue<MMSpdu> incomingResponses = new LinkedBlockingQueue<>();
+    private final BlockingQueue<MMSpdu> incomingRequests = new LinkedBlockingQueue<>();
+
     private final ReverseByteArrayOutputStream reverseOStream = new ReverseByteArrayOutputStream(500, true);
     ServerModel serverModel;
     private AcseAssociation acseAssociation = null;
@@ -367,37 +378,57 @@ public final class ClientAssociation {
         return servicesSupported;
     }
 
-    private ConfirmedServiceResponse encodeWriteReadDecode(ConfirmedServiceRequest serviceRequest)
+    private ConfirmedServiceResponse encodeWriteReadResponse(ConfirmedServiceRequest serviceRequest)
             throws ServiceError, IOException {
 
-        int currentInvokeId = getInvokeId();
+        encodeWriteResponse(serviceRequest);
+        return getConfirmedResponsePdu();
+    }
 
-        ConfirmedRequestPDU confirmedRequestPdu = new ConfirmedRequestPDU();
-        confirmedRequestPdu.setInvokeID(new Unsigned32(currentInvokeId));
-        confirmedRequestPdu.setService(serviceRequest);
+    private ConfirmedServiceRequest encodeWriteReadRequest(ConfirmedServiceRequest serviceRequest)
+            throws ServiceError, IOException {
 
-        MMSpdu requestPdu = new MMSpdu();
-        requestPdu.setConfirmedRequestPDU(confirmedRequestPdu);
+        encodeWriteResponse(serviceRequest);
+        return getConfirmedRequestPdu();
+    }
 
-        reverseOStream.reset();
+    /**
+     * 从服务端获取一个请求
+     * 主要是针对文件读取,客户端发送文件后服务端会进行文件读取流程
+     * 
+     * @return
+     * @throws ServiceError
+     * @throws IOException
+     */
+    private ConfirmedServiceRequest getConfirmedRequestPdu() throws ServiceError, IOException {
+        MMSpdu decodedRequestPdu = null;
 
         try {
-            requestPdu.encode(reverseOStream);
-        } catch (Exception e) {
-            IOException e2 = new IOException("Error encoding MmsPdu.", e);
-            clientReceiver.close(e2);
-            throw e2;
+            if (responseTimeout == 0) {
+                decodedRequestPdu = incomingRequests.take();
+            } else {
+                decodedRequestPdu = incomingRequests.poll(responseTimeout, TimeUnit.MILLISECONDS);
+            }
+        } catch (InterruptedException e) {
+            // TODO can this ever be interrupted?
         }
 
-        clientReceiver.setResponseExpected(currentInvokeId);
-        try {
-            acseAssociation.send(reverseOStream.getByteBuffer());
-        } catch (IOException e) {
-            IOException e2 = new IOException("Error sending packet.", e);
-            clientReceiver.close(e2);
-            throw e2;
+        ConfirmedRequestPDU confirmedRequestPDU = decodedRequestPdu.getConfirmedRequestPDU();
+        if (confirmedRequestPDU == null) {
+            throw new IllegalStateException("Response PDU is not a confirmed response pdu");
         }
 
+        return confirmedRequestPDU.getService();
+    }
+
+    /**
+     * 从服务端获取一个响应
+     * 
+     * @return
+     * @throws ServiceError
+     * @throws IOException
+     */
+    private ConfirmedServiceResponse getConfirmedResponsePdu() throws ServiceError, IOException {
         MMSpdu decodedResponsePdu = null;
 
         try {
@@ -432,6 +463,73 @@ public final class ClientAssociation {
         }
 
         return confirmedResponsePdu.getService();
+    }
+
+    /**
+     * 只发送请求不期待服务端的响应
+     */
+    private void encodeWriteResponse(ConfirmedServiceRequest serviceRequest)
+            throws ServiceError, IOException {
+
+        int currentInvokeId = getInvokeId();
+
+        ConfirmedRequestPDU confirmedRequestPdu = new ConfirmedRequestPDU();
+        confirmedRequestPdu.setInvokeID(new Unsigned32(currentInvokeId));
+        confirmedRequestPdu.setService(serviceRequest);
+
+        MMSpdu requestPdu = new MMSpdu();
+        requestPdu.setConfirmedRequestPDU(confirmedRequestPdu);
+
+        reverseOStream.reset();
+
+        try {
+            requestPdu.encode(reverseOStream);
+        } catch (Exception e) {
+            IOException e2 = new IOException("Error encoding MmsPdu.", e);
+            clientReceiver.close(e2);
+            throw e2;
+        }
+
+        clientReceiver.setResponseExpected(currentInvokeId);
+        try {
+            acseAssociation.send(reverseOStream.getByteBuffer());
+        } catch (IOException e) {
+            IOException e2 = new IOException("Error sending packet.", e);
+            clientReceiver.close(e2);
+            throw e2;
+        }
+    }
+
+    private void encodeWriteResponse(ConfirmedServiceResponse serviceResponse)
+            throws ServiceError, IOException {
+
+        int currentInvokeId = getInvokeId();
+
+        ConfirmedResponsePDU confirmedResponsePDU = new ConfirmedResponsePDU();
+        confirmedResponsePDU.setInvokeID(new Unsigned32(currentInvokeId));
+        confirmedResponsePDU.setService(serviceResponse);
+
+        MMSpdu requestPdu = new MMSpdu();
+        requestPdu.setConfirmedResponsePDU(confirmedResponsePDU);
+
+        reverseOStream.reset();
+
+        try {
+            requestPdu.encode(reverseOStream);
+        } catch (Exception e) {
+            IOException e2 = new IOException("Error encoding MmsPdu.", e);
+            clientReceiver.close(e2);
+            throw e2;
+        }
+
+        clientReceiver.setResponseExpected(currentInvokeId);
+        try {
+            acseAssociation.send(reverseOStream.getByteBuffer());
+        } catch (IOException e) {
+            IOException e2 = new IOException("Error sending packet.", e);
+            clientReceiver.close(e2);
+            throw e2;
+        }
     }
 
     private void associate(
@@ -599,7 +697,7 @@ public final class ClientAssociation {
 
     private List<String> retrieveLogicalDevices() throws ServiceError, IOException {
         ConfirmedServiceRequest serviceRequest = constructGetServerDirectoryRequest();
-        ConfirmedServiceResponse confirmedServiceResponse = encodeWriteReadDecode(serviceRequest);
+        ConfirmedServiceResponse confirmedServiceResponse = encodeWriteReadResponse(serviceRequest);
         return decodeGetServerDirectoryResponse(confirmedServiceResponse);
     }
 
@@ -644,7 +742,7 @@ public final class ClientAssociation {
         String continueAfterRef = "";
         do {
             ConfirmedServiceRequest serviceRequest = constructGetDirectoryRequest(ld, continueAfterRef, true);
-            ConfirmedServiceResponse confirmedServiceResponse = encodeWriteReadDecode(serviceRequest);
+            ConfirmedServiceResponse confirmedServiceResponse = encodeWriteReadResponse(serviceRequest);
             continueAfterRef = decodeGetDirectoryResponse(confirmedServiceResponse, lns);
 
         } while (!continueAfterRef.isEmpty());
@@ -728,7 +826,7 @@ public final class ClientAssociation {
     private LogicalNode retrieveDataDefinitions(ObjectReference lnRef)
             throws ServiceError, IOException {
         ConfirmedServiceRequest serviceRequest = constructGetDataDefinitionRequest(lnRef);
-        ConfirmedServiceResponse confirmedServiceResponse = encodeWriteReadDecode(serviceRequest);
+        ConfirmedServiceResponse confirmedServiceResponse = encodeWriteReadResponse(serviceRequest);
         return decodeGetDataDefinitionResponse(confirmedServiceResponse, lnRef);
     }
 
@@ -775,7 +873,7 @@ public final class ClientAssociation {
      */
     public void getDataValues(FcModelNode modelNode) throws ServiceError, IOException {
         ConfirmedServiceRequest serviceRequest = constructGetDataValuesRequest(modelNode);
-        ConfirmedServiceResponse confirmedServiceResponse = encodeWriteReadDecode(serviceRequest);
+        ConfirmedServiceResponse confirmedServiceResponse = encodeWriteReadResponse(serviceRequest);
         decodeGetDataValuesResponse(confirmedServiceResponse, modelNode);
     }
 
@@ -872,7 +970,7 @@ public final class ClientAssociation {
             ConfirmedServiceRequest confirmedServiceRequest = new ConfirmedServiceRequest();
             confirmedServiceRequest.setFileDirectory(fileDirectoryRequest);
 
-            ConfirmedServiceResponse confirmedServiceResponse = encodeWriteReadDecode(confirmedServiceRequest);
+            ConfirmedServiceResponse confirmedServiceResponse = encodeWriteReadResponse(confirmedServiceRequest);
 
             moreFollows = decodeGetFileDirectoryResponse(confirmedServiceResponse, files);
 
@@ -902,7 +1000,7 @@ public final class ClientAssociation {
         ConfirmedServiceRequest confirmedServiceRequest = new ConfirmedServiceRequest();
         confirmedServiceRequest.setFileDelete(fileDeleteRequest);
 
-        ConfirmedServiceResponse confirmedServiceResponse = encodeWriteReadDecode(confirmedServiceRequest);
+        ConfirmedServiceResponse confirmedServiceResponse = encodeWriteReadResponse(confirmedServiceRequest);
 
         if (confirmedServiceResponse.getFileDelete() == null) {
             throw new ServiceError(
@@ -913,15 +1011,13 @@ public final class ClientAssociation {
 
     /**
      * Write a file to the server
-     * @param filename 文件以这个名字保存到服务端
+     * 
+     * @param filename  文件以这个名字保存到服务端
      * @param writeFile 要保存的文件，文件不存在则抛出异常
-     * @throws ServiceError if a ServiceError is returned by the server
-     * @throws IOException  if a fatal association error occurs. The association
-     *                      object will be closed
-     *                      and can no longer be used after this exception is 
      * @author Mujave
+     * @throws Exception
      */
-    public void writeFile(String filename, File writeFile) throws ServiceError, IOException {
+    public void writeFile(String filename, File writeFile) throws Exception {
         if (!writeFile.exists()) {
             throw new ServiceError(
                     ServiceError.INSTANCE_NOT_AVAILABLE,
@@ -938,14 +1034,112 @@ public final class ClientAssociation {
 
         ConfirmedServiceRequest confirmedServiceRequest = new ConfirmedServiceRequest();
         confirmedServiceRequest.setFileObtain(fileObtainRequest);
-
-        ConfirmedServiceResponse confirmedServiceResponse = encodeWriteReadDecode(confirmedServiceRequest);
-        
-        if (confirmedServiceResponse.getFileObtain() == null) {
+        // 等待文件写入后的文件打开的请求
+        ConfirmedServiceRequest responseRequest = encodeWriteReadRequest(confirmedServiceRequest);
+        if (responseRequest.getFileOpen() == null) {
             throw new ServiceError(
-                    ServiceError.FAILED_DUE_TO_COMMUNICATIONS_CONSTRAINT,
-                    "Error decoding ObtainFileResponsePdu");
+                    ServiceError.FATAL,
+                    "Error decoding FileOpenRequestPdu");
         }
+
+        FileOpenRequest fileOpenRequest = responseRequest.getFileOpen();
+        String fileOpenFileName = fileOpenRequest.getFileName().getBerGraphicString().get(0).toString();
+        // 开始进行文件上传
+        if (!writeFile.getName().equals(fileOpenFileName)) {
+            // todo 本地要上送的文件名称与服务端要读取的文件名称不一样
+            throw new Exception("期待的文件读取名称不符");
+        }
+        // 构造一个文件打开的请求
+        FileOpenResponse fileOpenResponse = new FileOpenResponse();
+        int frmsId = -1;
+        do {
+            frmsId = RandomUtil.randomInt(0, Integer.MAX_VALUE);
+        } while (fileReadCache.containsKey(Convert.toStr(frmsId)));
+
+        fileOpenResponse.setFrsmID(new Integer32(frmsId));
+        // 1个小时内读取完毕
+        fileReadCache.put(Convert.toStr(frmsId), new FileReader(writeFile, filename),
+                DateUnit.HOUR.getMillis() * 1);
+
+        FileAttributes fileAttributes = new FileAttributes();
+        fileAttributes.setSizeOfFile(new Unsigned32(writeFile.length()));
+        fileAttributes.setLastModified(
+                new BerGeneralizedTime(DateUtil.format(new Date(writeFile.lastModified()), "yyyyMMddHHmmssZ")));
+        fileOpenResponse.setFileAttributes(fileAttributes);
+
+        ConfirmedServiceResponse confirmedServiceResponse = new ConfirmedServiceResponse();
+        confirmedServiceResponse.setFileOpen(fileOpenResponse);
+
+        ConfirmedResponsePDU confirmedResponsePDU = new ConfirmedResponsePDU();
+        confirmedResponsePDU.setInvokeID(new Unsigned32(invokeId));
+        confirmedResponsePDU.setService(confirmedServiceResponse);
+
+        MMSpdu requestPdu = new MMSpdu();
+        requestPdu.setConfirmedResponsePDU(confirmedResponsePDU);
+
+        reverseOStream.reset();
+
+        try {
+            requestPdu.encode(reverseOStream);
+        } catch (Exception e) {
+            IOException e2 = new IOException("Error encoding MmsPdu.", e);
+            clientReceiver.close(e2);
+            throw e2;
+        }
+
+        try {
+            acseAssociation.send(reverseOStream.getByteBuffer());
+        } catch (IOException e) {
+            IOException e2 = new IOException("Error sending packet.", e);
+            clientReceiver.close(e2);
+            throw e2;
+        }
+
+    }
+
+    /**
+     * 正在被对方读取的文件缓存
+     * <p>
+     * 这个队列默认大小是1024个,当缓存满时，清理过期缓存对象，清理后依旧满则删除先入的缓存（链表首部对象）
+     * </p>
+     */
+    private Cache<String, FileReader> fileReadCache = CacheUtil.newFIFOCache(1024);
+
+    /**
+     * 文件关闭请求
+     * 
+     * @param request 一个携带文件读取会话ID(frmsid)的请求
+     * @return
+     * @author Mujave
+     */
+    private FileCloseResponse handleFileCloseRequest(FileCloseRequest request) {
+        FileCloseResponse response = new FileCloseResponse();
+        Long frmsId = request.value.longValue();
+        fileReadCache.remove(frmsId.toString());
+        return response;
+    }
+
+    /**
+     * 文件内容读取请求
+     * 
+     * @param request 一个携带文件读取会话ID(frmsid)的请求
+     * @return
+     * @throws ServiceError 会话id不存在
+     * @author Mujave
+     */
+    private FileReadResponse handleFileReadRequest(FileReadRequest request) throws ServiceError {
+        String frmsId = Convert.toStr(request.value.longValue());
+        if (!fileReadCache.containsKey(frmsId)) {
+            logger.error(" read File has Error: readCache not fonut frmsid - {}", frmsId);
+            throw new ServiceError(ServiceError.PARAMETER_VALUE_INCONSISTENT,
+                    "frmsid is an illegal value..");
+        }
+        FileReader fileReader = fileReadCache.get(frmsId);
+        FileReadResponse response = new FileReadResponse();
+        response.setFileData(new BerGraphicString(fileReader.read(negotiatedMaxPduSize)));
+        // 获取是否文件已经读取到了末尾
+        response.setMoreFollows(new BerBoolean(!fileReader.isEndOfFile()));
+        return response;
     }
 
     private Integer32 openFile(String filename) throws ServiceError, IOException {
@@ -960,7 +1154,7 @@ public final class ClientAssociation {
         ConfirmedServiceRequest confirmedServiceRequest = new ConfirmedServiceRequest();
         confirmedServiceRequest.setFileOpen(fileOpenRequest);
 
-        ConfirmedServiceResponse confirmedServiceResponse = encodeWriteReadDecode(confirmedServiceRequest);
+        ConfirmedServiceResponse confirmedServiceResponse = encodeWriteReadResponse(confirmedServiceRequest);
 
         if (confirmedServiceResponse.getFileOpen() == null) {
             throw new ServiceError(
@@ -980,7 +1174,7 @@ public final class ClientAssociation {
         ConfirmedServiceRequest confirmedServiceRequest = new ConfirmedServiceRequest();
         confirmedServiceRequest.setFileRead(fileReadRequest);
 
-        ConfirmedServiceResponse confirmedServiceResponse = encodeWriteReadDecode(confirmedServiceRequest);
+        ConfirmedServiceResponse confirmedServiceResponse = encodeWriteReadResponse(confirmedServiceRequest);
 
         if (confirmedServiceResponse.getFileRead() == null) {
             throw new ServiceError(
@@ -1013,7 +1207,7 @@ public final class ClientAssociation {
         ConfirmedServiceRequest confirmedServiceRequest = new ConfirmedServiceRequest();
         confirmedServiceRequest.setFileClose(fileCloseRequest);
 
-        ConfirmedServiceResponse confirmedServiceResponse = encodeWriteReadDecode(confirmedServiceRequest);
+        ConfirmedServiceResponse confirmedServiceResponse = encodeWriteReadResponse(confirmedServiceRequest);
 
         if (confirmedServiceResponse.getFileClose() == null) {
             throw new ServiceError(
@@ -1142,7 +1336,7 @@ public final class ClientAssociation {
      */
     public void setDataValues(FcModelNode modelNode) throws ServiceError, IOException {
         ConfirmedServiceRequest serviceRequest = constructSetDataValuesRequest(modelNode);
-        ConfirmedServiceResponse confirmedServiceResponse = encodeWriteReadDecode(serviceRequest);
+        ConfirmedServiceResponse confirmedServiceResponse = encodeWriteReadResponse(serviceRequest);
         decodeSetDataValuesResponse(confirmedServiceResponse);
     }
 
@@ -1221,7 +1415,7 @@ public final class ClientAssociation {
 
         for (ModelNode ld : lds) {
             ConfirmedServiceRequest serviceRequest = constructGetDirectoryRequest(ld.getName(), "", false);
-            ConfirmedServiceResponse confirmedServiceResponse = encodeWriteReadDecode(serviceRequest);
+            ConfirmedServiceResponse confirmedServiceResponse = encodeWriteReadResponse(serviceRequest);
             decodeAndRetrieveDsNamesAndDefinitions(confirmedServiceResponse, (LogicalDevice) ld);
         }
     }
@@ -1258,7 +1452,7 @@ public final class ClientAssociation {
     private void getDataSetDirectory(Identifier dsId, LogicalDevice ld)
             throws ServiceError, IOException {
         ConfirmedServiceRequest serviceRequest = constructGetDataSetDirectoryRequest(dsId, ld);
-        ConfirmedServiceResponse confirmedServiceResponse = encodeWriteReadDecode(serviceRequest);
+        ConfirmedServiceResponse confirmedServiceResponse = encodeWriteReadResponse(serviceRequest);
         decodeGetDataSetDirectoryResponse(confirmedServiceResponse, dsId, ld);
     }
 
@@ -1355,7 +1549,7 @@ public final class ClientAssociation {
      */
     public void createDataSet(DataSet dataSet) throws ServiceError, IOException {
         ConfirmedServiceRequest serviceRequest = constructCreateDataSetRequest(dataSet);
-        encodeWriteReadDecode(serviceRequest);
+        encodeWriteReadResponse(serviceRequest);
         handleCreateDataSetResponse(dataSet);
     }
 
@@ -1391,7 +1585,7 @@ public final class ClientAssociation {
 
     public void deleteDataSet(DataSet dataSet) throws ServiceError, IOException {
         ConfirmedServiceRequest serviceRequest = constructDeleteDataSetRequest(dataSet);
-        ConfirmedServiceResponse confirmedServiceResponse = encodeWriteReadDecode(serviceRequest);
+        ConfirmedServiceResponse confirmedServiceResponse = encodeWriteReadResponse(serviceRequest);
         decodeDeleteDataSetResponse(confirmedServiceResponse, dataSet);
     }
 
@@ -1457,7 +1651,7 @@ public final class ClientAssociation {
         ConfirmedServiceResponse confirmedServiceResponse;
         try {
             ConfirmedServiceRequest serviceRequest = constructGetDataSetValuesRequest(dataSet);
-            confirmedServiceResponse = encodeWriteReadDecode(serviceRequest);
+            confirmedServiceResponse = encodeWriteReadResponse(serviceRequest);
         } catch (ServiceError e) {
             int dataSetSize = dataSet.getMembers().size();
             List<ServiceError> serviceErrors = new ArrayList<>(dataSetSize);
@@ -1535,7 +1729,7 @@ public final class ClientAssociation {
 
     public List<ServiceError> setDataSetValues(DataSet dataSet) throws ServiceError, IOException {
         ConfirmedServiceRequest serviceRequest = constructSetDataSetValues(dataSet);
-        ConfirmedServiceResponse confirmedServiceResponse = encodeWriteReadDecode(serviceRequest);
+        ConfirmedServiceResponse confirmedServiceResponse = encodeWriteReadResponse(serviceRequest);
         return decodeSetDataSetValuesResponse(confirmedServiceResponse);
     }
 
@@ -2137,7 +2331,9 @@ public final class ClientAssociation {
                         }
                     } else {
                         synchronized (incomingResponses) {
-                            if (expectedResponseId == null) {
+                            if (decodedResponsePdu.getConfirmedRequestPDU() != null) {
+                                incomingRequests.add(decodedResponsePdu);
+                            } else if (expectedResponseId == null) {
                                 // Discarding ConfirmedResponse MMS PDU because no listener for request was
                                 // found.
                                 continue;
