@@ -44,12 +44,12 @@
         <dependency>
             <groupId>cn.hutool</groupId>
             <artifactId>hutool-core</artifactId>
-            <version>5.8.23</version>
+            <version>5.8.25</version>
         </dependency>
         <dependency>
             <groupId>cn.hutool</groupId>
             <artifactId>hutool-cache</artifactId>
-            <version>5.8.23</version>
+            <version>5.8.25</version>
         </dependency>
         <dependency>
             <groupId>com.beanit</groupId>
