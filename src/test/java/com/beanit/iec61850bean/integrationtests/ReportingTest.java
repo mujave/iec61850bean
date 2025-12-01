@@ -15,12 +15,9 @@ package com.beanit.iec61850bean.integrationtests;
 
 import com.beanit.iec61850bean.*;
 
-import cn.hutool.poi.excel.cell.CellLocation;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.omg.PortableInterceptor.SYSTEM_EXCEPTION;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -34,8 +31,7 @@ public class ReportingTest implements ClientEventListener {
 
     private static final String PREEXISTING_DATASET_REFERENCE = "ied1lDevice1/LLN0$dataset1";
     private static final String CREATED_DATASET_REFERENCE = "ied1lDevice1/LLN0$datasetnew";
-    private static final String CHANGING_SERVER_DA_REFERENCE_1 =
-            "ied1lDevice1/MMXU1.W.phsA.cVal.mag.f";
+    private static final String CHANGING_SERVER_DA_REFERENCE_1 = "ied1lDevice1/MMXU1.W.phsA.cVal.mag.f";
     private static final int PORT = 54321;
     private static final String ICD_FILE = "src/test/resources/iec61850bean-sample01.icd";
     private static final String URCB1_REFERENCE = "ied1lDevice1/LLN0.urcb101";
@@ -53,19 +49,18 @@ public class ReportingTest implements ClientEventListener {
 
     private void startClient() throws IOException, ServiceError {
         ClientSap clientSap = new ClientSap();
-        this.clientAssociation =
-                clientSap.associate(InetAddress.getByName("localhost"), PORT, "", this);
+        this.clientAssociation = clientSap.associate(InetAddress.getByName("localhost"), PORT, "", this);
         this.clientModel = this.clientAssociation.retrieveModel();
         Collection<Urcb> urcb = clientModel.getUrcbs();
         for (Urcb u : urcb) {
-            //从模型里面读取最新状态
+            // 从模型里面读取最新状态
             clientAssociation.getRcbValues(u);
-            System.out.println("Urcb enable?: " + u.getRptEna()); 
+            System.out.println("Urcb enable?: " + u.getRptEna());
             if (!u.getRptEna().getValue()) {
                 System.out.println(u.getRptId().getName());
                 clientAssociation.enableReporting(u);
             }
-            
+
         }
     }
 
@@ -100,8 +95,7 @@ public class ReportingTest implements ClientEventListener {
 
         Thread.sleep(500);
 
-        BdaFloat32 mag =
-                (BdaFloat32) this.serverModel.findModelNode(CHANGING_SERVER_DA_REFERENCE_1, Fc.MX);
+        BdaFloat32 mag = (BdaFloat32) this.serverModel.findModelNode(CHANGING_SERVER_DA_REFERENCE_1, Fc.MX);
         assertNotNull(mag);
         assertEquals(0, this.reportCounter);
 
@@ -119,10 +113,10 @@ public class ReportingTest implements ClientEventListener {
     public void reportingWithCreatedDataSetTest()
             throws ServiceError, IOException, InterruptedException {
         // BdaFloat32 clientMag =
-        // (BdaFloat32)this.clientModel.findModelNode(CHANGING_SERVER_DA_REFERENCE, Fc.MX);
+        // (BdaFloat32)this.clientModel.findModelNode(CHANGING_SERVER_DA_REFERENCE,
+        // Fc.MX);
 
-        FcModelNode clientMag =
-                (FcModelNode) this.clientModel.findModelNode(CHANGING_SERVER_DA_REFERENCE_1, Fc.MX);
+        FcModelNode clientMag = (FcModelNode) this.clientModel.findModelNode(CHANGING_SERVER_DA_REFERENCE_1, Fc.MX);
         assertNotNull(clientMag);
         List<FcModelNode> dataSetMembers = new ArrayList<>();
         dataSetMembers.add(clientMag);
@@ -142,9 +136,8 @@ public class ReportingTest implements ClientEventListener {
         this.clientAssociation.reserveUrcb(urcb);
 
         urcb.getDatSet().setValue(CREATED_DATASET_REFERENCE);
-        List<ServiceError> serviceErrors =
-                this.clientAssociation.setRcbValues(
-                        urcb, false, true, false, false, false, false, false, false);
+        List<ServiceError> serviceErrors = this.clientAssociation.setRcbValues(
+                urcb, false, true, false, false, false, false, false, false);
 
         assertNull(serviceErrors.get(0));
 
@@ -156,8 +149,7 @@ public class ReportingTest implements ClientEventListener {
 
         Thread.sleep(500);
 
-        BdaFloat32 mag =
-                (BdaFloat32) this.serverModel.findModelNode(CHANGING_SERVER_DA_REFERENCE_1, Fc.MX);
+        BdaFloat32 mag = (BdaFloat32) this.serverModel.findModelNode(CHANGING_SERVER_DA_REFERENCE_1, Fc.MX);
         assertNotNull(mag);
         assertEquals(0, this.reportCounter);
 

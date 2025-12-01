@@ -1130,7 +1130,6 @@ public final class ClientAssociation {
     private FileReadResponse handleFileReadRequest(FileReadRequest request) throws ServiceError {
         String frmsId = Convert.toStr(request.value.longValue());
         if (!fileReadCache.containsKey(frmsId)) {
-            logger.error(" read File has Error: readCache not fonut frmsid - {}", frmsId);
             throw new ServiceError(ServiceError.PARAMETER_VALUE_INCONSISTENT,
                     "frmsid is an illegal value..");
         }
