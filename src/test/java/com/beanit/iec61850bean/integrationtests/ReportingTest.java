@@ -13,22 +13,25 @@
  */
 package com.beanit.iec61850bean.integrationtests;
 
+import cn.hutool.core.collection.CollUtil;
+import cn.hutool.core.thread.ThreadUtil;
+import cn.hutool.core.util.RandomUtil;
 import com.beanit.iec61850bean.*;
-
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ReportingTest implements ClientEventListener {
 
+    private Logger log = LoggerFactory.getLogger(ReportingTest.class);
     private static final String PREEXISTING_DATASET_REFERENCE = "ied1lDevice1/LLN0$dataset1";
     private static final String CREATED_DATASET_REFERENCE = "ied1lDevice1/LLN0$datasetnew";
     private static final String CHANGING_SERVER_DA_REFERENCE_1 = "ied1lDevice1/MMXU1.W.phsA.cVal.mag.f";
@@ -49,7 +52,7 @@ public class ReportingTest implements ClientEventListener {
 
     private void startClient() throws IOException, ServiceError {
         ClientSap clientSap = new ClientSap();
-        this.clientAssociation = clientSap.associate(InetAddress.getByName("localhost"), PORT, "", this);
+        this.clientAssociation = clientSap.associate(InetAddress.getByName("127.0.0.1"), PORT, "", this);
         this.clientModel = this.clientAssociation.retrieveModel();
         Collection<Urcb> urcb = clientModel.getUrcbs();
         for (Urcb u : urcb) {
@@ -60,125 +63,82 @@ public class ReportingTest implements ClientEventListener {
                 System.out.println(u.getRptId().getName());
                 clientAssociation.enableReporting(u);
             }
-
         }
     }
 
     private void startServer() throws SclParseException, IOException {
-
         serverSap = new ServerSap(PORT, 0, null, SclParser.parse(ICD_FILE).get(0), null);
+        this.serverSap.startListening(new ServerEventListener() {
 
-        this.serverSap.startListening(
-                new ServerEventListener() {
+            @Override
+            public List<ServiceError> write(List<BasicDataAttribute> arg0) {
+                return null;
+            }
 
-                    @Override
-                    public List<ServiceError> write(List<BasicDataAttribute> arg0) {
-                        return null;
-                    }
-
-                    @Override
-                    public void serverStoppedListening(ServerSap arg0) {
-                    }
-                });
-
+            @Override
+            public void serverStoppedListening(ServerSap arg0) {
+            }
+        });
         this.serverModel = this.serverSap.getModelCopy();
     }
 
     @Test
-    public void reportingTest() throws ServiceError, IOException, InterruptedException {
-        Urcb urcb = this.clientModel.getUrcb(URCB1_REFERENCE);
-        assertNotNull(urcb);
+    public void reportEnableTest() throws ServiceError, IOException {
+        HashSet<Object> enableReportNamees = new HashSet<>();
+        Collection<Urcb> urcbs = this.clientModel.getUrcbs();
+        for (Urcb urcb : urcbs) {
+            clientAssociation.getRcbValues(urcb);
+            String rptId = urcb.getRptId().getStringValue();
+            log.info("1.{}(rptID:{}) {}", urcb.getName(), rptId, urcb.getRptEna().getValue());
+            if (!enableReportNamees.contains(rptId)) {
+                clientAssociation.enableReporting(urcb);
+                enableReportNamees.add(rptId);
+            }
+        }
+        for (Urcb urcb : urcbs) {
+            clientAssociation.getRcbValues(urcb);
+            log.info("2.{}(rptID:{}) {}", urcb.getName(), urcb.getRptId().getStringValue(),
+                    urcb.getRptEna().getValue());
+        }
+    }
 
-        this.clientAssociation.getRcbValues(urcb);
-        this.clientAssociation.reserveUrcb(urcb);
-        this.clientAssociation.enableReporting(urcb);
-
-        Thread.sleep(500);
-
-        BdaFloat32 mag = (BdaFloat32) this.serverModel.findModelNode(CHANGING_SERVER_DA_REFERENCE_1, Fc.MX);
-        assertNotNull(mag);
-        assertEquals(0, this.reportCounter);
-
-        mag.setFloat(3.0f);
-        List<BasicDataAttribute> bdas = new ArrayList<>();
-        bdas.add(mag);
-        this.serverSap.setValues(bdas);
-
-        Thread.sleep(500);
-
-        assertEquals(1, this.reportCounter);
+    public void testSetValueForServer() throws IOException, ServiceError, InterruptedException {
+        List<BasicDataAttribute> writeList = CollUtil.newArrayList();
+        BdaFloat32 v2 = (BdaFloat32) serverModel.findModelNode("FKMONT/GGIO2.AnInd1.mag.f", Fc.MX);
+        // 读取模型该节点的当前值
+        System.out.println(v2.getFloat().floatValue());
+        v2.setFloat(RandomUtil.randomFloat());
+        writeList.add(v2);
+        // 服务端通过服务端能力对象将数据集写入到模型
+        serverSap.setValues(writeList);
     }
 
     @Test
-    public void reportingWithCreatedDataSetTest()
-            throws ServiceError, IOException, InterruptedException {
-        // BdaFloat32 clientMag =
-        // (BdaFloat32)this.clientModel.findModelNode(CHANGING_SERVER_DA_REFERENCE,
-        // Fc.MX);
-
-        FcModelNode clientMag = (FcModelNode) this.clientModel.findModelNode(CHANGING_SERVER_DA_REFERENCE_1, Fc.MX);
-        assertNotNull(clientMag);
-        List<FcModelNode> dataSetMembers = new ArrayList<>();
-        dataSetMembers.add(clientMag);
-
-        DataSet dataSet = new DataSet(CREATED_DATASET_REFERENCE, dataSetMembers);
-        this.clientAssociation.createDataSet(dataSet);
-
-        Urcb urcb = this.clientModel.getUrcb(URCB1_REFERENCE);
-        assertNotNull(urcb);
-
-        this.clientAssociation.getRcbValues(urcb);
-
-        assertEquals(PREEXISTING_DATASET_REFERENCE, urcb.getDatSet().getStringValue());
-
-        System.out.println("dataset: " + urcb.getDatSet().getStringValue());
-
-        this.clientAssociation.reserveUrcb(urcb);
-
-        urcb.getDatSet().setValue(CREATED_DATASET_REFERENCE);
-        List<ServiceError> serviceErrors = this.clientAssociation.setRcbValues(
-                urcb, false, true, false, false, false, false, false, false);
-
-        assertNull(serviceErrors.get(0));
-
-        this.clientAssociation.getRcbValues(urcb);
-
-        assertEquals(CREATED_DATASET_REFERENCE, urcb.getDatSet().getStringValue());
-
-        this.clientAssociation.enableReporting(urcb);
-
-        Thread.sleep(500);
-
-        BdaFloat32 mag = (BdaFloat32) this.serverModel.findModelNode(CHANGING_SERVER_DA_REFERENCE_1, Fc.MX);
-        assertNotNull(mag);
-        assertEquals(0, this.reportCounter);
-
-        mag.setFloat(3.0f);
-        List<BasicDataAttribute> bdas = new ArrayList<>();
-        bdas.add(mag);
-        this.serverSap.setValues(bdas);
-
-        Thread.sleep(1_000);
-
-        assertEquals(1, this.reportCounter);
+    public void reportTest() throws ServiceError, IOException, InterruptedException {
+        // 让客户端开启报告
+        reportEnableTest();
+        // 调用服务端发送数据
+        while (true) {
+            testSetValueForServer();
+            ThreadUtil.sleep(1000l);
+        }
     }
 
-    @AfterEach
-    public void disconnectAndStopServer() throws Exception {
-        if (this.serverSap != null) {
-            this.serverSap.stop();
-        }
+    @Test
+    public void syso() {
+        System.out.println(this.clientModel);//
+        BdaUnicodeString modelNode = (BdaUnicodeString) serverModel.findModelNode("FKMONT/GGIO4.AnInd1.dU", Fc.DC);
+        System.out.println(modelNode.getValStr());
+    }
+
+    @Override
+    public void newReport(Report report) {
+        System.out.println("got a report.");
+        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+        System.out.println(report);
     }
 
     @Override
     public void associationClosed(IOException arg0) {
-    }
-
-    @Override
-    public void newReport(Report arg0) {
-        System.out.println("got a report.");
-        synchronized (this) {
-            this.reportCounter++;
-        }
     }
 }

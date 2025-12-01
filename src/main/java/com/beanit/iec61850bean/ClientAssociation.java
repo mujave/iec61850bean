@@ -13,6 +13,12 @@
  */
 package com.beanit.iec61850bean;
 
+import cn.hutool.cache.Cache;
+import cn.hutool.cache.CacheUtil;
+import cn.hutool.core.convert.Convert;
+import cn.hutool.core.date.DateUnit;
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.RandomUtil;
 import com.beanit.asn1bean.ber.ReverseByteArrayOutputStream;
 import com.beanit.asn1bean.ber.types.BerGeneralizedTime;
 import com.beanit.asn1bean.ber.types.BerInteger;
@@ -30,14 +36,6 @@ import com.beanit.josistack.AcseAssociation;
 import com.beanit.josistack.ByteBufferInputStream;
 import com.beanit.josistack.ClientAcseSap;
 import com.beanit.josistack.DecodingException;
-
-import cn.hutool.cache.Cache;
-import cn.hutool.cache.CacheUtil;
-import cn.hutool.core.convert.Convert;
-import cn.hutool.core.date.DateUnit;
-import cn.hutool.core.date.DateUtil;
-import cn.hutool.core.io.FileUtil;
-import cn.hutool.core.util.RandomUtil;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -69,9 +67,9 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public final class ClientAssociation {
 
-    private static final Integer16 version = new Integer16(new byte[] { (byte) 0x01, (byte) 0x01 });
+    private static final Integer16 version = new Integer16(new byte[]{(byte) 0x01, (byte) 0x01});
     private static final ParameterSupportOptions proposedParameterCbbBitString = new ParameterSupportOptions(
-            new byte[] { 0x03, 0x05, (byte) 0xf1, 0x00 });
+            new byte[]{0x03, 0x05, (byte) 0xf1, 0x00});
     private final ClientReceiver clientReceiver;
     private final BlockingQueue<MMSpdu> incomingResponses = new LinkedBlockingQueue<>();
     private final BlockingQueue<MMSpdu> incomingRequests = new LinkedBlockingQueue<>();
@@ -201,10 +199,10 @@ public final class ClientAssociation {
                     ServiceError.UNKNOWN,
                     "MMS confirmed error. Description: "
                             + mmsResponsePdu
-                                    .getConfirmedErrorPDU()
-                                    .getServiceError()
-                                    .getAdditionalDescription()
-                                    .toString());
+                            .getConfirmedErrorPDU()
+                            .getServiceError()
+                            .getAdditionalDescription()
+                            .toString());
         }
         throw new ServiceError(ServiceError.UNKNOWN, "MMS confirmed error.");
     }
@@ -381,21 +379,21 @@ public final class ClientAssociation {
     private ConfirmedServiceResponse encodeWriteReadResponse(ConfirmedServiceRequest serviceRequest)
             throws ServiceError, IOException {
 
-        encodeWriteResponse(serviceRequest);
+        encodeWrite(serviceRequest);
         return getConfirmedResponsePdu();
     }
 
     private ConfirmedServiceRequest encodeWriteReadRequest(ConfirmedServiceRequest serviceRequest)
             throws ServiceError, IOException {
 
-        encodeWriteResponse(serviceRequest);
+        encodeWrite(serviceRequest);
         return getConfirmedRequestPdu();
     }
 
     /**
      * 从服务端获取一个请求
      * 主要是针对文件读取,客户端发送文件后服务端会进行文件读取流程
-     * 
+     *
      * @return
      * @throws ServiceError
      * @throws IOException
@@ -423,7 +421,7 @@ public final class ClientAssociation {
 
     /**
      * 从服务端获取一个响应
-     * 
+     *
      * @return
      * @throws ServiceError
      * @throws IOException
@@ -468,7 +466,7 @@ public final class ClientAssociation {
     /**
      * 只发送请求不期待服务端的响应
      */
-    private void encodeWriteResponse(ConfirmedServiceRequest serviceRequest)
+    private void encodeWrite(ConfirmedServiceRequest serviceRequest)
             throws ServiceError, IOException {
 
         int currentInvokeId = getInvokeId();
@@ -500,7 +498,7 @@ public final class ClientAssociation {
         }
     }
 
-    private void encodeWriteResponse(ConfirmedServiceResponse serviceResponse)
+    private void encodeWrite(ConfirmedServiceResponse serviceResponse)
             throws ServiceError, IOException {
 
         int currentInvokeId = getInvokeId();
@@ -1011,11 +1009,11 @@ public final class ClientAssociation {
 
     /**
      * Write a file to the server
-     * 
+     *
      * @param filename  文件以这个名字保存到服务端
      * @param writeFile 要保存的文件，文件不存在则抛出异常
-     * @author Mujave
      * @throws Exception
+     * @author Mujave
      */
     public void writeFile(String filename, File writeFile) throws Exception {
         if (!writeFile.exists()) {
@@ -1069,31 +1067,48 @@ public final class ClientAssociation {
 
         ConfirmedServiceResponse confirmedServiceResponse = new ConfirmedServiceResponse();
         confirmedServiceResponse.setFileOpen(fileOpenResponse);
+        encodeWrite(confirmedServiceResponse);
 
-        ConfirmedResponsePDU confirmedResponsePDU = new ConfirmedResponsePDU();
-        confirmedResponsePDU.setInvokeID(new Unsigned32(invokeId));
-        confirmedResponsePDU.setService(confirmedServiceResponse);
+        new Thread(() -> {
+            long start = System.currentTimeMillis();
+            while (true) {
 
-        MMSpdu requestPdu = new MMSpdu();
-        requestPdu.setConfirmedResponsePDU(confirmedResponsePDU);
+                ConfirmedServiceRequest service = null;
+                try {
+                    service = getConfirmedRequestPdu();
+                } catch (ServiceError e) {
+                    throw new RuntimeException(e);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                if (service != null && service.getFileRead() != null) {
+                    FileReadRequest fileRead = service.getFileRead();
+                    String _frmsId = Convert.toStr(fileRead.longValue());
+                    if (fileReadCache.containsKey(_frmsId)) {
+                        if (!fileReadCache.containsKey(_frmsId)) {
+//                                    throw new ServiceError(ServiceError.PARAMETER_VALUE_INCONSISTENT,
+//                                            "frmsid is an illegal value..");
+                        }
 
-        reverseOStream.reset();
-
-        try {
-            requestPdu.encode(reverseOStream);
-        } catch (Exception e) {
-            IOException e2 = new IOException("Error encoding MmsPdu.", e);
-            clientReceiver.close(e2);
-            throw e2;
-        }
-
-        try {
-            acseAssociation.send(reverseOStream.getByteBuffer());
-        } catch (IOException e) {
-            IOException e2 = new IOException("Error sending packet.", e);
-            clientReceiver.close(e2);
-            throw e2;
-        }
+//                        FileReader fileReader = fileReadCache.get(_frmsId);
+//                        FileReadResponse response = new FileReadResponse();
+//                        response.setFileData(new BerGraphicString(fileReader.read(negotiatedMaxPduSize)));
+//                        // 获取是否文件已经读取到了末尾
+//                        response.setMoreFollows(new BerBoolean(!fileReader.isEndOfFile()));
+//
+//                        ConfirmedServiceResponse serviceResponse = new ConfirmedServiceResponse();
+//                        serviceResponse.setFileRead(response);
+//                        try {
+//                            this.encodeWriteResponse(serviceResponse);
+//                        } catch (ServiceError | IOException e) {
+//                            throw new RuntimeException(e);
+//                        }
+                    }
+                } else if (service != null && service.getFileClose() != null) {
+                    //todo 文件读取完成，退出任务
+                }
+            }
+        }).start();
 
     }
 
@@ -1107,7 +1122,7 @@ public final class ClientAssociation {
 
     /**
      * 文件关闭请求
-     * 
+     *
      * @param request 一个携带文件读取会话ID(frmsid)的请求
      * @return
      * @author Mujave
@@ -1121,7 +1136,7 @@ public final class ClientAssociation {
 
     /**
      * 文件内容读取请求
-     * 
+     *
      * @param request 一个携带文件读取会话ID(frmsid)的请求
      * @return
      * @throws ServiceError 会话id不存在
@@ -2107,8 +2122,8 @@ public final class ClientAssociation {
      *                          a Data Attribute
      *                          named "SBO".
      * @return false if the selection/reservation was not successful (because it is
-     *         already selected
-     *         by another client). Otherwise true is returned.
+     * already selected
+     * by another client). Otherwise true is returned.
      * @throws ServiceError if a ServiceError is returned by the server.
      * @throws IOException  if a fatal IO error occurs. The association object will
      *                      be closed and can
@@ -2331,7 +2346,7 @@ public final class ClientAssociation {
                     } else {
                         synchronized (incomingResponses) {
                             if (decodedResponsePdu.getConfirmedRequestPDU() != null) {
-                                incomingRequests.add(decodedResponsePdu);
+                                incomingRequests.put(decodedResponsePdu);
                             } else if (expectedResponseId == null) {
                                 // Discarding ConfirmedResponse MMS PDU because no listener for request was
                                 // found.
