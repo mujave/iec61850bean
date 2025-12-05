@@ -1276,16 +1276,8 @@ public final class ClientAssociation {
                         try {
                             getDataValues(fcdo);
                         } catch (ServiceError e) {
-                            throw new ServiceError(
-                                    e.getErrorCode(),
-                                    "service error retrieving "
-                                            + fcdo.getReference()
-                                            + "["
-                                            + fcdo.getFc()
-                                            + "]"
-                                            + ", "
-                                            + e.getMessage(),
-                                    e);
+                            log.error("service error retrieving {}[{}],{}",
+                                    fcdo.getReference(), fcdo.getFc(), e.getMessage());
                         }
                     }
                 }
