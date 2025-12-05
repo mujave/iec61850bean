@@ -50,6 +50,9 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -67,9 +70,11 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public final class ClientAssociation {
 
-    private static final Integer16 version = new Integer16(new byte[]{(byte) 0x01, (byte) 0x01});
+    private static final Logger log = LoggerFactory.getLogger(ClientAssociation.class);
+
+    private static final Integer16 version = new Integer16(new byte[] { (byte) 0x01, (byte) 0x01 });
     private static final ParameterSupportOptions proposedParameterCbbBitString = new ParameterSupportOptions(
-            new byte[]{0x03, 0x05, (byte) 0xf1, 0x00});
+            new byte[] { 0x03, 0x05, (byte) 0xf1, 0x00 });
     private final ClientReceiver clientReceiver;
     private final BlockingQueue<MMSpdu> incomingResponses = new LinkedBlockingQueue<>();
     private final BlockingQueue<MMSpdu> incomingRequests = new LinkedBlockingQueue<>();
@@ -199,10 +204,10 @@ public final class ClientAssociation {
                     ServiceError.UNKNOWN,
                     "MMS confirmed error. Description: "
                             + mmsResponsePdu
-                            .getConfirmedErrorPDU()
-                            .getServiceError()
-                            .getAdditionalDescription()
-                            .toString());
+                                    .getConfirmedErrorPDU()
+                                    .getServiceError()
+                                    .getAdditionalDescription()
+                                    .toString());
         }
         throw new ServiceError(ServiceError.UNKNOWN, "MMS confirmed error.");
     }
@@ -1069,47 +1074,43 @@ public final class ClientAssociation {
         confirmedServiceResponse.setFileOpen(fileOpenResponse);
         encodeWrite(confirmedServiceResponse);
 
-        new Thread(() -> {
-            long start = System.currentTimeMillis();
-            while (true) {
+        long start = System.currentTimeMillis();
+        // while (true) {
 
-                ConfirmedServiceRequest service = null;
-                try {
-                    service = getConfirmedRequestPdu();
-                } catch (ServiceError e) {
-                    throw new RuntimeException(e);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
+        ConfirmedServiceRequest service = null;
+        try {
+            service = getConfirmedRequestPdu();
+        } catch (ServiceError e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        if (service != null && service.getFileRead() != null) {
+            FileReadRequest fileRead = service.getFileRead();
+            String _frmsId = Convert.toStr(fileRead.longValue());
+            if (fileReadCache.containsKey(_frmsId)) {
+                if (!fileReadCache.containsKey(_frmsId)) {
+                    // throw new ServiceError(ServiceError.PARAMETER_VALUE_INCONSISTENT,
+                    // "frmsid is an illegal value..");
                 }
-                if (service != null && service.getFileRead() != null) {
-                    FileReadRequest fileRead = service.getFileRead();
-                    String _frmsId = Convert.toStr(fileRead.longValue());
-                    if (fileReadCache.containsKey(_frmsId)) {
-                        if (!fileReadCache.containsKey(_frmsId)) {
-//                                    throw new ServiceError(ServiceError.PARAMETER_VALUE_INCONSISTENT,
-//                                            "frmsid is an illegal value..");
-                        }
 
-//                        FileReader fileReader = fileReadCache.get(_frmsId);
-//                        FileReadResponse response = new FileReadResponse();
-//                        response.setFileData(new BerGraphicString(fileReader.read(negotiatedMaxPduSize)));
-//                        // 获取是否文件已经读取到了末尾
-//                        response.setMoreFollows(new BerBoolean(!fileReader.isEndOfFile()));
-//
-//                        ConfirmedServiceResponse serviceResponse = new ConfirmedServiceResponse();
-//                        serviceResponse.setFileRead(response);
-//                        try {
-//                            this.encodeWriteResponse(serviceResponse);
-//                        } catch (ServiceError | IOException e) {
-//                            throw new RuntimeException(e);
-//                        }
-                    }
-                } else if (service != null && service.getFileClose() != null) {
-                    //todo 文件读取完成，退出任务
+                FileReader fileReader = fileReadCache.get(_frmsId);
+                FileReadResponse response = new FileReadResponse();
+                response.setFileData(new BerGraphicString(fileReader.read(negotiatedMaxPduSize)));
+                // 获取是否文件已经读取到了末尾
+                response.setMoreFollows(new BerBoolean(!fileReader.isEndOfFile()));
+
+                ConfirmedServiceResponse serviceResponse = new ConfirmedServiceResponse();
+                serviceResponse.setFileRead(response);
+                try {
+                    this.encodeWrite(serviceResponse);
+                } catch (ServiceError | IOException e) {
+                    e.printStackTrace();
                 }
             }
-        }).start();
-
+        } else if (service != null && service.getFileClose() != null) {
+            // todo 文件读取完成，退出任务
+        }
     }
 
     /**
@@ -2122,8 +2123,8 @@ public final class ClientAssociation {
      *                          a Data Attribute
      *                          named "SBO".
      * @return false if the selection/reservation was not successful (because it is
-     * already selected
-     * by another client). Otherwise true is returned.
+     *         already selected
+     *         by another client). Otherwise true is returned.
      * @throws ServiceError if a ServiceError is returned by the server.
      * @throws IOException  if a fatal IO error occurs. The association object will
      *                      be closed and can

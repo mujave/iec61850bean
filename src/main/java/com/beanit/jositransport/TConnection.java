@@ -23,7 +23,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public final class TConnection {
+
+    private static final Logger logger = LoggerFactory.getLogger(TConnection.class);
 
     // some servers do not like srcRef 0
     private static final SequenceNumber connectionCounter = new SequenceNumber(1, 1, 65519);

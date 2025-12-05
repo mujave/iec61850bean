@@ -36,11 +36,14 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 public final class AcseAssociation {
 
-    // private static final Logger logger = LoggerFactory.getLogger(AcseAssociation.class);
+    private static final Logger logger = LoggerFactory.getLogger(AcseAssociation.class);
 
     private static final PresentationContextDefinitionList context_list =
             new PresentationContextDefinitionList(
