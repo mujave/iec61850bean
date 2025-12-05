@@ -41,4 +41,12 @@ public interface ServerEventListener {
     default int fileDelete(String fileName){
         return 0;
     }
+
+    /**
+     * 文件写入事件
+     * @param destFileName 写入的文件名称
+     */
+    default void fileWrite(String destFileName){
+
+    };
 }

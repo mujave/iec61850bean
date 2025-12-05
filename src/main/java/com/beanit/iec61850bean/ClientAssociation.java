@@ -36,6 +36,8 @@ import com.beanit.josistack.AcseAssociation;
 import com.beanit.josistack.ByteBufferInputStream;
 import com.beanit.josistack.ClientAcseSap;
 import com.beanit.josistack.DecodingException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -49,9 +51,6 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -74,7 +73,7 @@ public final class ClientAssociation {
 
     private static final Integer16 version = new Integer16(new byte[] { (byte) 0x01, (byte) 0x01 });
     private static final ParameterSupportOptions proposedParameterCbbBitString = new ParameterSupportOptions(
-            new byte[] { 0x03, 0x05, (byte) 0xf1, 0x00 });
+            new byte[]{0x03, 0x05, (byte) 0xf1, 0x00});
     private final ClientReceiver clientReceiver;
     private final BlockingQueue<MMSpdu> incomingResponses = new LinkedBlockingQueue<>();
     private final BlockingQueue<MMSpdu> incomingRequests = new LinkedBlockingQueue<>();
@@ -204,10 +203,10 @@ public final class ClientAssociation {
                     ServiceError.UNKNOWN,
                     "MMS confirmed error. Description: "
                             + mmsResponsePdu
-                                    .getConfirmedErrorPDU()
-                                    .getServiceError()
-                                    .getAdditionalDescription()
-                                    .toString());
+                            .getConfirmedErrorPDU()
+                            .getServiceError()
+                            .getAdditionalDescription()
+                            .toString());
         }
         throw new ServiceError(ServiceError.UNKNOWN, "MMS confirmed error.");
     }
@@ -503,10 +502,10 @@ public final class ClientAssociation {
         }
     }
 
-    private void encodeWrite(ConfirmedServiceResponse serviceResponse)
+    private void encodeWrite(ConfirmedServiceResponse serviceResponse,int... invokeid)
             throws ServiceError, IOException {
 
-        int currentInvokeId = getInvokeId();
+        int currentInvokeId = invokeid == null ? getInvokeId() : invokeId;
 
         ConfirmedResponsePDU confirmedResponsePDU = new ConfirmedResponsePDU();
         confirmedResponsePDU.setInvokeID(new Unsigned32(currentInvokeId));
@@ -1074,43 +1073,65 @@ public final class ClientAssociation {
         confirmedServiceResponse.setFileOpen(fileOpenResponse);
         encodeWrite(confirmedServiceResponse);
 
-        long start = System.currentTimeMillis();
-        // while (true) {
+        new Thread(() -> {
+            long start = System.currentTimeMillis();
 
-        ConfirmedServiceRequest service = null;
-        try {
-            service = getConfirmedRequestPdu();
-        } catch (ServiceError e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        if (service != null && service.getFileRead() != null) {
-            FileReadRequest fileRead = service.getFileRead();
-            String _frmsId = Convert.toStr(fileRead.longValue());
-            if (fileReadCache.containsKey(_frmsId)) {
-                if (!fileReadCache.containsKey(_frmsId)) {
-                    // throw new ServiceError(ServiceError.PARAMETER_VALUE_INCONSISTENT,
-                    // "frmsid is an illegal value..");
-                }
 
-                FileReader fileReader = fileReadCache.get(_frmsId);
-                FileReadResponse response = new FileReadResponse();
-                response.setFileData(new BerGraphicString(fileReader.read(negotiatedMaxPduSize)));
-                // 获取是否文件已经读取到了末尾
-                response.setMoreFollows(new BerBoolean(!fileReader.isEndOfFile()));
-
-                ConfirmedServiceResponse serviceResponse = new ConfirmedServiceResponse();
-                serviceResponse.setFileRead(response);
+            while (true) {
+                ConfirmedServiceRequest service = null;
                 try {
-                    this.encodeWrite(serviceResponse);
+                    service = getConfirmedRequestPdu();
                 } catch (ServiceError | IOException e) {
-                    e.printStackTrace();
+                    throw new RuntimeException(e);
+                }
+                if (service != null && service.getFileRead() != null) {
+                    FileReadRequest fileRead = service.getFileRead();
+                    String _frmsId = Convert.toStr(fileRead.longValue());
+                    if (fileReadCache.containsKey(_frmsId)) {
+                        if (!fileReadCache.containsKey(_frmsId)) {
+                                    //throw new ServiceError(ServiceError.PARAMETER_VALUE_INCONSISTENT,
+                                    //        "frmsid is an illegal value..");
+                        }
+
+                        FileReader fileReader = fileReadCache.get(_frmsId);
+                        FileReadResponse response = new FileReadResponse();
+                        response.setFileData(new BerGraphicString(fileReader.read(negotiatedMaxPduSize)));
+                        // 获取是否文件已经读取到了末尾
+                        response.setMoreFollows(new BerBoolean(!fileReader.isEndOfFile()));
+
+                        ConfirmedServiceResponse serviceResponse = new ConfirmedServiceResponse();
+                        serviceResponse.setFileRead(response);
+                        try {
+                            encodeWrite(serviceResponse);
+                        } catch (ServiceError | IOException e) {
+                            //TODO error
+                        }
+
+                    }
+                } else if (service != null && service.getFileClose() != null) {
+                    //todo 文件读取完成，退出任务
+                    FileCloseResponse fileCloseResponse = handleFileCloseRequest(service.getFileClose());
+                    ConfirmedServiceResponse fileCloseReponse = new ConfirmedServiceResponse();
+                    fileCloseReponse.setFileClose(fileCloseResponse);
+                    try {
+                        encodeWrite(fileCloseReponse);
+                        break;
+                    } catch (ServiceError|IOException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
             }
-        } else if (service != null && service.getFileClose() != null) {
-            // todo 文件读取完成，退出任务
-        }
+            try {
+                ConfirmedServiceResponse service = getConfirmedResponsePdu();
+                if (service!= null && service.getFileObtain() != null){
+                    log.info("文件上报完成");
+                }
+            } catch (ServiceError | IOException e) {
+                throw new RuntimeException(e);
+            }
+
+        }).start();
+
     }
 
     /**

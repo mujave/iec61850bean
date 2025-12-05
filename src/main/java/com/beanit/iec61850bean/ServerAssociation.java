@@ -84,12 +84,12 @@ final class ServerAssociation {
     private int negotiatedMaxPduSize;
     private ByteBuffer pduBuffer;
     private boolean insertRef;
+    private String continueAfter;
 
     // 来自客户端的请求
     private ArrayBlockingQueue<MMSpdu> confirmedRequestQueue = new ArrayBlockingQueue<>(1024);
     // 来自客户端的响应，主要在文件写入时候的文件读取响应
     private ArrayBlockingQueue<MMSpdu> confirmedResponseQueue = new ArrayBlockingQueue<>(1024);
-    private String continueAfter;
 
     public ServerAssociation(ServerSap serverSap) {
         this.serverSap = serverSap;
@@ -411,25 +411,49 @@ final class ServerAssociation {
         MMSpdu mmsResponsePdu = new MMSpdu();
         mmsResponsePdu.setConfirmedRequestPDU(confirmedRequestPdu);
 
+        File destFile = FileUtil.file(this.serverSap.getFileServiceParentPath(), dest);
+
         if (sendAnMmsPdu(mmsResponsePdu)) {
-            // return;
             try {
-                expectedFileOpenResponse(invokeId, dest, (byte[] fileData, boolean moreFollows) -> {
-                    logger.info("Received {} bytes of file data. More data follows: {}", fileData.length, moreFollows);
-                    logger.info("\n{}", new String(fileData));
+                expectedFileOpenResponse(invokeId, (byte[] fileData, boolean moreFollows) -> {
+                    FileUtil.writeBytes(fileData,destFile);
                     return moreFollows;
                 });
-            } catch (ServiceError e) {
-                // TODO syso error
-            } catch (IOException e) {
+            } catch (ServiceError | IOException e) {
                 // TODO syso error
             }
 
-            // file obtain end
+            try {
+                MMSpdu fileClose = confirmedResponseQueue.take();
+                if (fileClose!= null
+                        && fileClose.getConfirmedResponsePDU()!=null
+                        && fileClose.getConfirmedResponsePDU().getService().getFileClose() !=null){
+
+                }
+            } catch (InterruptedException e) {
+                //TODO
+            }
+
+            //send fileobtain res
+            MMSpdu fileObtainMmspdu = new MMSpdu();
+
+            ConfirmedResponsePDU fileObtainPDU = new ConfirmedResponsePDU();
+            ConfirmedServiceResponse fileObtainResponse = new ConfirmedServiceResponse();
+            FileObtainResponse fileObtain = new FileObtainResponse();
+
+            fileObtainResponse.setFileObtain(fileObtain);
+            fileObtainPDU.setInvokeID(invokeId);
+            fileObtainPDU.setService(fileObtainResponse);
+            fileObtainMmspdu.setConfirmedResponsePDU(fileObtainPDU);
+            sendAnMmsPdu(fileObtainMmspdu);
+if (this.serverSap.serverEventListener!= null){
+    this.serverSap.serverEventListener.fileWrite(dest);
+}
+
         }
     }
 
-    private void expectedFileOpenResponse(Unsigned32 invokeId, String destFileName, GetFileListener listener)
+    private void expectedFileOpenResponse(Unsigned32 invokeId, GetFileListener listener)
             throws ServiceError, IOException {
         FileOpenResponse fileOpen = null;
 
@@ -451,10 +475,20 @@ final class ServerAssociation {
             while (moreFollows) {
                 moreFollows = readNextFileDataBlock(invokeId, frsmID, listener);
             }
+
+            //send closeFile
+            MMSpdu fileCloseMmspdu = new MMSpdu();
+
+            ConfirmedRequestPDU fileClosePDU = new ConfirmedRequestPDU();
+            ConfirmedServiceRequest fileCloseRequest = new ConfirmedServiceRequest();
+            FileCloseRequest fileClose = new FileCloseRequest(frsmID.longValue());
+
+            fileCloseRequest.setFileClose(fileClose);
+            fileClosePDU.setInvokeID(invokeId);
+            fileClosePDU.setService(fileCloseRequest);
+            fileCloseMmspdu.setConfirmedRequestPDU(fileClosePDU);
+            sendAnMmsPdu(fileCloseMmspdu);
         }
-
-        // closeFile
-
     }
 
     /**
@@ -772,30 +806,27 @@ final class ServerAssociation {
 
         sendAnMmsPdu(mmSpdu);
 
-        ConfirmedServiceResponse confirmedServiceResponse = null;
+        FileReadResponse fileread = null;
 
-        if (confirmedServiceResponse.getFileRead() == null) {
-            throw new ServiceError(
-                    ServiceError.FAILED_DUE_TO_COMMUNICATIONS_CONSTRAINT,
-                    "Error decoding FileReadResponsePdu");
+        try {
+            MMSpdu mmspdu = confirmedResponseQueue.take();
+
+            if (mmspdu.getConfirmedResponsePDU() != null
+                    && mmspdu.getConfirmedResponsePDU().getService().getFileRead() != null) {
+                fileread = mmspdu.getConfirmedResponsePDU().getService().getFileRead();
+            }
+        } catch (InterruptedException e) {
+            // TODO syso error
+            //throw new ServiceError()
         }
 
-        byte[] fileData = confirmedServiceResponse.getFileRead().getFileData().value;
-
-        boolean moreFollows = true;
-
-        if (confirmedServiceResponse.getFileRead().getMoreFollows() != null) {
-            moreFollows = confirmedServiceResponse.getFileRead().getMoreFollows().value;
-        }
+        byte[] fileData = fileread.getFileData().value;
+        boolean moreFollows = fileread.getMoreFollows().value;
 
         if (listener != null) {
             boolean continueRead = listener.dataReceived(fileData, moreFollows);
-
-            if (moreFollows == true) {
-                moreFollows = continueRead;
-            }
+            return continueRead;
         }
-
         return moreFollows;
     }
 

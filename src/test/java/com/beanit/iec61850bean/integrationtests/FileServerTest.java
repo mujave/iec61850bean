@@ -3,6 +3,7 @@ package com.beanit.iec61850bean.integrationtests;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.thread.ThreadUtil;
+import cn.hutool.core.util.StrUtil;
 import com.beanit.iec61850bean.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -48,12 +49,18 @@ public class FileServerTest implements ClientEventListener {
 
             @Override
             public void serverStoppedListening(ServerSap arg0) {
+
             }
 
             @Override
             public int fileDelete(String fileName) {
                 log.info("Delete file: {}", fileName);
                 return 0;
+            }
+
+            @Override
+            public void fileWrite(String destFileName) {
+                log.info("server recv file => {}",destFileName);
             }
         });
         this.serverModel = this.serverSap.getModelCopy();
@@ -85,7 +92,7 @@ public class FileServerTest implements ClientEventListener {
 
     @Test
     public void testPutFile() throws Exception {
-        this.clientAssociation.writeFile("test.txt", FileUtil.file("/Users/mujave/workspace.localized/test/test.txt"));
+        this.clientAssociation.writeFile(StrUtil.format("test-{}.txt",DateUtil.current()), FileUtil.file("/Users/mujave/workspace.localized/test/test.txt"));
 
         ThreadUtil.sleep(60*60*1000);
     }
