@@ -51,6 +51,7 @@ import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
 import java.util.*;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeoutException;
@@ -83,6 +84,11 @@ final class ServerAssociation {
     private int negotiatedMaxPduSize;
     private ByteBuffer pduBuffer;
     private boolean insertRef;
+
+    // 来自客户端的请求
+    private ArrayBlockingQueue<MMSpdu> confirmedRequestQueue = new ArrayBlockingQueue<>(1024);
+    // 来自客户端的响应，主要在文件写入时候的文件读取响应
+    private ArrayBlockingQueue<MMSpdu> confirmedResponseQueue = new ArrayBlockingQueue<>(1024);
     private String continueAfter;
 
     public ServerAssociation(ServerSap serverSap) {
@@ -124,7 +130,7 @@ final class ServerAssociation {
             logger.warn("Error during association build up", e);
             return;
         }
-
+        new Thread(() -> listenForMms(acseAssociation)).start();
         handleConnection();
     }
 
@@ -217,7 +223,12 @@ final class ServerAssociation {
 
         while (true) {
 
-            MMSpdu mmsRequestPdu = listenForMmsRequest(acseAssociation);
+            MMSpdu mmsRequestPdu = null;
+            try {
+                mmsRequestPdu = confirmedRequestQueue.take();
+            } catch (InterruptedException e) {
+                // todo syso error
+            }
             if (mmsRequestPdu == null) {
                 return;
             }
@@ -409,11 +420,9 @@ final class ServerAssociation {
                     return moreFollows;
                 });
             } catch (ServiceError e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                // TODO syso error
             } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                // TODO syso error
             }
 
             // file obtain end
@@ -422,16 +431,17 @@ final class ServerAssociation {
 
     private void expectedFileOpenResponse(Unsigned32 invokeId, String destFileName, GetFileListener listener)
             throws ServiceError, IOException {
-        FileOpenResponse fileOpen;
+        FileOpenResponse fileOpen = null;
 
-        while (true) {
-            MMSpdu listenForMmsPdu = listenForMmsRequest(acseAssociation);
+        try {
+            MMSpdu listenForMmsPdu = confirmedResponseQueue.take();
+
             if (listenForMmsPdu.getConfirmedResponsePDU() != null
                     && listenForMmsPdu.getConfirmedResponsePDU().getService().getFileOpen() != null) {
                 fileOpen = listenForMmsPdu.getConfirmedResponsePDU().getService().getFileOpen();
-
-                break;
             }
+        } catch (InterruptedException e) {
+            // TODO syso error
         }
 
         if (fileOpen != null) {
@@ -688,7 +698,7 @@ final class ServerAssociation {
         return true;
     }
 
-    private MMSpdu listenForMmsRequest(AcseAssociation acseAssociation) {
+    private void listenForMms(AcseAssociation acseAssociation) {
 
         while (true) {
             MMSpdu mmsPdu;
@@ -698,16 +708,16 @@ final class ServerAssociation {
                 buffer = acseAssociation.receive(pduBuffer);
             } catch (EOFException e) {
                 logger.debug("Connection was closed by client.");
-                return null;
+                return;
             } catch (SocketTimeoutException e) {
                 logger.warn(
                         "Message fragment timeout occured while receiving request. Closing association.", e);
-                return null;
+                return;
             } catch (IOException e) {
                 logger.warn(
                         "IOException at lower layers while listening for incoming request. Closing association.",
                         e);
-                return null;
+                return;
             } catch (DecodingException e) {
                 logger.error("Error decoding request at OSI layers.", e);
                 continue;
@@ -715,7 +725,7 @@ final class ServerAssociation {
                 logger.error(
                         "Illegal state: message timeout while receiving request though this timeout should 0 and never be thrown",
                         e);
-                return null;
+                return;
             }
             mmsPdu = new MMSpdu();
 
@@ -726,20 +736,23 @@ final class ServerAssociation {
                 continue;
             }
 
-            if (mmsPdu.getConfirmedRequestPDU() == null) {
-                if (mmsPdu.getConfirmedResponsePDU() != null) {
-                    logger.debug("Got confirm-response PDU");
-                    return mmsPdu;
-                } else if (mmsPdu.getConcludeRequestPDU() != null) {
-                    logger.debug("Got Conclude request, will close connection");
-                    return null;
-                } else {
-                    logger.warn("Got unexpected MMS PDU, will ignore it");
-                    continue;
-                }
+            if (mmsPdu.getConfirmedRequestPDU() != null) {
+                confirmedRequestQueue.add(mmsPdu);
+                continue;
+            }
+            if (mmsPdu.getConfirmedResponsePDU() != null) {
+                confirmedResponseQueue.add(mmsPdu);
+                continue;
             }
 
-            return mmsPdu;
+            if (mmsPdu.getConcludeRequestPDU() != null) {
+                logger.debug("Got Conclude request, will close connection");
+                return;
+            } else {
+                logger.warn("Got unexpected MMS PDU, will ignore it");
+                continue;
+            }
+
         }
     }
 
