@@ -18,6 +18,9 @@ import cn.hutool.core.io.FileUtil;
 import java.io.BufferedInputStream;
 import java.io.File;
 
+/**
+ * 文件读取
+ */
 public class FileReader { 
 
     private File file;

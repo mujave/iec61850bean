@@ -6,7 +6,7 @@
 
     <groupId>com.github.mujave</groupId>
     <artifactId>iec61850bean</artifactId>
-    <version>1.9.1.16</version>
+    <version>1.9.1.17.Beta</version>
 
     <name>${project.groupId}:${project.artifactId}</name>
     <description>IEC61850bean is a Java library implementing the IEC 61850 MMS communication standard for clients and servers.</description>
@@ -140,7 +140,7 @@
                 <version>1.6</version>
                 <configuration>
                     <!-- 改成你自己的路径 -->
-                    <executable>D:\GnuPG\bin\gpg.exe</executable>
+                    <executable>/opt/homebrew/bin/gpg</executable>
                 </configuration>
                 <executions>
                     <execution>
@@ -149,6 +149,13 @@
                         <goals>
                             <goal>sign</goal>
                         </goals>
+                        <configuration>
+                            <gpgArguments>
+                                <arg>--digest-algo</arg>
+                                <arg>SHA256</arg> <!-- 强制使用SHA-256 -->
+                            </gpgArguments>
+                            <passphraseServerId>gpg.passphrase</passphraseServerId> <!-- 禁用自动密码 -->
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

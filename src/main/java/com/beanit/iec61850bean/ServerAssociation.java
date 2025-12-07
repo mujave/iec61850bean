@@ -384,7 +384,7 @@ final class ServerAssociation {
 
     /**
      * 处理文件写入请求
-     * 
+     *
      * @param invokeId
      * @param fileObtainRequest
      * @throws ServiceError
@@ -410,13 +410,14 @@ final class ServerAssociation {
 
         MMSpdu mmsResponsePdu = new MMSpdu();
         mmsResponsePdu.setConfirmedRequestPDU(confirmedRequestPdu);
-
+        //构建写入的文件,在FileServiceParentPath路径下
         File destFile = FileUtil.file(this.serverSap.getFileServiceParentPath(), dest);
 
         if (sendAnMmsPdu(mmsResponsePdu)) {
             try {
+                //读取文件内容，直到文件全部读取完成，并发送文件关闭请求
                 expectedFileOpenResponse(invokeId, (byte[] fileData, boolean moreFollows) -> {
-                    FileUtil.writeBytes(fileData,destFile);
+                    FileUtil.writeBytes(fileData, destFile);
                     return moreFollows;
                 });
             } catch (ServiceError | IOException e) {
@@ -425,16 +426,14 @@ final class ServerAssociation {
 
             try {
                 MMSpdu fileClose = confirmedResponseQueue.take();
-                if (fileClose!= null
-                        && fileClose.getConfirmedResponsePDU()!=null
-                        && fileClose.getConfirmedResponsePDU().getService().getFileClose() !=null){
-
+                if (fileClose != null
+                        && fileClose.getConfirmedResponsePDU() != null
+                        && fileClose.getConfirmedResponsePDU().getService().getFileClose() != null) {
                 }
             } catch (InterruptedException e) {
-                //TODO
             }
 
-            //send fileobtain res
+            //接收到文件关闭响应了，接着发送文件写入响应
             MMSpdu fileObtainMmspdu = new MMSpdu();
 
             ConfirmedResponsePDU fileObtainPDU = new ConfirmedResponsePDU();
@@ -446,9 +445,12 @@ final class ServerAssociation {
             fileObtainPDU.setService(fileObtainResponse);
             fileObtainMmspdu.setConfirmedResponsePDU(fileObtainPDU);
             sendAnMmsPdu(fileObtainMmspdu);
-if (this.serverSap.serverEventListener!= null){
-    this.serverSap.serverEventListener.fileWrite(dest);
-}
+            if (this.serverSap.serverEventListener != null) {
+                //通知文件读取完成
+                this.serverSap.serverEventListener.fileWrite(dest);
+            }else{
+                logger.info("接收到文件[{}]的写入完成，但是没有找到服务端事件监听器无法通知",dest);
+            }
 
         }
     }
@@ -1826,9 +1828,8 @@ if (this.serverSap.serverEventListener!= null){
                         return writeResponse;
                     }
 
-                } else if (nodeName.equals("RptID")) {
-                    return writeSuccess;
-                } else if (nodeName.equals("BufTm")
+                } else if (nodeName.equals("RptID")
+                        || nodeName.equals("BufTm")
                         || nodeName.equals("TrgOps")
                         || nodeName.equals("IntgPd")) {
                     if ((urcb.reserved == null || urcb.reserved == this) && !urcb.enabled) {

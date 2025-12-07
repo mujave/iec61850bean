@@ -1048,8 +1048,8 @@ public final class ClientAssociation {
         String fileOpenFileName = fileOpenRequest.getFileName().getBerGraphicString().get(0).toString();
         // 开始进行文件上传
         if (!writeFile.getName().equals(fileOpenFileName)) {
-            // todo 本地要上送的文件名称与服务端要读取的文件名称不一样
-            throw new Exception("期待的文件读取名称不符");
+            //本地要上送的文件名称与服务端要读取的文件名称不一样
+            log.debug("期待的文件读取名称不符");
         }
         // 构造一个文件打开的请求
         FileOpenResponse fileOpenResponse = new FileOpenResponse();
@@ -1074,9 +1074,6 @@ public final class ClientAssociation {
         encodeWrite(confirmedServiceResponse);
 
         new Thread(() -> {
-            long start = System.currentTimeMillis();
-
-
             while (true) {
                 ConfirmedServiceRequest service = null;
                 try {
@@ -1109,12 +1106,12 @@ public final class ClientAssociation {
 
                     }
                 } else if (service != null && service.getFileClose() != null) {
-                    //todo 文件读取完成，退出任务
                     FileCloseResponse fileCloseResponse = handleFileCloseRequest(service.getFileClose());
                     ConfirmedServiceResponse fileCloseReponse = new ConfirmedServiceResponse();
                     fileCloseReponse.setFileClose(fileCloseResponse);
                     try {
                         encodeWrite(fileCloseReponse);
+                        //文件读取完成，退出任务
                         break;
                     } catch (ServiceError|IOException e) {
                         throw new RuntimeException(e);
@@ -1127,7 +1124,7 @@ public final class ClientAssociation {
                     log.info("文件上报完成");
                 }
             } catch (ServiceError | IOException e) {
-                throw new RuntimeException(e);
+                //
             }
 
         }).start();

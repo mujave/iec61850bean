@@ -6,7 +6,7 @@
 - [x] 修改原项目的构建方式，从gradle改为maven
 - [x] 为了适配兼容南瑞V1.0 的客户端（ClientMmi.exe）测试程序，修改一些问题。
 - [x] 服务端支持文件读取、文件目录读取、文件删除
-- [ ] 服务端支持文件写入
+- [x] 服务端支持文件写入
 - [ ] GUI部分界面、主要方法Javadoc的汉化
 - [ ] Goose协议栈的支持
 
@@ -16,7 +16,7 @@
 <dependency>
     <groupId>com.github.mujave</groupId>
     <artifactId>iec61850bean</artifactId>
-    <version>1.9.1.16</version>
+    <version>1.9.1.17.Beta</version>
 </dependency>
 ```
 
