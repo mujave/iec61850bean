@@ -14,8 +14,11 @@
 package com.beanit.jositransport;
 
 import com.beanit.iec61850bean.internal.util.SequenceNumber;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
@@ -682,6 +685,14 @@ public final class TConnection {
         } catch (IOException e) {
             return false;
         }
+    }
+
+    public InetAddress getSocketInetAddress(){
+        return this.socket.getInetAddress();
+    }
+
+    public int getSocketPort(){
+        return this.socket.getPort();
     }
 
 }
