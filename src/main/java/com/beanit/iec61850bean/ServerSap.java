@@ -48,6 +48,7 @@ public final class ServerSap {
     byte[] servicesSupportedCalled = new byte[] { (byte) 0xee, 0x1c, 0, 0, 0x04, 0x08, 0, 0, 0x79, (byte) 0xef, 0x18 };
     byte[] cbbBitString = { (byte) 0xfb, 0x00 };
     ServerEventListener serverEventListener;
+    ClientConnectionListener clientConnectionlistener;
     Timer timer;
     boolean listening = false;
     private int proposedMaxMmsPduSize = 65000;
@@ -335,6 +336,9 @@ public final class ServerSap {
             serverSocketFactory = ServerSocketFactory.getDefault();
         }
         acseSap = new ServerAcseSap(port, backlog, bindAddr, new AcseListener(this), serverSocketFactory);
+        if (clientConnectionlistener != null){
+            acseSap.setClientConnectionlistener(clientConnectionlistener);
+        }
         acseSap.serverTSap.setMaxConnections(maxAssociations);
         this.serverEventListener = serverEventListener;
         listening = true;
@@ -433,6 +437,13 @@ public final class ServerSap {
                     bdaMirror.setValueFrom(bda);
                 }
             }
+        }
+    }
+
+    public void setClientConnectionlistener(ClientConnectionListener clientConnectionlistener) {
+        this.clientConnectionlistener = clientConnectionlistener;
+        if (this.acseSap != null){
+            this.acseSap.setClientConnectionlistener(clientConnectionlistener);
         }
     }
 }

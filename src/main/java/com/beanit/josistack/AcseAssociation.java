@@ -23,6 +23,8 @@ import com.beanit.josistack.internal.acse.asn1.*;
 import com.beanit.josistack.internal.presentation.asn1.*;
 import com.beanit.jositransport.ClientTSap;
 import com.beanit.jositransport.TConnection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayInputStream;
 import java.io.EOFException;
@@ -35,9 +37,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -1070,5 +1069,13 @@ public final class AcseAssociation {
 
     public boolean testConnected(){
         return this.tConnection.testConnected();
+    }
+
+    public InetAddress getSocketAddress(){
+        return this.tConnection.getSocketInetAddress();
+    }
+
+    public int getSocketPort(){
+        return this.tConnection.getSocketPort();
     }
 }

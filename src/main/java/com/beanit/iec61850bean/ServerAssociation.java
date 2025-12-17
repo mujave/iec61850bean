@@ -743,6 +743,9 @@ final class ServerAssociation {
             try {
                 buffer = acseAssociation.receive(pduBuffer);
             } catch (EOFException e) {
+                if (serverSap.clientConnectionlistener != null){
+                    serverSap.clientConnectionlistener.remoteClinetStopConnect(acseAssociation.getSocketAddress(),acseAssociation.getSocketPort());
+                }
                 logger.debug("Connection was closed by client.");
                 return;
             } catch (SocketTimeoutException e) {
