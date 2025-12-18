@@ -13,7 +13,7 @@
  */
 package com.beanit.josistack;
 
-import com.beanit.iec61850bean.ClientConnectionlistener;
+import com.beanit.iec61850bean.ClientConnectionListener;
 import com.beanit.jositransport.ServerTSap;
 import com.beanit.jositransport.TConnection;
 import com.beanit.jositransport.TConnectionListener;
@@ -36,7 +36,7 @@ public final class ServerAcseSap implements TConnectionListener {
     public ServerTSap serverTSap = null;
     public byte[] pSelLocal = ClientAcseSap.P_SEL_DEFAULT;
     private AcseAssociationListener associationListener = null;
-    private ClientConnectionlistener clientConnectionlistener = null;
+    private ClientConnectionListener clientConnectionlistener = null;
     /**
      * Use this constructor to create a server ACSE SAP that listens on a fixed port.
      *
@@ -133,7 +133,7 @@ public final class ServerAcseSap implements TConnectionListener {
         }
     }
 
-    public void setClientConnectionlistener(ClientConnectionlistener clientConnectionlistener) {
+    public void setClientConnectionlistener(ClientConnectionListener clientConnectionlistener) {
         this.clientConnectionlistener = clientConnectionlistener;
     }
 }

@@ -42,7 +42,7 @@ public final class ServerSap {
     byte[] servicesSupportedCalled = new byte[]{(byte) 0xee, 0x1c, 0, 0, 0x04, 0x08, 0, 0, 0x79, (byte) 0xef, 0x18};
     byte[] cbbBitString = {(byte) 0xfb, 0x00};
     ServerEventListener serverEventListener;
-    private ClientConnectionlistener clientConnectionlistener;
+    ClientConnectionListener clientConnectionlistener;
     Timer timer;
     boolean listening = false;
     private int proposedMaxMmsPduSize = 65000;
@@ -408,7 +408,7 @@ public final class ServerSap {
         }
     }
 
-    public void setClientConnectionlistener(ClientConnectionlistener clientConnectionlistener) {
+    public void setClientConnectionlistener(ClientConnectionListener clientConnectionlistener) {
         this.clientConnectionlistener = clientConnectionlistener;
         if (this.acseSap != null){
             this.acseSap.setClientConnectionlistener(clientConnectionlistener);
