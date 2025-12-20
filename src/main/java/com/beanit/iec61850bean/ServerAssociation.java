@@ -48,6 +48,7 @@ import java.io.ByteArrayInputStream;
 import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
+import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
 import java.util.*;
@@ -622,7 +623,7 @@ final class ServerAssociation {
 
         while (true) {
             MMSpdu mmsRequestPdu;
-            byte[] buffer;
+            byte[] buffer = null;
             pduBuffer.clear();
             try {
                 buffer = acseAssociation.receive(pduBuffer);
@@ -636,6 +637,12 @@ final class ServerAssociation {
                 logger.warn(
                         "Message fragment timeout occured while receiving request. Closing association.", e);
                 return null;
+            } catch (SocketException e){
+                logger.debug("Connection was [{}] by client.",e.getMessage());
+                if (serverSap.clientConnectionlistener != null){
+                    serverSap.clientConnectionlistener.remoteClinetStopConnect(acseAssociation.getSocketAddress(),acseAssociation.getSocketPort());
+                }
+                close();
             } catch (IOException e) {
                 logger.warn(
                         "IOException at lower layers while listening for incoming request. Closing association.",
@@ -1880,5 +1887,13 @@ final class ServerAssociation {
         if (acseAssociation != null) {
             acseAssociation.disconnect();
         }
+    }
+
+    void checkSocketIsKeepAlive(){
+         if(acseAssociation.getSocketIsOpen() && acseAssociation.getSocketIsConnected() && acseAssociation.testConnected()){
+             //this socket connection is keepAlive
+         }
+         this.serverSap.clientConnectionlistener.remoteClinetStopConnect(acseAssociation.getSocketAddress(),acseAssociation.getSocketPort());
+         close();
     }
 }

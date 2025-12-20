@@ -13,6 +13,7 @@
  */
 package com.beanit.iec61850bean;
 
+import cn.hutool.core.thread.ThreadUtil;
 import com.beanit.josistack.AcseAssociation;
 import com.beanit.josistack.ServerAcseSap;
 
@@ -312,6 +313,14 @@ public final class ServerSap {
         this.serverEventListener = serverEventListener;
         listening = true;
         acseSap.startListening();
+        new Thread(()->{
+            while (true){
+                for (ServerAssociation association : associations) {
+                     association.checkSocketIsKeepAlive();
+                }
+                ThreadUtil.sleep(5*1000);
+            }
+        },"clientConnectionCheck").start();
     }
 
     /**
