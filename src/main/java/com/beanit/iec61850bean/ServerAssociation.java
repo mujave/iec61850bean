@@ -1889,11 +1889,14 @@ final class ServerAssociation {
         }
     }
 
-    void checkSocketIsKeepAlive(){
-         if(acseAssociation.getSocketIsOpen() && acseAssociation.getSocketIsConnected() && acseAssociation.testConnected()){
-             //this socket connection is keepAlive
-         }
-         this.serverSap.clientConnectionlistener.remoteClinetStopConnect(acseAssociation.getSocketAddress(),acseAssociation.getSocketPort());
-         close();
+    void checkSocketIsKeepAlive() {
+        if (acseAssociation.getSocketIsOpen() && acseAssociation.getSocketIsConnected()
+                && acseAssociation.testConnected()) {
+            // this socket connection is keepAlive
+            return;
+        }
+        this.serverSap.clientConnectionlistener.remoteClinetStopConnect(acseAssociation.getSocketAddress(),
+                acseAssociation.getSocketPort());
+        close();
     }
 }

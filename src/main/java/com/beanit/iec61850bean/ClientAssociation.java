@@ -2002,7 +2002,7 @@ public final class ClientAssociation {
     }
 
     public boolean getSocketIsOpen() {
-        return !this.acseAssociation.getSocketIsOpen();
+        return this.acseAssociation.getSocketIsOpen();
     }
 
     public boolean getSocketIsConnected() {

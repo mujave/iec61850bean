@@ -1046,9 +1046,8 @@ public final class AcseAssociation {
         tConnection.setMessageTimeout(i);
     }
 
-
-    public boolean getSocketIsOpen(){
-        return !this.tConnection.getSocketIsOpen();
+    public boolean getSocketIsOpen() {
+        return this.tConnection.getSocketIsOpen();
     }
 
     public boolean getSocketIsConnected(){
