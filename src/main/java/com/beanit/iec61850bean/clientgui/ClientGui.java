@@ -18,12 +18,15 @@ import com.beanit.iec61850bean.ClientSap;
 import com.beanit.iec61850bean.ServerModel;
 import com.beanit.iec61850bean.ServiceError;
 import com.beanit.iec61850bean.clientgui.util.Counter;
+import com.beanit.iec61850bean.clientgui.util.MessageUtil;
 
 import javax.swing.*;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeNode;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -33,9 +36,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Locale;
+import java.util.Comparator;
 import java.util.Properties;
-import java.util.ResourceBundle;
 
 public class ClientGui extends JFrame implements ActionListener, TreeSelectionListener {
 
@@ -59,12 +61,10 @@ public class ClientGui extends JFrame implements ActionListener, TreeSelectionLi
 
     private DataTreeNode selectedNode;
 
-    private ResourceBundle messages;
-
     public ClientGui() {
-        super("IEC61850bean Client GUI");
-        messages = ResourceBundle.getBundle("Messages", Locale.CHINESE, new UTF8Control());
-        tree.setModel(new DefaultTreeModel(new DefaultMutableTreeNode(messages.getString("LABEL.NO_SERVER_CONNECTED")), false));
+        super("IEC61850bean Client");
+        tree.setModel(new DefaultTreeModel(
+                new DefaultMutableTreeNode(MessageUtil.getString("LABEL.NO_SERVER_CONNECTED")), false));
         Properties lastConnection = new Properties();
 
         InputStream in = null;
@@ -136,13 +136,13 @@ public class ClientGui extends JFrame implements ActionListener, TreeSelectionLi
         topPanel.add(portTextField);
         topPanel.add(Box.createRigidArea(new Dimension(5, 0)));
 
-        JButton newServerButton = new JButton(messages.getString("BUTTON.CONNECT_TO_SERVER"));
+        JButton newServerButton = new JButton(MessageUtil.getString("BUTTON.CONNECT_TO_SERVER"));
         newServerButton.addActionListener(this);
         newServerButton.setActionCommand("Connect");
         topPanel.add(newServerButton);
         topPanel.add(Box.createRigidArea(new Dimension(5, 0)));
 
-        JButton settingsButton = new JButton(messages.getString("BUTON.SETTING"));
+        JButton settingsButton = new JButton(MessageUtil.getString("BUTON.SETTING"));
         settingsButton.addActionListener(this);
         settingsButton.setActionCommand("Settings");
         topPanel.add(settingsButton);
@@ -229,7 +229,7 @@ public class ClientGui extends JFrame implements ActionListener, TreeSelectionLi
                 detailsLayout.setConstraints(filler, gbc);
                 detailsPanel.add(filler);
 
-                JButton button = new JButton(messages.getString("BUTTON.RELOAD_VALUES"));
+                JButton button = new JButton(MessageUtil.getString("BUTTON.RELOAD_VALUES"));
                 button.addActionListener(this);
                 button.setActionCommand("reload");
                 gbc = new GridBagConstraints();
@@ -246,7 +246,7 @@ public class ClientGui extends JFrame implements ActionListener, TreeSelectionLi
                 detailsPanel.add(button);
 
                 if (selectedNode.writable()) {
-                    button = new JButton(messages.getString("BUTTON.WRITE_VALUES"));
+                    button = new JButton(MessageUtil.getString("BUTTON.WRITE_VALUES"));
                     button.addActionListener(this);
                     button.setActionCommand("write");
                     gbc = new GridBagConstraints();
