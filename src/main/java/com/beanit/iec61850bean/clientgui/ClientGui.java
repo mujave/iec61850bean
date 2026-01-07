@@ -489,7 +489,7 @@ public class ClientGui extends JFrame implements ActionListener, TreeSelectionLi
     }
 
     private TreeNode getFileDirectory() {
-        FileDirectoryTreeNode root = new FileDirectoryTreeNode("root");
+        FileDirectoryTreeNode root = new FileDirectoryTreeNode("/");
         try {
             List<FileInformation> fileDirectory = this.association.getFileDirectory("/");
 
