@@ -233,7 +233,8 @@ public class ClientGui extends JFrame implements ActionListener, TreeSelectionLi
                 data_gbl.setConstraints(detailsScrollPane, detailsScrollPaneConstraint);
                 dataPanel.add(detailsScrollPane);
 
-                tabbedPane.addTab("数据", null, dataPanel, "数据集");
+                tabbedPane.addTab(MessageUtil.getString("TAB.DATA"), null, dataPanel,
+                        MessageUtil.getString("TAB.DATA"));
             }
 
             file: {
@@ -245,14 +246,7 @@ public class ClientGui extends JFrame implements ActionListener, TreeSelectionLi
                 ToolTipManager.sharedInstance().registerComponent(fileTree);
                 fileTree.setCellRenderer(new DataObjectTreeCellRenderer());
                 fileTree.setMinimumSize(new Dimension(100, 0));
-                fileTree.addTreeSelectionListener(new TreeSelectionListener() {
-
-                    @Override
-                    public void valueChanged(TreeSelectionEvent e) {
-                        fileTreeSelectedEvent(e);
-                    }
-
-                });
+                fileTree.addTreeSelectionListener(e -> fileTreeSelectedEvent(e));
                 JScrollPane treeScrollPane = new JScrollPane(fileTree);
                 treeScrollPane.setMinimumSize(new Dimension(100, 0));
                 treeScrollPane.setVisible(true);
@@ -285,7 +279,8 @@ public class ClientGui extends JFrame implements ActionListener, TreeSelectionLi
                 file_gbl.setConstraints(detailsScrollPane, detailsScrollPaneConstraint);
                 filePanel.add(detailsScrollPane);
 
-                tabbedPane.addTab("文件", null, filePanel, "文件");
+                tabbedPane.addTab(MessageUtil.getString("TAB.FILE"), null, filePanel,
+                        MessageUtil.getString("TAB.FILE"));
             }
         }
 
