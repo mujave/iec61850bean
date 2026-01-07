@@ -26,8 +26,6 @@ import com.beanit.iec61850bean.clientgui.tree.file.FileTreeNode;
 import com.beanit.iec61850bean.clientgui.util.Counter;
 import com.beanit.iec61850bean.clientgui.util.MessageUtil;
 
-import cn.hutool.core.date.DateUtil;
-import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.CharsetUtil;
 import cn.hutool.core.util.StrUtil;
 
@@ -38,10 +36,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 
-import static java.awt.Window.*;
-
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -190,10 +185,9 @@ public class ClientGui extends JFrame implements ActionListener, TreeSelectionLi
             tabPanelConstraint.insets = new Insets(5, 5, 0, 5);
             tabPanelConstraint.anchor = GridBagConstraints.NORTH;
             gbl.setConstraints(tabbedPane, tabPanelConstraint);
-
             add(tabbedPane);
 
-            data: {
+            dataTab: {
                 JPanel dataPanel = new JPanel();
 
                 GridBagLayout data_gbl = new GridBagLayout();
@@ -234,11 +228,10 @@ public class ClientGui extends JFrame implements ActionListener, TreeSelectionLi
                 data_gbl.setConstraints(detailsScrollPane, detailsScrollPaneConstraint);
                 dataPanel.add(detailsScrollPane);
 
-                tabbedPane.addTab(MessageUtil.getString("TAB.DATA"), null, dataPanel,
-                        MessageUtil.getString("TAB.DATA"));
+                tabbedPane.addTab(MessageUtil.getString("TAB.DATA"), null, dataPanel);
             }
 
-            file: {
+            filetab: {
                 JPanel filePanel = new JPanel();
 
                 GridBagLayout file_gbl = new GridBagLayout();
@@ -280,13 +273,10 @@ public class ClientGui extends JFrame implements ActionListener, TreeSelectionLi
                 file_gbl.setConstraints(detailsScrollPane, detailsScrollPaneConstraint);
                 filePanel.add(detailsScrollPane);
 
-                tabbedPane.addTab(MessageUtil.getString("TAB.FILE"), null, filePanel,
-                        MessageUtil.getString("TAB.FILE"));
+                tabbedPane.addTab(MessageUtil.getString("TAB.FILE"), null, filePanel);
             }
         }
 
-        setBackground(Color.green);
-        setForeground(Color.green);
         setIconImage(Toolkit.getDefaultToolkit().getImage("src/main/java/com/beanit/iec61850bean/clientgui/logo.png"));
         // Display the window.
         setSize(700, 500);
