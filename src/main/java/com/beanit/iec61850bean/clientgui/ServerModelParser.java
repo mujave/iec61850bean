@@ -14,6 +14,8 @@
 package com.beanit.iec61850bean.clientgui;
 
 import com.beanit.iec61850bean.*;
+import com.beanit.iec61850bean.clientgui.tree.data.DataObjectTreeNode;
+import com.beanit.iec61850bean.clientgui.tree.data.DataSetTreeNode;
 
 import javax.swing.tree.TreeNode;
 import java.util.*;

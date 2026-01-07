@@ -11,11 +11,12 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.beanit.iec61850bean.clientgui;
+package com.beanit.iec61850bean.clientgui.tree.data;
 
 import com.beanit.iec61850bean.ClientAssociation;
 import com.beanit.iec61850bean.DataSet;
 import com.beanit.iec61850bean.ServiceError;
+import com.beanit.iec61850bean.clientgui.BasicDataBind;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import java.io.IOException;
