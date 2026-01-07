@@ -47,6 +47,7 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.FileInputStream;
@@ -286,6 +287,7 @@ public class ClientGui extends JFrame implements ActionListener, TreeSelectionLi
 
         setBackground(Color.green);
         setForeground(Color.green);
+        setIconImage(Toolkit.getDefaultToolkit().getImage("src/main/java/com/beanit/iec61850bean/clientgui/logo.png"));
         // Display the window.
         setSize(700, 500);
         setMinimumSize(new Dimension(420, 0));
