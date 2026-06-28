@@ -11,9 +11,10 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.beanit.iec61850bean.clientgui;
+package com.beanit.iec61850bean.clientgui.tree.data;
 
 import com.beanit.iec61850bean.*;
+import com.beanit.iec61850bean.clientgui.BasicDataBind;
 import com.beanit.iec61850bean.clientgui.databind.*;
 
 import javax.swing.tree.DefaultMutableTreeNode;

@@ -15,6 +15,7 @@ package com.beanit.iec61850bean.clientgui;
 
 import com.beanit.iec61850bean.BasicDataAttribute;
 import com.beanit.iec61850bean.FcModelNode;
+import com.beanit.iec61850bean.clientgui.tree.data.DataObjectTreeNode;
 
 import javax.swing.*;
 import javax.swing.tree.DefaultTreeCellRenderer;

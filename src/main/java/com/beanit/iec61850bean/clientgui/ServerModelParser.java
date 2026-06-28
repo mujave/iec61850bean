@@ -14,9 +14,12 @@
 package com.beanit.iec61850bean.clientgui;
 
 import com.beanit.iec61850bean.*;
+import com.beanit.iec61850bean.clientgui.tree.data.DataObjectTreeNode;
+import com.beanit.iec61850bean.clientgui.tree.data.DataSetTreeNode;
 
 import javax.swing.tree.TreeNode;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class ServerModelParser {
 
@@ -64,6 +67,8 @@ public class ServerModelParser {
         }
     }
 
+    List<String> priorityStrings = Arrays.asList("Mod", "Beh", "Health", "NamPlt");
+
     private void addLogicalNode(DataObjectTreeNode parent, LogicalNode node) {
         DataObjectTreeNode treeLN = new DataObjectTreeNode(node.getName(), node);
         parent.add(treeLN);
@@ -75,8 +80,14 @@ public class ServerModelParser {
             }
             childMap.get(child.getName()).add(((FcModelNode) child).getFc());
         }
-        for (Map.Entry<String, Set<Fc>> childEntry : childMap.entrySet()) {
-            addFunctionalConstraintObject(treeLN, node, childEntry.getKey(), childEntry.getValue());
+        List<String> childNames = childMap.keySet().stream()
+                .sorted(Comparator.comparing(
+                        (String s) -> priorityStrings.indexOf(s) >= 0 ? priorityStrings.indexOf(s) : Integer.MAX_VALUE)
+                        .thenComparingInt(String::length).thenComparing(Comparator.naturalOrder()))
+                .collect(Collectors.toList());
+
+        for (String childName : childNames) {
+            addFunctionalConstraintObject(treeLN, node, childName, childMap.get(childName));
         }
     }
 

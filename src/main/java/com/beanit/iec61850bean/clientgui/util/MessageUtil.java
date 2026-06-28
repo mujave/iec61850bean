@@ -1,4 +1,4 @@
-package com.beanit.iec61850bean.clientgui;
+package com.beanit.iec61850bean.clientgui.util;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -9,9 +9,22 @@ import java.net.URLConnection;
 import java.util.Locale;
 import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
- 
 
-public class UTF8Control extends ResourceBundle.Control {
+public class MessageUtil {
+
+    private static ResourceBundle messages = null;
+
+    public static String getString(String key) {
+
+        if (messages == null) {
+            messages = ResourceBundle.getBundle("Messages", Locale.CHINESE, new UTF8Control());
+        }
+        return messages.getString(key);
+    }
+
+}
+
+class UTF8Control extends ResourceBundle.Control {
     public ResourceBundle newBundle(String baseName, Locale locale, String format, ClassLoader loader, boolean reload)
             throws IllegalAccessException, InstantiationException, IOException {
         // 指定加载特定格式的文件，这里我们只处理properties文件

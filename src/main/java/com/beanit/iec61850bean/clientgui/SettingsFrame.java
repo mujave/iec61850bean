@@ -14,6 +14,8 @@
 package com.beanit.iec61850bean.clientgui;
 
 import javax.swing.*;
+import com.beanit.iec61850bean.clientgui.util.MessageUtil;
+
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -37,7 +39,7 @@ public class SettingsFrame extends JDialog implements ActionListener {
         final GridBagLayout layout = new GridBagLayout();
         setLayout(layout);
 
-        this.setSize(200, 120);
+        this.setSize(220, 160);
         setLocationRelativeTo(null);
 
         JLabel label = new JLabel("TSelLocal: ");
@@ -110,7 +112,7 @@ public class SettingsFrame extends JDialog implements ActionListener {
         layout.setConstraints(tselRemoteField2, constraint);
         add(tselRemoteField2);
 
-        JButton button = new JButton("Cancel");
+        JButton button = new JButton(MessageUtil.getString("BUTTON.CANCEL"));
         button.setActionCommand("Cancel");
         button.addActionListener(this);
         constraint.gridwidth = 1;
@@ -122,7 +124,7 @@ public class SettingsFrame extends JDialog implements ActionListener {
         layout.setConstraints(button, constraint);
         add(button);
 
-        button = new JButton("OK");
+        button = new JButton(MessageUtil.getString("BUTTON.OK"));
         button.setActionCommand("Okay");
         button.addActionListener(this);
         constraint.gridwidth = 2;
@@ -153,7 +155,7 @@ public class SettingsFrame extends JDialog implements ActionListener {
     }
 
     public byte[] getTselLocal() {
-        return new byte[]{(byte) tselLocal1, (byte) tselLocal2};
+        return new byte[] { (byte) tselLocal1, (byte) tselLocal2 };
     }
 
     public void setTselLocal(byte[] tsel) {
@@ -168,7 +170,7 @@ public class SettingsFrame extends JDialog implements ActionListener {
     }
 
     public byte[] getTselRemote() {
-        return new byte[]{(byte) tselRemote1, (byte) tselRemote2};
+        return new byte[] { (byte) tselRemote1, (byte) tselRemote2 };
     }
 
     public void setTselRemote(byte[] tsel) {

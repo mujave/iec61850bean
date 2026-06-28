@@ -15,16 +15,34 @@ package com.beanit.iec61850bean.clientgui;
 
 import com.beanit.iec61850bean.ClientAssociation;
 import com.beanit.iec61850bean.ClientSap;
+import com.beanit.iec61850bean.FileInformation;
+import com.beanit.iec61850bean.GetFileListener;
 import com.beanit.iec61850bean.ServerModel;
 import com.beanit.iec61850bean.ServiceError;
+import com.beanit.iec61850bean.clientgui.tree.data.DataObjectTreeNode;
+import com.beanit.iec61850bean.clientgui.tree.data.DataTreeNode;
+import com.beanit.iec61850bean.clientgui.tree.file.FileDirectoryTreeNode;
+import com.beanit.iec61850bean.clientgui.tree.file.FileTreeNode;
 import com.beanit.iec61850bean.clientgui.util.Counter;
+import com.beanit.iec61850bean.clientgui.util.MessageUtil;
+
+import cn.hutool.core.util.CharsetUtil;
+import cn.hutool.core.util.StrUtil;
 
 import javax.swing.*;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
-import java.awt.*;
+import javax.swing.tree.TreeNode;
+
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.FileInputStream;
@@ -33,9 +51,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Locale;
+import java.util.List;
 import java.util.Properties;
-import java.util.ResourceBundle;
 
 public class ClientGui extends JFrame implements ActionListener, TreeSelectionListener {
 
@@ -50,7 +67,10 @@ public class ClientGui extends JFrame implements ActionListener, TreeSelectionLi
     private final JTextField ipTextField = new JTextField("127.0.0.1");
     private final JTextField portTextField = new JTextField("10002");
     private final JTree tree = new JTree();
+    private final JTree fileTree = new JTree();
+
     private final JPanel detailsPanel = new JPanel();
+    private final JPanel fileDetailsPanel = new JPanel(new BorderLayout());
     private final GridBagLayout detailsLayout = new GridBagLayout();
 
     private final SettingsFrame settingsFrame = new SettingsFrame();
@@ -59,12 +79,12 @@ public class ClientGui extends JFrame implements ActionListener, TreeSelectionLi
 
     private DataTreeNode selectedNode;
 
-    private ResourceBundle messages;
-
     public ClientGui() {
-        super("IEC61850bean Client GUI");
-        messages = ResourceBundle.getBundle("Messages", Locale.CHINESE, new UTF8Control());
-        tree.setModel(new DefaultTreeModel(new DefaultMutableTreeNode(messages.getString("LABEL.NO_SERVER_CONNECTED")), false));
+        super("IEC61850bean Client");
+        tree.setModel(new DefaultTreeModel(
+                new DefaultMutableTreeNode(MessageUtil.getString("LABEL.NO_SERVER_CONNECTED")), false));
+        fileTree.setModel(new DefaultTreeModel(
+                new DefaultMutableTreeNode(MessageUtil.getString("LABEL.NO_SERVER_CONNECTED")), false));
         Properties lastConnection = new Properties();
 
         InputStream in = null;
@@ -113,80 +133,188 @@ public class ClientGui extends JFrame implements ActionListener, TreeSelectionLi
         GridBagLayout gbl = new GridBagLayout();
         setLayout(gbl);
 
-        JPanel topPanel = new JPanel();
-        topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.X_AXIS));
+        top: {
+            JPanel topPanel = new JPanel();
+            topPanel.setLayout(new BoxLayout(topPanel, BoxLayout.X_AXIS));
 
-        GridBagConstraints topPanelConstraint = new GridBagConstraints();
-        topPanelConstraint.fill = GridBagConstraints.HORIZONTAL;
-        topPanelConstraint.gridwidth = GridBagConstraints.REMAINDER;
-        topPanelConstraint.gridx = 0;
-        topPanelConstraint.gridy = 0;
-        topPanelConstraint.insets = new Insets(5, 5, 5, 5);
-        topPanelConstraint.anchor = GridBagConstraints.NORTH;
-        gbl.setConstraints(topPanel, topPanelConstraint);
-        add(topPanel);
+            GridBagConstraints topPanelConstraint = new GridBagConstraints();
+            topPanelConstraint.fill = GridBagConstraints.HORIZONTAL;
+            topPanelConstraint.gridwidth = GridBagConstraints.REMAINDER;
+            topPanelConstraint.gridx = 0;
+            topPanelConstraint.gridy = 0;
+            topPanelConstraint.insets = new Insets(5, 5, 0, 5);
+            topPanelConstraint.anchor = GridBagConstraints.NORTH;
+            gbl.setConstraints(topPanel, topPanelConstraint);
+            add(topPanel);
 
-        JLabel label = new JLabel("IP: ");
-        topPanel.add(label);
-        topPanel.add(ipTextField);
-        topPanel.add(Box.createRigidArea(new Dimension(5, 0)));
+            topPanel.setSize(700, 500);
+            topPanel.setMinimumSize(new Dimension(420, 0));
 
-        label = new JLabel("Port: ");
-        topPanel.add(label);
-        topPanel.add(portTextField);
-        topPanel.add(Box.createRigidArea(new Dimension(5, 0)));
+            JLabel label = new JLabel("IP: ");
+            topPanel.add(label);
+            topPanel.add(ipTextField);
+            topPanel.add(Box.createRigidArea(new Dimension(5, 0)));
 
-        JButton newServerButton = new JButton(messages.getString("BUTTON.CONNECT_TO_SERVER"));
-        newServerButton.addActionListener(this);
-        newServerButton.setActionCommand("Connect");
-        topPanel.add(newServerButton);
-        topPanel.add(Box.createRigidArea(new Dimension(5, 0)));
+            label = new JLabel("Port: ");
+            topPanel.add(label);
+            topPanel.add(portTextField);
+            topPanel.add(Box.createRigidArea(new Dimension(5, 0)));
 
-        JButton settingsButton = new JButton(messages.getString("BUTON.SETTING"));
-        settingsButton.addActionListener(this);
-        settingsButton.setActionCommand("Settings");
-        topPanel.add(settingsButton);
+            JButton newServerButton = new JButton(MessageUtil.getString("BUTTON.CONNECT_TO_SERVER"));
+            newServerButton.addActionListener(this);
+            newServerButton.setActionCommand("Connect");
+            topPanel.add(newServerButton);
+            topPanel.add(Box.createRigidArea(new Dimension(5, 0)));
 
-        ToolTipManager.sharedInstance().registerComponent(tree);
+            JButton settingsButton = new JButton(MessageUtil.getString("BUTON.SETTING"));
+            settingsButton.addActionListener(this);
+            settingsButton.setActionCommand("Settings");
+            topPanel.add(settingsButton);
+        }
 
-        tree.setCellRenderer(new DataObjectTreeCellRenderer());
-        tree.setMinimumSize(new Dimension(100, 0));
-        tree.addTreeSelectionListener(this);
-        JScrollPane treeScrollPane = new JScrollPane(tree);
-        treeScrollPane.setMinimumSize(new Dimension(100, 0));
-        treeScrollPane.setVisible(true);
+        tab: {
+            JTabbedPane tabbedPane = new JTabbedPane();
 
-        GridBagConstraints treeScrollPaneConstraint = new GridBagConstraints();
-        treeScrollPaneConstraint.fill = GridBagConstraints.BOTH;
-        treeScrollPaneConstraint.gridx = 0;
-        treeScrollPaneConstraint.gridy = 1;
-        treeScrollPaneConstraint.weightx = 0.2;
-        treeScrollPaneConstraint.weighty = 1;
-        treeScrollPaneConstraint.insets = new Insets(5, 5, 5, 5);
-        gbl.setConstraints(treeScrollPane, treeScrollPaneConstraint);
-        add(treeScrollPane);
+            GridBagConstraints tabPanelConstraint = new GridBagConstraints();
+            tabPanelConstraint.fill = GridBagConstraints.BOTH;
+            tabPanelConstraint.gridwidth = GridBagConstraints.REMAINDER;
+            tabPanelConstraint.gridx = 0;
+            tabPanelConstraint.gridy = 1;
+            tabPanelConstraint.weightx = 1;
+            tabPanelConstraint.weighty = 1;
+            tabPanelConstraint.insets = new Insets(5, 5, 0, 5);
+            tabPanelConstraint.anchor = GridBagConstraints.NORTH;
+            gbl.setConstraints(tabbedPane, tabPanelConstraint);
+            add(tabbedPane);
 
-        detailsPanel.setLayout(detailsLayout);
-        detailsPanel.setAlignmentY(TOP_ALIGNMENT);
-        JScrollPane detailsScrollPane = new JScrollPane(detailsPanel);
-        detailsPanel.setMaximumSize(detailsScrollPane.getSize());
-        detailsScrollPane.setMinimumSize(new Dimension(0, 0));
-        detailsScrollPane.setPreferredSize(new Dimension(200, 0));
-        detailsScrollPane.setVisible(true);
-        GridBagConstraints detailsScrollPaneConstraint = new GridBagConstraints();
-        detailsScrollPaneConstraint.fill = GridBagConstraints.BOTH;
-        detailsScrollPaneConstraint.gridx = 1;
-        detailsScrollPaneConstraint.gridy = 1;
-        detailsScrollPaneConstraint.weightx = 0.8;
-        detailsScrollPaneConstraint.weighty = 1;
-        detailsScrollPaneConstraint.insets = new Insets(5, 5, 5, 5);
-        gbl.setConstraints(detailsScrollPane, detailsScrollPaneConstraint);
-        add(detailsScrollPane);
+            dataTab: {
+                JPanel dataPanel = new JPanel();
 
+                GridBagLayout data_gbl = new GridBagLayout();
+                dataPanel.setLayout(data_gbl);
+
+                ToolTipManager.sharedInstance().registerComponent(tree);
+                tree.setCellRenderer(new DataObjectTreeCellRenderer());
+                tree.setMinimumSize(new Dimension(100, 0));
+                tree.addTreeSelectionListener(this);
+                JScrollPane treeScrollPane = new JScrollPane(tree);
+                treeScrollPane.setMinimumSize(new Dimension(100, 0));
+                treeScrollPane.setVisible(true);
+
+                GridBagConstraints treeScrollPaneConstraint = new GridBagConstraints();
+                treeScrollPaneConstraint.fill = GridBagConstraints.BOTH;
+                treeScrollPaneConstraint.gridx = 0;
+                treeScrollPaneConstraint.gridy = 0;
+                treeScrollPaneConstraint.weightx = 0.2;
+                treeScrollPaneConstraint.weighty = 1;
+                treeScrollPaneConstraint.insets = new Insets(5, 5, 5, 5);
+                data_gbl.setConstraints(treeScrollPane, treeScrollPaneConstraint);
+                dataPanel.add(treeScrollPane);
+
+                detailsPanel.setLayout(detailsLayout);
+                detailsPanel.setAlignmentY(TOP_ALIGNMENT);
+                JScrollPane detailsScrollPane = new JScrollPane(detailsPanel);
+                detailsPanel.setMaximumSize(detailsScrollPane.getSize());
+                detailsScrollPane.setMinimumSize(new Dimension(0, 0));
+                detailsScrollPane.setPreferredSize(new Dimension(200, 0));
+                detailsScrollPane.setVisible(true);
+                GridBagConstraints detailsScrollPaneConstraint = new GridBagConstraints();
+                detailsScrollPaneConstraint.fill = GridBagConstraints.BOTH;
+                detailsScrollPaneConstraint.gridx = 1;
+                detailsScrollPaneConstraint.gridy = 0;
+                detailsScrollPaneConstraint.weightx = 0.8;
+                detailsScrollPaneConstraint.weighty = 1;
+                detailsScrollPaneConstraint.insets = new Insets(5, 5, 5, 5);
+                data_gbl.setConstraints(detailsScrollPane, detailsScrollPaneConstraint);
+                dataPanel.add(detailsScrollPane);
+
+                tabbedPane.addTab(MessageUtil.getString("TAB.DATA"), null, dataPanel);
+            }
+
+            filetab: {
+                JPanel filePanel = new JPanel();
+
+                GridBagLayout file_gbl = new GridBagLayout();
+                filePanel.setLayout(file_gbl);
+
+                ToolTipManager.sharedInstance().registerComponent(fileTree);
+                fileTree.setCellRenderer(new DataObjectTreeCellRenderer());
+                fileTree.setMinimumSize(new Dimension(100, 0));
+                fileTree.addTreeSelectionListener(e -> fileTreeSelectedEvent(e));
+                JScrollPane treeScrollPane = new JScrollPane(fileTree);
+                treeScrollPane.setMinimumSize(new Dimension(100, 0));
+                treeScrollPane.setVisible(true);
+
+                GridBagConstraints treeScrollPaneConstraint = new GridBagConstraints();
+                treeScrollPaneConstraint.fill = GridBagConstraints.BOTH;
+                treeScrollPaneConstraint.gridx = 0;
+                treeScrollPaneConstraint.gridy = 0;
+                treeScrollPaneConstraint.weightx = 0.2;
+                treeScrollPaneConstraint.weighty = 1;
+                treeScrollPaneConstraint.insets = new Insets(5, 5, 5, 5);
+                file_gbl.setConstraints(treeScrollPane, treeScrollPaneConstraint);
+                filePanel.add(treeScrollPane);
+
+                fileDetailsPanel.setAlignmentY(TOP_ALIGNMENT);
+                fileDetailsPanel.setBorder(BorderFactory.createEmptyBorder(2, 2, 2, 2));
+
+                JScrollPane detailsScrollPane = new JScrollPane(fileDetailsPanel);
+                fileDetailsPanel.setMaximumSize(detailsScrollPane.getSize());
+                detailsScrollPane.setMinimumSize(new Dimension(0, 0));
+                detailsScrollPane.setPreferredSize(new Dimension(200, 0));
+                detailsScrollPane.setVisible(true);
+                GridBagConstraints detailsScrollPaneConstraint = new GridBagConstraints();
+                detailsScrollPaneConstraint.fill = GridBagConstraints.BOTH;
+                detailsScrollPaneConstraint.gridx = 1;
+                detailsScrollPaneConstraint.gridy = 0;
+                detailsScrollPaneConstraint.weightx = 0.8;
+                detailsScrollPaneConstraint.weighty = 1;
+                detailsScrollPaneConstraint.insets = new Insets(5, 5, 5, 5);
+                file_gbl.setConstraints(detailsScrollPane, detailsScrollPaneConstraint);
+                filePanel.add(detailsScrollPane);
+
+                tabbedPane.addTab(MessageUtil.getString("TAB.FILE"), null, filePanel);
+            }
+        }
+
+        setIconImage(Toolkit.getDefaultToolkit().getImage("src/main/java/com/beanit/iec61850bean/clientgui/logo.png"));
         // Display the window.
         setSize(700, 500);
         setMinimumSize(new Dimension(420, 0));
         setVisible(true);
+    }
+
+    protected void fileTreeSelectedEvent(TreeSelectionEvent e) {
+        fileDetailsPanel.removeAll();
+        fileDetailsPanel.repaint();
+        if (e.getNewLeadSelectionPath() != null) {
+            DefaultMutableTreeNode fileTreeSelectNode = (DefaultMutableTreeNode) e.getNewLeadSelectionPath()
+                    .getLastPathComponent();
+            if (fileTreeSelectNode instanceof FileDirectoryTreeNode) {
+                // todo 这里想构造一个表格来展示信息
+            } else if (fileTreeSelectNode instanceof FileTreeNode) {
+
+                JTextArea textArea = new JTextArea();
+
+                fileDetailsPanel.add(textArea, BorderLayout.CENTER);
+                String fileName = ((FileTreeNode) fileTreeSelectNode).getAbsPathName();
+                Long fileSize = ((FileTreeNode) fileTreeSelectNode).getFileSize();
+                // todo 这里要不要判断一下文件大小，大文件单独启用线程下载后本地查看
+                // MMS read fileContent
+                try {
+                    this.association.getFile(fileName, new GetFileListener() {
+
+                        @Override
+                        public boolean dataReceived(byte[] fileData, boolean moreFollows) {
+                            textArea.append(StrUtil.str(fileData, CharsetUtil.UTF_8));
+                            return moreFollows;
+                        }
+                    });
+                } catch (ServiceError | IOException e1) {
+                    e1.printStackTrace();
+                }
+            }
+        }
     }
 
     public static void main(String[] args) {
@@ -229,7 +357,7 @@ public class ClientGui extends JFrame implements ActionListener, TreeSelectionLi
                 detailsLayout.setConstraints(filler, gbc);
                 detailsPanel.add(filler);
 
-                JButton button = new JButton(messages.getString("BUTTON.RELOAD_VALUES"));
+                JButton button = new JButton(MessageUtil.getString("BUTTON.RELOAD_VALUES"));
                 button.addActionListener(this);
                 button.setActionCommand("reload");
                 gbc = new GridBagConstraints();
@@ -246,7 +374,7 @@ public class ClientGui extends JFrame implements ActionListener, TreeSelectionLi
                 detailsPanel.add(button);
 
                 if (selectedNode.writable()) {
-                    button = new JButton(messages.getString("BUTTON.WRITE_VALUES"));
+                    button = new JButton(MessageUtil.getString("BUTTON.WRITE_VALUES"));
                     button.addActionListener(this);
                     button.setActionCommand("write");
                     gbc = new GridBagConstraints();
@@ -318,6 +446,8 @@ public class ClientGui extends JFrame implements ActionListener, TreeSelectionLi
         ServerModelParser parser = new ServerModelParser(serverModel);
         tree.setModel(new DefaultTreeModel(parser.getModelTree()));
 
+        fileTree.setModel(new DefaultTreeModel(getFileDirectory()));
+
         Properties lastConnectSettings = new Properties();
         FileOutputStream out = null;
         try {
@@ -343,6 +473,20 @@ public class ClientGui extends JFrame implements ActionListener, TreeSelectionLi
         }
 
         validate();
+    }
+
+    private TreeNode getFileDirectory() {
+        FileDirectoryTreeNode root = new FileDirectoryTreeNode("/");
+        try {
+            List<FileInformation> fileDirectory = this.association.getFileDirectory("/");
+
+            for (FileInformation fileInformation : fileDirectory) {
+                root.add(fileInformation);
+            }
+        } catch (ServiceError | IOException e) {
+            e.printStackTrace();
+        }
+        return root;
     }
 
     private void reload() {
