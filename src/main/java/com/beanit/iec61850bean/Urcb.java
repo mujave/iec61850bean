@@ -14,6 +14,7 @@
 package com.beanit.iec61850bean;
 
 import com.beanit.asn1bean.ber.types.BerBitString;
+import com.beanit.asn1bean.ber.types.string.BerVisibleString;
 import com.beanit.iec61850bean.internal.mms.asn1.*;
 
 import java.util.*;
@@ -219,7 +220,17 @@ public class Urcb extends Rcb {
             accessResult.setSuccess(data);
             accessResults.add(accessResult);
 
-            // data reference sending not supported for now
+            // send data references if enabled
+            if (getOptFlds().isDataReference()) {
+                for (FcModelNode dataSetMember : dataSetMembers) {
+                    accessResult = new AccessResult();
+                    Data dataRefData = new Data();
+                    dataRefData.setVisibleString(
+                        new BerVisibleString(dataSetMember.getReference().toString().getBytes(UTF_8)));
+                    accessResult.setSuccess(dataRefData);
+                    accessResults.add(accessResult);
+                }
+            }
 
             for (FcModelNode dataSetMember : dataSetMembers) {
                 accessResult = new AccessResult();
@@ -260,7 +271,19 @@ public class Urcb extends Rcb {
             accessResult.setSuccess(data);
             accessResults.add(accessResult);
 
-            // data reference sending not supported for now
+            // send data references if enabled
+            if (getOptFlds().isDataReference()) {
+                for (FcModelNode dataSetMember : dataSetMembers) {
+                    if (membersToBeReported.get(dataSetMember) != null) {
+                        accessResult = new AccessResult();
+                        Data dataRefData = new Data();
+                        dataRefData.setVisibleString(
+                            new BerVisibleString(dataSetMember.getReference().toString().getBytes(UTF_8)));
+                        accessResult.setSuccess(dataRefData);
+                        accessResults.add(accessResult);
+                    }
+                }
+            }
 
             for (FcModelNode dataSetMember : dataSetMembers) {
                 if (membersToBeReported.get(dataSetMember) != null) {
