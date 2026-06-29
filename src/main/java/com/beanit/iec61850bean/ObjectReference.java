@@ -61,6 +61,22 @@ public final class ObjectReference implements Iterable<String> {
         return objectReference;
     }
 
+    public String toMmsString(Fc fc) {
+        StringBuilder resBuilder = new StringBuilder();
+        for (int i = 0; i < nodeNames.size(); i++) {
+            resBuilder.append(nodeNames.get(i));
+            if (i == 0) {
+                resBuilder.append('/');
+            }else if (i == 1) {
+                resBuilder.append('$').append(fc.name()).append("$");
+            }else {
+                resBuilder.append('.');
+            }
+        } 
+        resBuilder.setLength(resBuilder.length() - 1);
+        return resBuilder.toString();
+    }
+
     public boolean isLogicalDeviceRef() {
         if (nodeNames == null) {
             parseForNameList();
