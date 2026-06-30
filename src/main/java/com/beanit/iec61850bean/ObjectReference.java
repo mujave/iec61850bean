@@ -61,19 +61,39 @@ public final class ObjectReference implements Iterable<String> {
         return objectReference;
     }
 
+    /**
+     * ObjectReference(MMS) syntax: LDName/LNName$FcName$DOName[$Name[$ ...]]
+     * <p>
+     * IEC61850-8-1 SCSM 映射规则
+     * </p>
+     * 
+     * @param fc 对象功能约束类型
+     * @return the MMS string representation of the reference
+     */
     public String toMmsString(Fc fc) {
+        if (nodeNames == null) {
+            parseForNameList();
+        }
+        if (nodeNames.isEmpty()) {
+            return "";
+        }
         StringBuilder resBuilder = new StringBuilder();
-        for (int i = 0; i < nodeNames.size(); i++) {
+        // 第一个元素是LDName，后面加/
+        resBuilder.append(nodeNames.get(0)).append('/');
+        if (nodeNames.size() == 1) {
+            // 只有LDName，去掉末尾的/
+            resBuilder.setLength(resBuilder.length() - 1);
+            return resBuilder.toString();
+        }
+        // 第二个元素是LNName，后面加$FcName$
+        resBuilder.append(nodeNames.get(1)).append('$').append(fc.name()).append('$');
+        // 剩余的元素用$连接
+        for (int i = 2; i < nodeNames.size(); i++) {
             resBuilder.append(nodeNames.get(i));
-            if (i == 0) {
-                resBuilder.append('/');
-            }else if (i == 1) {
-                resBuilder.append('$').append(fc.name()).append("$");
-            }else {
-                resBuilder.append('.');
+            if (i < nodeNames.size() - 1) {
+                resBuilder.append('$');
             }
-        } 
-        resBuilder.setLength(resBuilder.length() - 1);
+        }
         return resBuilder.toString();
     }
 
