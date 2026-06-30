@@ -7,7 +7,7 @@
     </Header>
     <Communication>
         <SubNetwork name="MMS" type="8-MMS">
-            <ConnectedAP apName="S1" iedName="FK">
+            <ConnectedAP apName="S1" iedName="FK101">
                 <Address>
                     <P type="OSI-AP-Title">1,3,9999,33</P>
                     <P type="OSI-AE-Qualifier">33</P>
@@ -20,7 +20,7 @@
             </ConnectedAP>
         </SubNetwork>
     </Communication>
-    <IED configVersion="v1.00" desc="测控装置" manufacturer="XXXX" name="FK" type="DHJC">
+    <IED configVersion="v1.00" desc="测控装置" manufacturer="XXXX" name="FK101" type="DHJC">
         <Services>
             <DynAssociation/>
             <GetDirectory/>

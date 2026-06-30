@@ -1,10 +1,10 @@
 package com.beanit.iec61850bean.mms;
+ 
 
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,7 +18,6 @@ import com.beanit.iec61850bean.ClientAssociation;
 import com.beanit.iec61850bean.ClientEventListener;
 import com.beanit.iec61850bean.ClientSap;
 import com.beanit.iec61850bean.Fc;
-import com.beanit.iec61850bean.FcModelNode;
 import com.beanit.iec61850bean.FileInformation;
 import com.beanit.iec61850bean.Report;
 import com.beanit.iec61850bean.SclParseException;
@@ -32,6 +31,7 @@ import com.beanit.iec61850bean.Urcb;
 import cn.hutool.core.collection.CollUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.thread.ThreadUtil;
+import cn.hutool.core.util.RandomUtil;
 
 public class SimpleServerClientTest implements ClientEventListener {
 
@@ -50,7 +50,7 @@ public class SimpleServerClientTest implements ClientEventListener {
         // 创建客户端能力对象
         ClientSap clientSap = new ClientSap();
         // 与服务端建立连接
-        this.clientAssociation = clientSap.associate(InetAddress.getByName("localhost"), PORT, "", this);
+        this.clientAssociation = clientSap.associate(InetAddress.getByName("127.0.0.1"), PORT, "", this);
         // 获取模型文件能力对象
         this.clientModel = this.clientAssociation.retrieveModel();
         // 客户端也可以离线的方式读取本地的模型文件
@@ -70,14 +70,14 @@ public class SimpleServerClientTest implements ClientEventListener {
         // 设置服务端的消息监听器
         this.serverSap.startListening(
                 new ServerEventListener() {
-
                     @Override
-                    public List<ServiceError> write(List<BasicDataAttribute> arg0) {
-                        return null;
+                    public void serverStoppedListening(ServerSap arg0) {
                     }
 
                     @Override
-                    public void serverStoppedListening(ServerSap arg0) {
+                    public List<ServiceError> write(List<BasicDataAttribute> bdas) {
+                        // TODO Auto-generated method stub
+                        throw new UnsupportedOperationException("Unimplemented method 'write'");
                     }
                 });
         // 设置服务端文件服务的根目录
@@ -87,28 +87,31 @@ public class SimpleServerClientTest implements ClientEventListener {
 
     @Test
     public void testSetValueForServer() throws IOException, ServiceError, InterruptedException {
-        List<BasicDataAttribute> writeList = CollUtil.newArrayList();
-        // 通过模型中DA的引用名称找到对应的对象
-        BdaBoolean v1 = (BdaBoolean) serverModel.findModelNode("FKMONT/GGIO1.Ind1.stVal", Fc.ST);
+        while (true) {
+            List<BasicDataAttribute> writeList = CollUtil.newArrayList();
+            // 通过模型中DA的引用名称找到对应的对象
+            BdaBoolean v1 = (BdaBoolean) serverModel.findModelNode("FK101MONT/GGIO1.Ind1.stVal", Fc.ST);
 
-        // 设置对应要写入的值
-        v1.setValue(true);
-        // 将DA加入到待写入集合中
-        writeList.add(v1);
-        BdaFloat32 v2 = (BdaFloat32) serverModel.findModelNode("FKMONT/GGIO2.AnInd1.mag.f", Fc.MX);
-        // 读取模型该节点的当前值
-        System.out.println(v2.getFloat().floatValue());
-        v2.setFloat(1.2f);
-        writeList.add(v2);
-        // 服务端通过服务端能力对象将数据集写入到模型
-        serverSap.setValues(writeList);
+            // 设置对应要写入的值
+            v1.setValue(RandomUtil.randomBoolean());
+            // 将DA加入到待写入集合中
+            writeList.add(v1);
+            BdaFloat32 v2 = (BdaFloat32) serverModel.findModelNode("FK101MONT/GGIO2.AnInd1.mag.f", Fc.MX);
+            // 读取模型该节点的当前值
+            System.out.println(v2.getFloat().floatValue());
+            v2.setFloat(RandomUtil.randomFloat());
+            writeList.add(v2);
+            // 服务端通过服务端能力对象将数据集写入到模型
+            serverSap.setValues(writeList);
+            ThreadUtil.sleep(5 * 1000L);
+        }
     }
 
     @Test
     public void testSetValueForClient() throws IOException, ServiceError, InterruptedException {
-        BdaBoolean v1 = (BdaBoolean) clientModel.findModelNode("FKMONT/GGIO1.Ind1.stVal", Fc.ST);
+        BdaBoolean v1 = (BdaBoolean) clientModel.findModelNode("FK101MONT/GGIO1.Ind1.stVal", Fc.ST);
         System.out.println("1." + v1.getValue());
-        BdaFloat32 v2 = (BdaFloat32) clientModel.findModelNode("FKMONT/GGIO2.AnInd1.mag.f", Fc.MX);
+        BdaFloat32 v2 = (BdaFloat32) clientModel.findModelNode("FK101MONT/GGIO2.AnInd1.mag.f", Fc.MX);
         System.out.println("2." + v2.getFloat());
         testSetValueForServer();
 
@@ -147,7 +150,7 @@ public class SimpleServerClientTest implements ClientEventListener {
             for (Urcb urcb : urcbs) {
                 log.info("{}:{}", urcb.getName(), urcb.getRptEna().getValue());
             }
-            ThreadUtil.sleep(5*1000L);
+            ThreadUtil.sleep(5 * 1000L);
         }
 
     }
