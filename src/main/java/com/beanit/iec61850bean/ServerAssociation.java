@@ -1631,18 +1631,7 @@ final class ServerAssociation {
                     }
                 } else if (nodeName.equals("OptFlds")) {
                     if ((urcb.reserved == null || urcb.reserved == this) && !urcb.enabled) {
-                        if (!((BdaOptFlds) modelNode).isBufferOverflow()
-                                && !((BdaOptFlds) modelNode).isConfigRevision()
-                                && !((BdaOptFlds) modelNode).isDataReference()
-                                && !((BdaOptFlds) modelNode).isEntryId()) {
-                            ((BasicDataAttribute) modelNode).setValueFrom((BasicDataAttribute) fcModelNodeCopy);
                             return writeSuccess;
-                        } else {
-                            logger.info("Client tried to write OptFlds with usupported field set to true.");
-                            // 3 indicates error "object_access_denied"
-                            writeResponse.setFailure(new DataAccessError(3L));
-                            return writeResponse;
-                        }
                     } else {
                         logger.info(
                                 "Client tried to write RCB parameter even though URCB is reserved by other client or already enabled.");

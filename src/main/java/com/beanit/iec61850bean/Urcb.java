@@ -168,6 +168,7 @@ public class Urcb extends Rcb {
         accessResults.add(accessResult);
 
         accessResult = new AccessResult();
+        getOptFlds().setDataReference(true);
         accessResult.setSuccess(getOptFlds().getMmsDataObj());
         accessResults.add(accessResult);
 
