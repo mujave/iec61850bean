@@ -226,7 +226,7 @@ public class Urcb extends Rcb {
                     accessResult = new AccessResult();
                     Data dataRefData = new Data();
                     dataRefData.setVisibleString(
-                        new BerVisibleString(dataSetMember.getReference().toString().getBytes(UTF_8)));
+                        new BerVisibleString(dataSetMember.getReference().toMmsString(dataSetMember.getFc()).getBytes(UTF_8)));
                     accessResult.setSuccess(dataRefData);
                     accessResults.add(accessResult);
                 }
